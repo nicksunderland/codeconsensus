@@ -10,8 +10,15 @@ app_ui <- function(request) {
     golem_add_external_resources(),
     # Your application UI logic
     fluidPage(
-      h1("hfphenotyping"),
-      h2("testing")
+      titlePanel("Heart failure phenotyping"),
+      h5("nicholas.sunderland@bristol.ac.uk"),
+      navlistPanel(
+        "Phenotype",
+        tabPanel("Heart failure syndrome",  DT::dataTableOutput("checkbox_table_1")),
+        tabPanel("Cardiomyopathy", DT::dataTableOutput("checkbox_table_2")),
+        tabPanel("DCM",  DT::dataTableOutput("checkbox_table_3"))
+      ),
+      plotOutput("plot")
     )
   )
 }

@@ -1,0 +1,53 @@
+Oracle cloud infrastructure
+- make VNC network for the shiny server
+    - main page, left-hand side menu: Networking -> Virtual Cloud Networks -> Start VCN Wizard
+- make an instance
+    - Compute -> Instances -> Create Instance
+
+Setup server
+- login via terminal (or setup ssh keys): ssh -i opc@ip_address_from_prev_step
+- install R: sudo yum install R
+- install r-shiny: sudo su - -c "R -e \"install.packages('shiny',repos='https://cran.rstudio.com/')\""
+    - also install other R packages like this
+- go to Rstudio and download the R Studio Server then install
+- auto booting of server: sudo systemctl enable shiny-server
+- start: sudo systemctl start shiny-server
+- open firewall:
+    - sudo firewall-cmd --permanent --add-port=3838/tcp
+    - sudo firewall-cmd --permanent --add-port=3838/udp
+    - sudo firewall-cmd --reload
+- sudo yum install cairo-devel
+- sudo su - -c "R -e \"install.packages('Cairo', repos='https://cran.rstudio.com/')\""
+
+Get the package ready:
+- create with golem
+- make sure to run golem::add_shinyserver_file()
+- push to github
+- on the server go to /srv/shiny-server/
+- sudo git clone package
+
+Set the shiny_server config
+- /etc/shiny-server/shiny-server.conf
+- turn index off
+- ensure paths correct
+- restart the server: sudo systemctl restart shiny-server
+
+See the app:
+ip_address:3838/package_name
+
+
+
+
+some helpers to add to server .bashrc file:
+
+alias sourcebash='source ~/.bashrc'
+alias editbash='nano ~/.bashrc'
+alias home='cd /srv/shiny-server/hfphenotyping/'
+alias restart='sudo systemctl restart shiny-server'
+alias config='sudo nano /etc/shiny-server/shiny-server.conf'
+alias logs='cd /var/log/shiny-server/'
+log() {
+    latest_log=$(ls -t /var/log/shiny-server/*.log | head -n 1)
+    echo "Tailing the latest log file: $latest_log"
+    sudo cat "$latest_log"
+}
