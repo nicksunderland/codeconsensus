@@ -1,0 +1,11 @@
+name: Angina pectoris
+definition: |
+  Characteristics of discomfort related to myocardial ischaemia.
+pmid: NA
+domain: Disorder
+terminology: SNOMED
+concept_id: "194828000"
+concept_term: Angina
+valueset_definition: ...
+regexes: |
+  "Angina"

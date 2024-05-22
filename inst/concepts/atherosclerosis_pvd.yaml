@@ -1,0 +1,11 @@
+name: Peripheral artery disease
+definition: |
+    Peripheral arterial disease (other than carotid artery disease) is defined as atherosclerotic peripheral arterial disease in the upper or lower extremities, renal, splenic, mesenteric, and/or abdominal aortic systems. Atherosclerotic peripheral arterial disease can also include claudication, either with exertion or at rest.
+pmid: NA
+domain: Disorder
+terminology: SNOMED
+concept_id: "840580004"
+concept_term: Peripheral arterial disease
+valueset_definition: ...
+regexes: |
+  "Peripheral arterial disease"

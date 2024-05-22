@@ -10,18 +10,22 @@ app_ui <- function(request) {
     golem_add_external_resources(),
     # Your application UI logic
     fluidPage(
-      titlePanel("Heart failure phenotyping"),
+      titlePanel("Phenotyping by consensus"),
       h5("nicholas.sunderland@bristol.ac.uk"),
-      navlistPanel(
-        "Phenotype",
-        tabPanel("Heart failure syndrome",  DT::dataTableOutput("checkbox_table_1")),
-        tabPanel("Cardiomyopathy", DT::dataTableOutput("checkbox_table_2")),
-        tabPanel("DCM",  DT::dataTableOutput("checkbox_table_3"))
-      ),
-      plotOutput("plot")
+      verbatimTextOutput("auth_output"),
+      hr(),
+      uiOutput("concept_menu")
+
     )
   )
 }
+
+# log in
+app_ui <- shinymanager::secure_app(app_ui, theme = "cerulean")
+
+
+
+
 
 #' Add external Resources to the Application
 #'

@@ -1,0 +1,11 @@
+name: Peripheral vascular procedure (open)
+definition: |
+  Operative procedure on artery of extremity
+pmid: NA
+domain: Procedure
+terminology: SNOMED
+concept_id: "22701007"
+concept_term: Operative procedure on artery of extremity
+valueset_definition: ...
+regexes: |
+  "Operative procedure on artery of extremity"

@@ -1,0 +1,11 @@
+name: Age
+definition: |
+  Chronolical age at the time of assessment.
+pmid: NA
+domain: Observable entity
+terminology: LOINC
+concept_id: "30525-0"
+concept_term: Age
+valueset_definition: ...
+regexes: |
+  "NA"

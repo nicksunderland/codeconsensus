@@ -1,0 +1,11 @@
+name: Atherosclerosis (aorta)
+definition: |
+  Atherosclerosis of the aorta.
+pmid: NA
+domain: Disorder
+terminology: SNOMED
+concept_id: "81817003"
+concept_term: Atherosclerosis of aorta
+valueset_definition: ...
+regexes: |
+  "Atherosclerosis of aorta"

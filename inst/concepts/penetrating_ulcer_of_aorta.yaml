@@ -1,0 +1,11 @@
+name: Penetrating aortic ulcer
+definition: |
+  Penetrating aortic ulcer (PAU) is defined as ulceration of an aortic atherosclerotic plaque penetrating through the internal elastic lamina into the media.
+pmid: NA
+domain: Disorder
+terminology: SNOMED
+concept_id: "690791000119107"
+concept_term: Penetrating aortic ulcer
+valueset_definition: ...
+regexes: |
+  "Penetrating aortic ulcer"

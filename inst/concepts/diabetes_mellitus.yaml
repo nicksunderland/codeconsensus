@@ -1,0 +1,11 @@
+name: Diabetes mellitus
+definition: |
+  Diabetes mellitus is defined as HbA1c ≥48 mmol/mol (6.5%) or fasting blood glucose ≥7.0 mmol/L or based on random blood glucose/two-hour plasma glucose test ≥11.1 mmol/L (on more than one measurement) and includes all types of diabetes mellitus regardless of treatment strategy.
+pmid: NA
+domain: Disorder
+terminology: SNOMED
+concept_id: 73211009
+concept_term: Diabetes mellitus
+valueset_definition: ...
+regexes: |
+  "Diabetes mellitus"

@@ -1,0 +1,12 @@
+name: Hypertension (systemic, arterial)
+definition: |
+  Resting blood pressure >140/90 mmHg on at least two occasions, or current antihypertensive treatment.
+  The optimal BP target associated with lowest risk of major cardiovascular events is 120/70 mmHg (or keep as low as reasonably achievable)
+pmid: NA
+domain: Disorder
+terminology: SNOMED
+concept_id: "38341003"
+concept_term: Systemic arterial hypertension
+valueset_definition: ...
+regexes: |
+  "Systemic arterial hypertension"

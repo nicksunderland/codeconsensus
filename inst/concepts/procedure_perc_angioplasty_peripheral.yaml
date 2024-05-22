@@ -1,0 +1,11 @@
+name: Peripheral vascular procedure (percutaneous)
+definition: |
+  Percutaneous procedure on artery of extremity
+pmid: NA
+domain: Procedure
+terminology: SNOMED
+concept_id: ???
+concept_term: Percutaneous procedure on artery of extremity
+valueset_definition: ...
+regexes: |
+  "Percutaneous procedure on artery of extremity"
