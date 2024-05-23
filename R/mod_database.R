@@ -30,7 +30,8 @@ query_db <- function(query_str = NULL, type = "get", ...) {
   # get the results
   if (type == "get") {
 
-    results <- DBI::dbGetQuery(con, query_str) |> data.table::as.data.table()
+    results <- DBI::dbGetQuery(con, query_str)
+    results <- data.table::as.data.table(results)
 
   } else if (type == "send") {
 
