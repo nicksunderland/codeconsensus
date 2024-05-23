@@ -7,5 +7,5 @@ terminology: SNOMED
 concept_id: "443502000"
 concept_term: Coronary atherosclerosis
 valueset_definition: ...
-regexes: |
-  "Coronary atherosclerosis"
+regexes:
+  - "Coronary atherosclerosis"

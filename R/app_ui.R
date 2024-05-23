@@ -12,7 +12,7 @@ app_ui <- function(request) {
     fluidPage(
       titlePanel("Phenotyping by consensus"),
       h5("nicholas.sunderland@bristol.ac.uk"),
-      verbatimTextOutput("auth_output"),
+      uiOutput("user_info"),
       hr(),
       uiOutput("concept_menu")
 
@@ -21,7 +21,7 @@ app_ui <- function(request) {
 }
 
 # log in
-app_ui <- shinymanager::secure_app(app_ui, theme = "cerulean")
+#app_ui <- shinymanager::secure_app(app_ui, theme = "cerulean")
 
 
 

@@ -9,5 +9,5 @@ terminology: SNOMED
 concept_id: "84114007"
 concept_term: Heart failure
 valueset_definition: ...
-regexes: |
-  "heart failure"
+regexes:
+  - "heart failure"

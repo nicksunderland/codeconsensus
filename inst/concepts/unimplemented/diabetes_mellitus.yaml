@@ -7,5 +7,5 @@ terminology: SNOMED
 concept_id: 73211009
 concept_term: Diabetes mellitus
 valueset_definition: ...
-regexes: |
-  "Diabetes mellitus"
+regexes:
+  - "Diabetes mellitus"

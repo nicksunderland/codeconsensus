@@ -7,5 +7,6 @@ terminology: LOINC
 concept_id: "30525-0"
 concept_term: Age
 valueset_definition: ...
-regexes: |
-  "NA"
+regexes:
+  - "age"
+  - "another regex"

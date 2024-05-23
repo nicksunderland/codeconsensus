@@ -7,5 +7,5 @@ terminology: SNOMED
 concept_id: "194828000"
 concept_term: Angina
 valueset_definition: ...
-regexes: |
-  "Angina"
+regexes:
+  - "Angina"

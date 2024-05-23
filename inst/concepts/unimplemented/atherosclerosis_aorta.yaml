@@ -7,5 +7,5 @@ terminology: SNOMED
 concept_id: "81817003"
 concept_term: Atherosclerosis of aorta
 valueset_definition: ...
-regexes: |
-  "Atherosclerosis of aorta"
+regexes:
+  - "Atherosclerosis of aorta"
