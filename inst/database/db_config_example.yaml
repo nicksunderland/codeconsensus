@@ -1,0 +1,4 @@
+default:
+  username: ""
+  password: ""
+  connection_str: "(description= (retry_count=20)(retry_delay=3)..................."
