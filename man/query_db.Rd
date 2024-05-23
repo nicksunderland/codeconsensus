@@ -11,9 +11,7 @@ query_db(query_str = NULL, type = "get", ...)
 
 \item{type}{string, either get or send}
 
-\item{dtname}{name of data.table name}
-
-\item{dtvalue}{data.table}
+\item{...}{arguments to pass to DBI::dbWriteTable}
 }
 \value{
 a data.table

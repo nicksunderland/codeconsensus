@@ -8,7 +8,7 @@ Imports:
     config (>= 0.3.2),
     RJDBC,
     DBI,
-    DT,
+    data.table,
     shinymanager,
     golem (>= 0.4.1),
     pkgload,

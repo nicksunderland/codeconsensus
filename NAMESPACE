@@ -2,7 +2,6 @@
 
 export(query_db)
 export(run_app)
-import(DT)
 import(Rdiagnosislist)
 import(data.table)
 import(shiny)

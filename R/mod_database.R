@@ -5,8 +5,7 @@
 #' @title database connection and query function
 #' @param query_str string, valid SQL (or name of dt if 'write' option)
 #' @param type string, either get or send
-#' @param dtname name of data.table name
-#' @param dtvalue data.table
+#' @param ... arguments to pass to DBI::dbWriteTable
 #' @return a data.table
 #' @export
 #'

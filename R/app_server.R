@@ -4,7 +4,7 @@
 #'     DO NOT REMOVE.
 #' @import shiny
 #' @import shinymanager
-#' @import DT
+#' @import data.table
 #' @importFrom config get
 #' @importFrom yaml read_yaml
 #' @importFrom RJDBC JDBC
