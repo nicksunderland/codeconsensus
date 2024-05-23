@@ -4,24 +4,22 @@
 #'     DO NOT REMOVE.
 #' @import shiny
 #' @noRd
-app_ui <- function(request) {
-  tagList(
-    # Leave this function for adding external resources
-    golem_add_external_resources(),
-    # Your application UI logic
-    fluidPage(
-      titlePanel("Phenotyping by consensus"),
-      h5("nicholas.sunderland@bristol.ac.uk"),
-      uiOutput("user_info"),
-      hr(),
-      uiOutput("concept_menu")
+app_ui <- shinymanager::secure_app(
+  function(request) {
+    tagList(
+      # Leave this function for adding external resources
+      golem_add_external_resources(),
+      # Your application UI logic
+      fluidPage(
+        titlePanel("Phenotyping by consensus"),
+        h5("nicholas.sunderland@bristol.ac.uk"),
+        uiOutput("user_info"),
+        hr(),
+        uiOutput("concept_menu")
 
+      )
     )
-  )
-}
-
-# log in
-app_ui <- shinymanager::secure_app(app_ui, theme = "cerulean")
+  }, theme = "cerulean")
 
 
 

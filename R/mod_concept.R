@@ -238,9 +238,10 @@ mod_concept_server <- function(id, regexes, user){
 
       # get selections for this user
       sel <- votes()
+      sel[, SELECTED := as.logical(as.integer(SELECTED))]
 
       # join
-      hc[sel, SELECTED := as.logical(i.SELECTED), on = "CONCEPTID"]
+      hc[sel, SELECTED := i.SELECTED, on = "CONCEPTID"]
 
       # apply
       tree <- modify_selected(tree, hc)
