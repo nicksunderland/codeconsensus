@@ -145,13 +145,15 @@ mod_concept_server <- function(id, regexes, user){
 
         # get the mapping to other coding systems
         mappings <- c("icd10" = "icd10_code", "opcs4" = "opcs4_code", "ctv3simple" = "ctv3_simple")
-        maps     <- Rdiagnosislist::getMaps(concept, to = names(mappings)) |> data.table::as.data.table()
+        maps     <- Rdiagnosislist::getMaps(concept, to = names(mappings))
+        maps     <- data.table::as.data.table(maps)
         maps[, conceptId := as.character(conceptId)]
         maps[, unname(mappings) := lapply(.SD, function(x) sapply(x, paste, collapse = ",")), .SDcols = unname(mappings)]
         maps[, unname(mappings) := lapply(.SD, function(x) replace(x, x == "", NA_character_)), .SDcols = unname(mappings)]
 
         # convert to hierarchy table
-        hierarch_codes <- Rdiagnosislist::showCodelistHierarchy(concept) |> data.table::as.data.table()
+        hierarch_codes <- Rdiagnosislist::showCodelistHierarchy(concept)
+        hierarch_codes <- data.table::as.data.table(hierarch_codes)
         hierarch_codes[, conceptId := as.character(conceptId)]
         hierarch_codes[, conceptId_lab := ifelse(.N > 1, paste0(conceptId, "*"), conceptId), by = "conceptId"] # is duplicated somewhere
 
