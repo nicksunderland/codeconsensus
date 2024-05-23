@@ -14,11 +14,11 @@
 app_server <- function(input, output, session) {
 
   # the login details
-  # user_info        <- query_db("SELECT * FROM USERS")
-  # names(user_info) <- c("uid", "user", "password")
-  # creds            <- shinymanager::check_credentials(user_info)
-  # res_auth         <- shinymanager::secure_server(check_credentials = creds)
-  res_auth = list(user = "test")
+  user_info        <- query_db("SELECT * FROM USERS")
+  names(user_info) <- c("uid", "user", "password")
+  creds            <- shinymanager::check_credentials(user_info)
+  res_auth         <- shinymanager::secure_server(check_credentials = creds)
+  # res_auth = list(user = "test")
 
   # get the concepts
   concept_dir    <- system.file("concepts", package = "hfphenotyping")

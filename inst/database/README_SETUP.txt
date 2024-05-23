@@ -1,3 +1,15 @@
+Setting up database
+
+|> Database homepage
+|> Network section
+| |> Turn off Mutual TLS (mTLS) authentication (set to Not required)
+| |> Add the IP addresses (of your home computer and the Oracle instance) to `Access control list:`
+
+
+
+
+=====================
+
 Java on Oracle
 
 [root@heart-failure-phenotyping include]# sudo update-alternatives --config java

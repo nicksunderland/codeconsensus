@@ -21,7 +21,7 @@ app_ui <- function(request) {
 }
 
 # log in
-#app_ui <- shinymanager::secure_app(app_ui, theme = "cerulean")
+app_ui <- shinymanager::secure_app(app_ui, theme = "cerulean")
 
 
 
