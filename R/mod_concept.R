@@ -56,6 +56,7 @@ mod_concept_server <- function(id, regexes, user){
     })
 
     observeEvent(input$user_comments, {
+      # not working
       saved_data <- votes()
       comments   <- saved_data[CONCEPTID == "COMMENTS", SELECTED]
       output$user_comments <- renderText(comments)
@@ -237,7 +238,7 @@ mod_concept_server <- function(id, regexes, user){
       tree <- build_tree(hc)
 
       # get selections for this user
-      sel <- votes()
+      sel <- data.table::copy(votes())
       sel[, SELECTED := as.logical(as.integer(SELECTED))]
 
       # join
