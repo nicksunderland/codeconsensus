@@ -8,7 +8,6 @@
 #' @importFrom config get
 #' @importFrom yaml read_yaml
 #' @importFrom RJDBC JDBC
-#' @importFrom DBI dbConnect dbDisconnect
 
 #' @noRd
 app_server <- function(input, output, session) {
@@ -64,14 +63,11 @@ app_server <- function(input, output, session) {
   # initialise the home UI element server
   mod_home_server("home")
 
-  # get the table names in the database (do once here to avoid each conecept pining the db)
-  db_table_names <- reactive({ query_db("SELECT table_name FROM all_tables WHERE owner = 'SHINY'")$TABLE_NAME })
-
   # initialise the concept UI element server functions
   lapply(concepts, function(x) mod_concept_server(id             = clean_id(x$id, check = TRUE),
+                                                  concept_name   = x$name,
                                                   regexes        = x$regexes,
-                                                  user           = res_auth[["user"]],
-                                                  db_table_names = db_table_names))
+                                                  username       = res_auth[["user"]]))
 
   # initialise the derived phenotype UI servers
   mod_derived_server("derived")

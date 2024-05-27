@@ -5,23 +5,26 @@
 \title{TreeElement S3 class}
 \usage{
 TreeElement(
-  name,
-  db_name,
+  code,
+  code_type,
+  description,
   stselected = FALSE,
   stopened = TRUE,
   children = list()
 )
 }
 \arguments{
-\item{name}{the label}
+\item{code}{string, the code e.g. I510}
 
-\item{db_name}{the database column name}
+\item{code_type}{string, the code tyoe e.g. "ICD10"}
+
+\item{description}{string, the code's description}
 
 \item{stselected}{logical}
 
 \item{stopened}{logical}
 
-\item{data}{empty character ""}
+\item{children}{empty list for recursive use (will potentially be filled with other TreeElements)}
 }
 \value{
 a TreeElement S3 object

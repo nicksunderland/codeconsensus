@@ -7,9 +7,9 @@
 icd10_tree(icd10, regex = ".")
 }
 \arguments{
-\item{regex}{regular expression to search for}
+\item{icd10}{list output from xml2::read_xml -> xml2::as_list (https://www.cms.gov/files/zip/2024-code-tables-tabular-and-index-updated-02/01/2024.zip)}
 
-\item{icd_xml}{list output from xml2::read_xml -> xml2::as_list (https://www.cms.gov/files/zip/2024-code-tables-tabular-and-index-updated-02/01/2024.zip)}
+\item{regex}{regular expression to search for}
 }
 \value{
 a nested list

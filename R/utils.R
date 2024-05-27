@@ -2,6 +2,7 @@
 #' @description id cleaning (only allowed letters, numbers, underscores)
 #' @param str a string to clean
 #' @param check a logical, whether to use as a checking function
+#' @param to_lower logical, whether to convert to lowercase
 #' @return a clean string
 #' @export
 #'

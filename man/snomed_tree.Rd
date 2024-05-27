@@ -8,8 +8,6 @@ snomed_tree(hierarch_codes)
 }
 \arguments{
 \item{hierarch_codes}{output from Rdiagnosislist::showCodelistHierarchy}
-
-\item{row_id}{NA for recursive use}
 }
 \value{
 a nested list

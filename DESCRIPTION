@@ -7,16 +7,15 @@ License: MIT + file LICENSE
 Imports: 
     config (>= 0.3.2),
     RJDBC,
-    DBI,
     data.table,
     shinymanager,
     golem (>= 0.4.1),
-    pkgload,
     yaml,
     shiny (>= 1.8.1.1),
     shinyTree,
     ggplot2,
-    shinycssloaders
+    shinycssloaders,
+    glue
 Suggests:
   Rdiagnosislist,
   xml2

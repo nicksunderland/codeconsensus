@@ -10,6 +10,8 @@ clean_id(str, check = FALSE, to_lower = TRUE)
 \item{str}{a string to clean}
 
 \item{check}{a logical, whether to use as a checking function}
+
+\item{to_lower}{logical, whether to convert to lowercase}
 }
 \value{
 a clean string

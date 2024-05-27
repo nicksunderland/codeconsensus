@@ -8,6 +8,8 @@ opcs_tree(opcs_dt, regex = ".")
 }
 \arguments{
 \item{opcs_dt}{a data.table of OPCS codes with columns CODE and DESCRIPTION}
+
+\item{regex}{regular expression to search for}
 }
 \value{
 a nested list

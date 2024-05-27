@@ -34,14 +34,15 @@ for (config in configs) {
   cat("Extracting with regex: `", regex, "`\n")
 
   # tree
-  tree <- TreeElement("tree", "tree")
+  tree <- TreeElement("tree", "tree", "tree")
 
   # extract the concept
   cat("[i] Extracting SNOMED\n")
   concept        <- SNOMEDconcept(regex, SNOMED = SNOMED, exact = FALSE)
   hierarch_codes <- showCodelistHierarchy(concept)
   snomed_tree    <- snomed_tree(hierarch_codes)
-  tree[[attr(snomed_tree, "name")]] <- snomed_tree
+  label          <- paste0(attr(snomed_tree, "code"), " | ", attr(snomed_tree, "description"))
+  tree[[label]] <- snomed_tree
 
   # read the ICD10
   cat("[i] Extracting ICD-10\n")
@@ -50,17 +51,49 @@ for (config in configs) {
   icd10 <- xml2::as_list(icd10)
   icd10 <- icd10[[1]]
   icd10_tree <- icd10_tree(icd10, regex = regex)
-  tree[[attr(icd10_tree, "name")]] <- icd10_tree
+  label <- paste0(attr(icd10_tree, "code"), " | ", attr(icd10_tree, "description"))
+  tree[[label]] <- icd10_tree
 
   # read the OPCS (NHS TRUD)
   cat("[i] Extracting OPCS-4\n")
   opcs <- fread(file.path(dir, "OPCS410 Data files txt", "OPCS410 CodesAndTitles Nov 2022 V1.0.txt"), col.names = c("CODE", "DESCRIPTION"), header = FALSE)
   opcs_tree <- opcs_tree(opcs, regex = regex)
-  tree[[attr(opcs_tree, "name")]] <- opcs_tree
+  label <- paste0(attr(opcs_tree, "code"), " | ", attr(opcs_tree, "description"))
+  tree[[label]] <- opcs_tree
 
   # save
   cat("[i] saving .RDS file\n")
   saveRDS(tree, outfile)
+
+  # populate the CONCEPTS database
+  sql <- glue::glue("SELECT * FROM CONCEPTS WHERE CONCEPT_NAME = '{conf$name}' AND CONCEPT_CODE = '{conf$concept_id}'")
+  this_concept <- query_db(sql, type = "get")
+  if (nrow(this_concept) == 0) {
+    sql     <- "SELECT MAX(CONCEPT_ID) AS max_concept_id FROM CONCEPTS"
+    max_id  <- query_db(sql, type = "get")$MAX_CONCEPT_ID
+    entry   <- list(CONCEPT_NAME = conf$name,
+                    CONCEPT_ID   = if (is.na(max_id)) 1 else max_id + 1,
+                    CONCEPT_CODE = conf$concept_id)
+    cols <- paste0(names(entry), collapse = ", ")
+    placeholders <- paste0(rep('?', length(entry)), collapse = ", ")
+    sql <- glue::glue("INSERT INTO CONCEPTS ({cols}) VALUES ({placeholders})")
+    query_db(query_str = sql, type = "update", value = entry)
+  }
+
+  # populate the CODE database
+  these_codes <- data.table::data.table(CODE_DESC = as.character(tree_attributes(tree, "description")),
+                                        CODE      = as.character(tree_attributes(tree, "code")),
+                                        CODE_TYPE = as.character(tree_attributes(tree, "code_type")))
+  saved_codes <- query_db(type = "read", table = "CODES")
+  max_id <- if (is.infinite(max(saved_codes$CODE_ID))) 0 else max(saved_codes$CODE_ID)
+  saved_codes[, CODE_ID := NULL]
+  missing <- data.table::fsetdiff(these_codes, saved_codes)
+  if (nrow(missing) > 0) {
+    missing[, CODE_ID := .I + max_id]
+    sql <- glue::glue("INSERT INTO CODES ({paste(names(missing), collapse = ', ')}) VALUES ({paste0(rep('?', ncol(missing)), collapse = ', ')})")
+    query_db(query_str = sql, type = "update", value = as.list(missing))
+  }
+
 }
 
 
