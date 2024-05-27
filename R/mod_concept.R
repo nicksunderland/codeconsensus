@@ -27,7 +27,7 @@ mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, con
            textAreaInput(ns("user_comments"), label = "Comments", width = "100%"),
            # the codes table
            fluidRow(column(2, actionButton(ns("save"), "Save")),
-                    column(10, shinycssloaders::withSpinner(textOutput(ns("message_box")), type = 8))),
+                    column(10, textOutput(ns("message_box")))),
            shinycssloaders::withSpinner(
              shinyTree::shinyTree(ns("tree"), theme="proton", wholerow = FALSE, search = F, unique = FALSE, checkbox = TRUE),
              type = 8
