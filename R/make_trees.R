@@ -98,7 +98,6 @@ snomed_tree <- function(hierarch_codes) {
 #' @param icd_xml list output from xml2::read_xml -> xml2::as_list (https://www.cms.gov/files/zip/2024-code-tables-tabular-and-index-updated-02/01/2024.zip)
 #' @param regex regular expression to search for
 #' @return a nested list
-#' @importFrom xml2 as_list
 #' @export
 #'
 icd10_tree <- function(icd10, regex = ".") {

@@ -27,8 +27,11 @@ mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, con
            textAreaInput(ns("user_comments"), label = "Comments", width = "100%"),
            # the codes table
            fluidRow(column(2, actionButton(ns("save"), "Save")),
-                    column(10, textOutput(ns("message_box")))),
-           shinyTree::shinyTree(ns("tree"), theme="proton", wholerow = FALSE, search = F, unique = FALSE, checkbox = TRUE),
+                    column(10, shinycssloaders::withSpinner(textOutput(ns("message_box")), type = 8))),
+           shinycssloaders::withSpinner(
+             shinyTree::shinyTree(ns("tree"), theme="proton", wholerow = FALSE, search = F, unique = FALSE, checkbox = TRUE),
+             type = 8
+           ),
            hr(),
            "Currently Selected:",
            verbatimTextOutput(ns("sel_names"))
@@ -51,6 +54,7 @@ mod_concept_server <- function(id, regexes, user, db_table_names){
     # -----------------------------
     # reactive values / expressions
     # -----------------------------
+    message <- reactiveVal("")
     db_attributes  <- reactive({ data.table::data.table(name    = names(tree_attributes(tree(), "name")),
                                                         db_name = unlist(tree_attributes(tree(), "db_name"))) })
 
@@ -104,7 +108,7 @@ mod_concept_server <- function(id, regexes, user, db_table_names){
       query_db(paste0("DELETE FROM ", db_vote, " WHERE USERNAME = '", user, "'"), type = "send")
       check <- query_db(paste0("SELECT COUNT(*) AS user_count FROM ",  db_vote, " WHERE USERNAME = '", user, "'"), type = "get")
       if (check$USER_COUNT != 0) {
-        output$message_box <- renderText("Error removing previous data")
+        message("Error removing previous data")
       }
 
       # get the selected data
@@ -116,7 +120,7 @@ mod_concept_server <- function(id, regexes, user, db_table_names){
                     " VALUES ( '", user,  "', '", input$user_comments, "', ", paste0("'", select_dat$selected, "'", collapse = ", "), " )")
       safe_pattern <- "^[a-zA-Z0-9_;\\s\\,\\.\\*\\=\\<\\>\\'\\%\\(\\)]+$"
       if (!grepl(safe_pattern, sql, perl = TRUE)) {
-        output$message_box <- renderText("Invalid characters in comments box - use only [A-Z0-9.,%<>]")
+        message("Invalid characters in comments box - use only [A-Z0-9.,%<>]")
         return()
       }
       query_db(sql, type = "send")
@@ -124,15 +128,16 @@ mod_concept_server <- function(id, regexes, user, db_table_names){
       # check
       check <- query_db(paste0("SELECT COUNT(*) AS user_count FROM ",  db_vote, " WHERE USERNAME = '", user, "'"), type = "get")
       if (check$USER_COUNT > 0) {
-        output$message_box <- renderText("Successfully saved")
+        message("Successfully saved")
       } else {
-        output$message_box <- renderText("Error saving data")
+        message("Error saving data")
       }
 
     })
 
     # selection tree
     output$tree <- shinyTree::renderTree({
+      updateTextInput(session, "message_box", value = "loading...")
 
       # get tree
       tree <- tree()
@@ -152,6 +157,9 @@ mod_concept_server <- function(id, regexes, user, db_table_names){
 
       return(tree)
     })
+
+    # message box
+    output$message_box <- renderText({ message() })
 
   })
 }
