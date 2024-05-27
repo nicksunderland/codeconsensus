@@ -15,8 +15,9 @@ Imports:
     yaml,
     shiny (>= 1.8.1.1),
     shinyTree,
-    Rdiagnosislist,
     ggplot2
+Suggests:
+  Rdiagnosislist
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.1

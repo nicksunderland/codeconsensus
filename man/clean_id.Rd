@@ -4,10 +4,12 @@
 \alias{clean_id}
 \title{Clean ID string}
 \usage{
-clean_id(str)
+clean_id(str, check = FALSE, to_lower = TRUE)
 }
 \arguments{
 \item{str}{a string to clean}
+
+\item{check}{a logical, whether to use as a checking function}
 }
 \value{
 a clean string

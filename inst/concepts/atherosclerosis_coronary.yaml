@@ -1,0 +1,14 @@
+id: "atherosclerosis_coronary"
+name: "Atherosclerosis (coronary)"
+definition: |
+  Atherosclerosis of the epicardial coronary arteries.
+pmid: NA
+domain: Disorder
+terminology: SNOMED
+concept_id: "443502000"
+concept_term: Coronary atherosclerosis
+regexes:
+  - "443502000"
+  - "(?i)athero(ma|sclerosis) .*coronar(y|ies)"
+  - "(?i)coronar(y|ies) .*athero(ma|sclerosis)"
+  - "(?i)coronary artery disease"

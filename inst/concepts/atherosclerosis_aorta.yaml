@@ -1,4 +1,5 @@
-name: Atherosclerosis (aorta)
+id: "atherosclerosis_aorta"
+name: "Atherosclerosis (aorta)"
 definition: |
   Atherosclerosis of the aorta.
 pmid: NA
@@ -6,6 +7,7 @@ domain: Disorder
 terminology: SNOMED
 concept_id: "81817003"
 concept_term: Atherosclerosis of aorta
-valueset_definition: ...
 regexes:
-  - "Atherosclerosis of aorta"
+  - "81817003"
+  - "(?i)athero(ma|sclerosis) .*aort(ic|a)"
+  - "(?i)aort(ic|a) .*athero(ma|sclerosis)"

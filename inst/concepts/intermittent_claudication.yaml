@@ -1,3 +1,4 @@
+id: intermittent_claudication
 name: Intermittent claudication
 definition: |
   Peripheral vascular disease with intermittent claudication.
@@ -7,5 +8,6 @@ terminology: SNOMED
 concept_id: "63491006"
 concept_term: Intermittent claudication
 valueset_definition: ...
-regexes: |
-  "Intermittent claudication"
+regexes:
+  - "63491006"
+  - "intermittent claudication"

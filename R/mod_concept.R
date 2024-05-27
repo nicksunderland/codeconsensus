@@ -9,7 +9,6 @@
 #' @importFrom shiny NS tagList
 #' @importFrom shinyTree shinyTree dfToTree
 #' @import data.table
-#' @import Rdiagnosislist
 mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, concept_term, valueset_definition, regexes){
   ns <- NS(id)
 
@@ -23,8 +22,7 @@ mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, con
              h5("Domain:",              span(domain,                          style = "font-weight: normal;")),
              h5("Terminology:",         span(terminology,                     style = "font-weight: normal;")),
              h5("Concept term:",        span(concept_term,                    style = "font-weight: normal;")),
-             h5("ValueSet definition:", span(valueset_definition,             style = "font-weight: normal;")),
-             h5("Search expressions:",  span(paste0(regexes, collapse = "|"), style = "font-weight: normal;"))
+             h5("Search expressions:\n",span(paste0(regexes, collapse = " | "), style = "font-weight: normal;"))
            ),
            textAreaInput(ns("user_comments"), label = "Comments", width = "100%"),
            # the codes table
@@ -39,41 +37,68 @@ mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, con
 
 }
 
-#' concept Server Functions
+#' @title concept Server Functions
+#' @param id string, id of this module
+#' @param regexes string, regex pattern
+#' @param user string, the current user
+#' @param db_table_names a reactive that lives in the main server function (returns a character table names vector from the database)
 #'
 #' @noRd
-mod_concept_server <- function(id, regexes, user){
+mod_concept_server <- function(id, regexes, user, db_table_names){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    # reactive values
-    selec_list <- reactiveVal(NULL)
+    # -----------------------------
+    # reactive values / expressions
+    # -----------------------------
+    db_attributes  <- reactive({ data.table::data.table(name    = names(tree_attributes(tree(), "name")),
+                                                        db_name = unlist(tree_attributes(tree(), "db_name"))) })
 
-    # update reactive value when tree changes
-    observeEvent(input$tree, {
-      output$message_box <- renderText("")
-      selec_list(shinyTree::get_selected(input$tree))
+    # the tree of options
+    tree <- reactive({
+      tree_path <- system.file("concepts", paste0(id, ".RDS"), package = "hfphenotyping")
+      tree <- readRDS(tree_path)
+      return(tree)
     })
 
-    observeEvent(input$user_comments, {
-      # not working
-      saved_data <- votes()
-      comments   <- saved_data[CONCEPTID == "COMMENTS", SELECTED]
-      output$user_comments <- renderText(comments)
-      output$message_box <- renderText("")
+    # the selected options from the database
+    db_selected <- reactive({
+
+      # db_name for this concept and the db_name_votes
+      db_vote <- toupper(paste0(id, "_VOTE"))
+
+      # if the voting table doesnt exist, create it
+      if (!db_vote %in% db_table_names()) {
+
+        db_cols <- tree_attributes(tree(), "db_name")
+        db_create <- query_db(paste("CREATE TABLE",
+                                    db_vote,
+                                    "(",
+                                    "USERNAME VARCHAR2(50),",
+                                    "COMMENTS CLOB,",
+                                    paste0(db_attributes()$db_name, " BOOLEAN", collapse = ", "),
+                                    ")"), type = "send")
+
+      }
+
+      # read the voting table for this user and join (get default test if no entry yet)
+      votes <- query_db(paste0("SELECT * FROM ", db_vote, " WHERE USERNAME = '", user, "'"), type = "get")
+
+      if (nrow(votes) == 0) {
+        votes <- query_db(paste0("SELECT * FROM ", db_vote, " WHERE USERNAME = 'test'"), type = "get")
+      }
+
+      votes <- data.table::melt.data.table(votes, id.vars = "USERNAME", variable.name =  "db_name", value.name = "selected", variable.factor = FALSE)
+      votes[db_attributes(), name := i.name, on = "db_name"]
+
+      return(votes)
     })
 
     # save button
     observeEvent(input$save, {
 
-      # get the selected in a list (named with CONCEPT_STR)
-      selected <- selec_list()
-
-      # get all the (unique) codes and see which are selected
-      selec_dat <- hierarch_codes()[, .(CONCEPTID, SELECTED = any(CONCEPT_STR %in% selected)), by = "CONCEPTID"]
-
       # the voting db_table
-      db_vote <- paste0(toupper(gsub("[^A-Za-z0-9_]+", "_", id)), "_VOTE")
+      db_vote <- toupper(paste0(id, "_VOTE"))
 
       # delete previous entries
       query_db(paste0("DELETE FROM ", db_vote, " WHERE USERNAME = '", user, "'"), type = "send")
@@ -82,9 +107,13 @@ mod_concept_server <- function(id, regexes, user){
         output$message_box <- renderText("Error removing previous data")
       }
 
+      # get the selected data
+      select_dat   <- data.table::data.table(db_name  = tree_attributes(input$tree, "db_name"),
+                                             selected = tree_attributes(input$tree, "stselected"))
+
       # send updated row
-      sql <- paste0("INSERT INTO ", db_vote, " ( USERNAME, COMMENTS, ", paste0("CID_", selec_dat$CONCEPTID, collapse = ", "), ")",
-                    "VALUES ( '", user,  "', '", input$user_comments, "', ", paste0("'", selec_dat$SELECTED, "'", collapse = ", "), " )")
+      sql <- paste0("INSERT INTO ", db_vote, " ( USERNAME, COMMENTS, ", paste0(select_dat$db_name, collapse = ", "), ")",
+                    " VALUES ( '", user,  "', '", input$user_comments, "', ", paste0("'", select_dat$selected, "'", collapse = ", "), " )")
       safe_pattern <- "^[a-zA-Z0-9_;\\s\\,\\.\\*\\=\\<\\>\\'\\%\\(\\)]+$"
       if (!grepl(safe_pattern, sql, perl = TRUE)) {
         output$message_box <- renderText("Invalid characters in comments box - use only [A-Z0-9.,%<>]")
@@ -102,214 +131,43 @@ mod_concept_server <- function(id, regexes, user){
 
     })
 
-    # revert button
-    observeEvent(input$revert, {
-      # Your action when the button is pressed
-      output$message <- renderText("Save button pressed!")
-
-    })
-
-    # reactive hierarch_codes table
-    hierarch_codes <- reactive({
-
-      # get the database code tables
-      db_tables <- query_db("SELECT table_name FROM all_tables WHERE owner = 'SHINY'")
-
-      # db_name for this concept and the db_name_votes
-      db_name <- toupper(gsub("[^A-Za-z0-9_]+", "_", id))
-
-      # if doesn't exist CREATE TABLE
-      if (!db_name %in% db_tables$TABLE_NAME) {
-
-        db_create <- query_db(paste("CREATE TABLE",
-                                    db_name,
-                                    "(",
-                                    "conceptId VARCHAR2(4000),",
-                                    "thisrowid INT,",
-                                    "parentrowid INT,",
-                                    "childrowid VARCHAR2(4000),",
-                                    "icd10_code VARCHAR2(4000),",
-                                    "opcs4_code VARCHAR2(4000),",
-                                    "ctv3_simple VARCHAR2(4000),",
-                                    "concept_str VARCHAR2(4000)",
-                                    ")"), type = "send")
-
-        # load the SNOMED library
-        require(Rdiagnosislist)
-        SNOMED <- Rdiagnosislist::sampleSNOMED()
-
-        # get the terms to search for for this concept
-        regex    <- paste0(regexes, collapse = "|")
-
-        # generate the concept
-        concept  <- Rdiagnosislist::SNOMEDconcept(x = regex, exact_match = FALSE, active_only = FALSE, SNOMED = SNOMED)
-
-        # get the mapping to other coding systems
-        mappings <- c("icd10" = "icd10_code", "opcs4" = "opcs4_code", "ctv3simple" = "ctv3_simple")
-        maps     <- Rdiagnosislist::getMaps(concept, to = names(mappings))
-        maps     <- data.table::as.data.table(maps)
-        maps[, conceptId := as.character(conceptId)]
-        maps[, unname(mappings) := lapply(.SD, function(x) sapply(x, paste, collapse = ",")), .SDcols = unname(mappings)]
-        maps[, unname(mappings) := lapply(.SD, function(x) replace(x, x == "", NA_character_)), .SDcols = unname(mappings)]
-
-        # convert to hierarchy table
-        hierarch_codes <- Rdiagnosislist::showCodelistHierarchy(concept)
-        hierarch_codes <- data.table::as.data.table(hierarch_codes)
-        hierarch_codes[, conceptId := as.character(conceptId)]
-        hierarch_codes[, conceptId_lab := ifelse(.N > 1, paste0(conceptId, "*"), conceptId), by = "conceptId"] # is duplicated somewhere
-
-        # join the other coding systems
-        hierarch_codes[maps, unname(mappings) := mget(unname(mappings)), on = "conceptId"]
-        hierarch_codes[, concept_str := apply(.SD, 1, function(row) paste0(row[!is.na(row)], collapse = " | ")), .SDcols = c("conceptId_lab", "term", unname(mappings))]
-        hierarch_codes[, conceptId_lab := NULL]
-
-        # rename for database
-        db_cols <- c("conceptId", "rowid", "parentrowid", "childrowid", "icd10_code", "opcs4_code", "ctv3_simple", "concept_str")
-        hierarch_codes[, names(hierarch_codes)[!names(hierarch_codes) %in% db_cols] := NULL]
-        data.table::setnames(hierarch_codes, names(hierarch_codes), toupper(names(hierarch_codes)))
-        data.table::setnames(hierarch_codes, "ROWID", "THISROWID") # ROWID is a reserved name
-
-        # sort out storage of multiple integers
-        hierarch_codes[, CHILDROWID := lapply(CHILDROWID, function(x) ifelse(length(x) == 0, NA_character_, paste0(x, collapse=",")))]
-
-        # write to database
-        db_write <- query_db(type = "write", name = db_name, value = hierarch_codes, overwrite = TRUE)
-
-      }
-
-      # read the hierarchical codes table
-      hierarch_codes <- query_db(paste("SELECT * FROM", db_name), type = "get")
-      hierarch_codes[, THISROWID   := as.integer(THISROWID)]
-      hierarch_codes[, PARENTROWID := as.integer(PARENTROWID)]
-      hierarch_codes[, CHILDROWID  := lapply(CHILDROWID, function(x) {
-        if (is.na(x)) {
-          integer(0L)
-        } else {
-          as.integer(unlist(strsplit(x, ",")))
-        }
-      })]
-
-      return(hierarch_codes)
-    })
-
-    # get the
-    votes <- reactive({
-
-      # get the database code tables
-      db_tables <- query_db("SELECT table_name FROM all_tables WHERE owner = 'SHINY'")
-
-      # db_name for this concept and the db_name_votes
-      db_vote <- paste0(toupper(gsub("[^A-Za-z0-9_]+", "_", id)), "_VOTE")
-
-      # get the codes
-      hc <- hierarch_codes()
-
-      # if the voting table doesnt exist, create it
-      if (!db_vote %in% db_tables$TABLE_NAME) {
-
-        db_create <- query_db(paste("CREATE TABLE",
-                                    db_vote,
-                                    "(",
-                                    "USERNAME VARCHAR2(50),",
-                                    "COMMENTS CLOB,",
-                                    paste0("CID_", unique(hc$CONCEPTID), " BOOLEAN", collapse = ", "),
-                                    ")"), type = "send")
-
-      }
-
-      # read the voting table for this user and join (get default test if no entry yet)
-      votes <- query_db(paste0("SELECT * FROM ", db_vote, " WHERE USERNAME = '", user, "'"), type = "get")
-      if (nrow(votes) == 0) {
-        votes <- query_db(paste0("SELECT * FROM ", db_vote, " WHERE USERNAME = 'test'"), type = "get")
-      }
-
-      votes <- data.table::melt.data.table(votes, id.vars = "USERNAME", variable.name =  "CONCEPTID", value.name = "SELECTED")
-      votes[, CONCEPTID := sub("^CID_", "", CONCEPTID)]
-
-      return(votes)
-    })
-
-
     # selection tree
     output$tree <- shinyTree::renderTree({
 
-      # get codes
-      hc   <- hierarch_codes()
-      tree <- build_tree(hc)
+      # get tree
+      tree <- tree()
 
       # get selections for this user
-      sel <- data.table::copy(votes())
-      sel[, SELECTED := as.logical(as.integer(SELECTED))]
+      sel <- data.table::copy(db_selected())
 
-      # join
-      hc[sel, SELECTED := i.SELECTED, on = "CONCEPTID"]
+      # set coments
+      comments   <- sel[db_name == "COMMENTS", selected]
+      sel <- sel[db_name != "COMMENTS", ]
+      sel[, selected := as.logical(as.integer(selected))]
+      updateTextAreaInput(session, "user_comments", value = comments)
+      updateTextInput(session, "message_box", value = "")
 
-      # apply
-      tree <- modify_selected(tree, hc)
+      # apply selection
+      tree <- modify_selected(tree, sel)
 
       return(tree)
     })
-
-
-
 
   })
 }
 
 
-# function
-build_tree <- function(hierarch_codes, row_id = NA) {
-
-  # start case
-  if (is.na(row_id)) {
-    children  <- hierarch_codes[is.na(hierarch_codes$PARENTROWID), THISROWID] # children of the top of the tree are the start enteries
-    hierarchy <- list()
-
-    # Loop through each top-level child and build the hierarchy
-    for (child_row_id in children) {
-      child_hierarchy <- build_tree(hierarch_codes, child_row_id)
-      hierarchy       <- c(hierarchy, child_hierarchy)
-    }
-
-    return(hierarchy)
-
-  } else {
-
-
-    # Get the children of the current row_id
-    children    <- hierarch_codes[hierarch_codes$THISROWID == row_id, CHILDROWID][[1]]
-    concept_str <- hierarch_codes[THISROWID == row_id, CONCEPT_STR]
-
-    # If there are no children, return the current row as a list
-    if (length(children) == 0) {
-      return(setNames(list(c("")), concept_str))
-    }
-
-    # otherwise, recursively build the list of children
-    children_list <- lapply(children, function(child_row_id) {
-      build_tree(hierarch_codes, child_row_id)
-    })
-    children_list <- do.call(c, children_list)
-
-    # Return the current row as a list with nested children
-    return(setNames(list(children_list), concept_str))
-  }
-}
-
-
 
 # recursively set selected or not
-modify_selected <- function(tree, hierarch_codes) {
-  for (name in names(tree)) {
-    if (is.list(tree[[name]])) {
-      tree[[name]] <- modify_selected(tree[[name]], hierarch_codes) # recursively process
-      selected_value <- any(hierarch_codes[CONCEPT_STR == name, SELECTED])
-      attr(tree[[name]], "stselected") <- selected_value
-      attr(tree[[name]], "stopened") <- TRUE
+modify_selected <- function(tree, selected) {
+  for (name_ in names(tree)) {
+    if (is.list(tree[[name_]]) && length(tree[[name_]]) > 0) {
+      selected_value <- any(selected[name == name_, selected])
+      attr(tree[[name_]], "stselected") <- selected_value
+      tree[[name_]] <- modify_selected(tree[[name_]], selected) # recursively process
     } else {
-      selected_value <- any(hierarch_codes[CONCEPT_STR == name, SELECTED])
-      attr(tree[[name]], "stselected") <- selected_value
-      attr(tree[[name]], "stopened") <- TRUE
+      selected_value <- any(selected[name == name_, selected])
+      attr(tree[[name_]], "stselected") <- selected_value
     }
   }
   return(tree)

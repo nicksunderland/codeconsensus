@@ -1,3 +1,4 @@
+id: systemic_arterial_hypertension
 name: Hypertension (systemic, arterial)
 definition: |
   Resting blood pressure >140/90 mmHg on at least two occasions, or current antihypertensive treatment.
@@ -7,6 +8,7 @@ domain: Disorder
 terminology: SNOMED
 concept_id: "38341003"
 concept_term: Systemic arterial hypertension
-valueset_definition: ...
-regexes: |
-  "Systemic arterial hypertension"
+regexes:
+  - "38341003"
+  - "(?i)hypertensi(on|ve)"
+  - "(?i)systemic arterial hypertension"

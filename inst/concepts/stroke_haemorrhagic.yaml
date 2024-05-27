@@ -1,3 +1,4 @@
+id: stroke_haemorrhagic
 name: Stroke (haemorrhagic)
 definition: |
   Stroke is defined as an acute episode of focal or global neurological dysfunction (lasting for ≥24 hours or until death) caused by haemorrhage of the brain, spinal cord, or retina that is resulting in cell damage based on pathological, imaging, or other objective evidence. Stroke does not include nonvascular neurological deficits.
@@ -6,6 +7,11 @@ domain: Disorder
 terminology: SNOMED
 concept_id: "274100004"
 concept_term: Cerebral hemorrhage
-valueset_definition: ...
-regexes: |
-  "Cerebral ha?emorrhage"
+regexes:
+  - "274100004"
+  - "(?i)intra-?cranial hae?morrhae?ge"
+  - "(?i)(intra-?)?cerebrae?l hae?morrhae?ge"
+  - "(?i)hae?morrhae?g(e|ic) stroke"
+  - "(?i)sub-?arachnoid hae?morrhae?ge"
+  - "(?i)sub-?dural hae?morrhae?ge"
+  - "(?i)extra-?dural hae?morrhae?ge"

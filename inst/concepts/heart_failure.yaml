@@ -1,3 +1,4 @@
+id: heart_failure
 name: Heart Failure
 definition: |
   HF is a clinical syndrome with current or prior symptoms and or signs (Table 6) caused by a structural and/or functional cardiac abnormality (as determined by EF < 50%, abnormal cardiac chamber enlargement, E/E′> 15, moderate/severe ventricular hypertrophy or moderate/severe valvular obstructive or regurgitant lesion) and corroborated by at least one of the following:
@@ -8,6 +9,8 @@ domain: Disorder
 terminology: SNOMED
 concept_id: "84114007"
 concept_term: Heart failure
-valueset_definition: ...
 regexes:
-  - "heart failure"
+  - "84114007"
+  - "(?i)heart failure"
+  - "(?i)ventricular failure"
+  - "(?i)biventricular cardiac pacemaker"
