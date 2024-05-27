@@ -15,7 +15,8 @@ Imports:
     yaml,
     shiny (>= 1.8.1.1),
     shinyTree,
-    ggplot2
+    ggplot2,
+    shinycssloaders
 Suggests:
   Rdiagnosislist,
   xml2
