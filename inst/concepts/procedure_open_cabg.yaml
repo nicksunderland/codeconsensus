@@ -1,3 +1,4 @@
+id: procedure_open_cabg
 name: Coronary artery bypass grafting
 definition: |
   Coronary artery bypass graft surgery is a procedure that involves sternotomy to bypass diseased segment(s) of the coronary tree using blood vessels derived other parts of the body and connected to the aorta
@@ -6,6 +7,7 @@ domain: Procedure
 terminology: SNOMED
 concept_id: "232717009"
 concept_term: Coronary artery bypass grafting
-valueset_definition: ...
-regexes: |
-  "Coronary artery bypass grafting"
+regexes:
+  - "232717009"
+  - "(?i)coronary artery bypass grafting"
+  - "CABG"

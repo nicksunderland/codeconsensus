@@ -1,0 +1,14 @@
+id: open_aortic_intervention
+name: Open aortic intervention
+definition: |
+    Open surgical repair of the aorta.
+pmid: NA
+domain: Procedure
+terminology: SNOMED
+concept_id: "315362007"
+concept_term: Angioplasty of aorta
+regexes:
+  - "(?i)open repair of aorta"
+  - "L1[89][0-9]"
+  - "315362007"
+  - "(?i)repair of thoracoabdominal aortic aneurysm"

@@ -10,6 +10,7 @@ app_ui <- function(request) {
     golem_add_external_resources(),
     # Your application UI logic
     fluidPage(
+      title = "Phenotyping",
       titlePanel("Phenotyping by consensus"),
       h6("bug reports: nicholas.sunderland@bristol.ac.uk"),
       uiOutput("user_info"),

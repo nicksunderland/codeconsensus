@@ -1,0 +1,15 @@
+id: procedure_perc_angioplasty_aorta
+name: Percutaneous aortic intervention
+definition: |
+    Endovascular repair of the aorta.
+pmid: NA
+domain: Procedure
+terminology: OPCS
+concept_id: "444588006"
+concept_term: Angioplasty of aorta
+regexes:
+  - "(?i)angioplasty of aorta"
+  - "EVAR"
+  - "L2[678][0-9]"
+  - "444588006"
+  - "(?i)endovascular repair of abdominal aortic aneurysm"

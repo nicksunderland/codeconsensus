@@ -6,6 +6,8 @@ library(data.table)
 library(xml2)
 devtools::load_all()
 
+OVERWRITE = FALSE
+
 # first we need the data sources, which are the SNOMED, ICD-10, and OPCS codes from the NHS
 # TRUD website (https://isd.digital.nhs.uk/trud). You will need an account set up.
 # These should be downloaded into directories outside this package (because they are large)
@@ -30,6 +32,10 @@ for (config in configs) {
   conf    <- yaml::read_yaml(config)
   outfile <- file.path(dirname(config), paste0(conf$id, ".RDS"))
   regex   <- paste0(conf$regexes, collapse = "|")
+
+
+  if (!OVERWRITE & file.exists(outfile)) next
+
 
   cat("Extracting with regex: `", regex, "`\n")
 
