@@ -124,6 +124,10 @@ icd10_tree <- function(icd10, regex = ".") {
 
       # If there are nested results or the current name matches the regex
       if (grepl(regex, desc, perl = TRUE) | grepl(regex, diag_code, perl = TRUE) | length(nested_result) > 0) {
+        if (names(icd10)[i] %in% c("chapter", "section")) {
+          attr(nested_result, "stselected") <- FALSE
+          attr(nested_result, "stdisabled") <- TRUE
+        }
         label <- paste0(attr(nested_result, "code"), " | ", attr(nested_result, "description"))
         result[[label]] <- nested_result
       }
@@ -168,21 +172,23 @@ opcs_tree <- function(opcs_dt, regex = ".") {
     if (!grepl("\\.", code, perl = TRUE)) {
       # Chapter level code
       current_chapter_element <- element
-      current_chapter_name <- paste0(attr(element, "code_type"), " | ", attr(element, "description"))
+      attr(current_chapter_element, "stselected") <- FALSE
+      attr(current_chapter_element, "stdisabled") <- TRUE
+      current_chapter_name <- paste0(attr(element, "code"), " | ", attr(element, "description"))
 
     } else {
 
       # skip if fails regex
-      if (!grepl(regex, code) && !grepl(regex, description)) {
+      if (!grepl(regex, clean_code) && !grepl(regex, description)) {
         next
       } else {
         # add the chapter
-        if (!is.null(attr(current_chapter_element, "code_type"))) {
+        if (!is.null(attr(current_chapter_element, "code"))) {
           OPCS[[current_chapter_name]] <- current_chapter_element
           current_chapter_element <- NULL
         }
         # add the procedure
-        label <- paste0(attr(element, "code_type"), " | ", attr(element, "description"))
+        label <- paste0(attr(element, "code"), " | ", attr(element, "description"))
         OPCS[[current_chapter_name]][[label]] <- element
 
       }
@@ -199,29 +205,4 @@ opcs_tree <- function(opcs_dt, regex = ".") {
 # opcs_tree <- opcs_tree(opcs, regex = "pacemaker")
 # tree[[attr(opcs_tree, "name")]] <- opcs_tree
 
-
-
-
-
-
-#' @title Get tree attributes
-#' @param tree a tree
-#' @param attribute_name str, the attribute name (label, code, code_type, description, stselected, stopened)
-#' @param result for recursive use
-#' @return a list of name = attribute
-#' @export
-#'
-tree_attributes <- function(tree, attribute_name, result = list()) {
-
-  for (element_name in names(tree)) {
-    element                <- tree[[element_name]]
-    attribute_value        <- attr(element, attribute_name)
-    if (is.null(attribute_value) && attribute_name == "stselected") {
-      attribute_value <- FALSE
-    }
-    result[[element_name]] <- attribute_value
-    result                 <- tree_attributes(element, attribute_name, result)
-  }
-  return(result)
-}
 

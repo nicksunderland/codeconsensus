@@ -36,38 +36,85 @@ app_server <- function(input, output, session) {
     # create the home ui
     home <- mod_home_ui("home")
 
-    # create the list of concepts uis
-    concept_iu_list <- lapply(concepts, function(x) {
+    # create the list of diagnosis concepts uis
+    diagnosis_ui_list <- list()
+    procedure_ui_list <- list()
 
-      mod_concept_ui(id                  = clean_id(x$id, check = TRUE),
-                     title               = x$name,
-                     definition          = x$definition,
-                     pmid                = x$pmid,
-                     domain              = x$domain,
-                     terminology         = x$terminology,
-                     concept_term        = x$concept_term,
-                     regexes             = x$regexes)
+    for (x in concepts) {
 
-    })
+      m <- mod_concept_ui(id                  = clean_id(x$id, check = TRUE),
+                          title               = x$name,
+                          definition          = x$definition,
+                          pmid                = x$pmid,
+                          domain              = x$domain,
+                          terminology         = x$terminology,
+                          concept_term        = x$concept_term,
+                          regexes             = x$regexes)
+
+      if (x$domain != "Procedure") {
+
+        diagnosis_ui_list <- c(diagnosis_ui_list, list(m))
+
+      } else {
+
+        procedure_ui_list <- c(procedure_ui_list, list(m))
+
+      }
+
+    }
 
     # create the derived phenotypes uis
     derived <- mod_derived_ui("derived")
 
     # unpack the list into the menu panel
-    menu <- navlistPanel(home, "Concepts", !!!concept_iu_list, "Derived", derived, widths = c(3, 9))
+    menu <- navlistPanel(home,
+                         "Diseases / syndromes",
+                         !!!diagnosis_ui_list,
+                         "Procedures",
+                         !!!procedure_ui_list,
+                         "Derived",
+                         derived,
+                         widths = c(3, 9))
 
     # return the menu panel
     return(menu)
   })
 
+  # create a reactive to get the selected codes
+  selected_summary <- reactive({
+    refresh()
+    sql <- glue::glue("
+      SELECT
+          CASE WHEN SELECTED.USERNAME = '{res_auth[['user']]}' THEN 'USER' ELSE 'OTHER_USERS' END AS USER_CATEGORY,
+          SELECTED.CONCEPT_ID,
+          CONCEPTS.CONCEPT_NAME,
+          AVG(SELECTED.SELECTED) AS AVG_SELECTED,
+          COUNT(DISTINCT SELECTED.USERNAME) AS NUM_RATERS
+      FROM
+          SELECTED
+      INNER JOIN
+          CODES ON SELECTED.CODE_ID = CODES.CODE_ID
+      INNER JOIN
+          CONCEPTS ON SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
+      GROUP BY
+          USER_CATEGORY,
+          SELECTED.CONCEPT_ID,
+          CONCEPTS.CONCEPT_NAME
+      ")
+    res <- query_db(sql, type = "get")
+    refresh(FALSE)
+    return(res)
+  })
+
   # initialise the home UI element server
-  mod_home_server("home")
+  refresh <- mod_home_server("home", username = res_auth[["user"]], selected_summary = selected_summary)
 
   # initialise the concept UI element server functions
-  lapply(concepts, function(x) mod_concept_server(id             = clean_id(x$id, check = TRUE),
-                                                  concept_name   = x$name,
-                                                  regexes        = x$regexes,
-                                                  username       = res_auth[["user"]]))
+  lapply(concepts, function(x) mod_concept_server(id               = clean_id(x$id, check = TRUE),
+                                                  concept_name     = x$name,
+                                                  regexes          = x$regexes,
+                                                  username         = res_auth[["user"]],
+                                                  selected_summary = selected_summary))
 
   # initialise the derived phenotype UI servers
   mod_derived_server("derived")
