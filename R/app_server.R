@@ -17,7 +17,7 @@ app_server <- function(input, output, session) {
   # names(user_info) <- c("uid", "user", "password")
   # creds            <- shinymanager::check_credentials(user_info)
   # res_auth         <- shinymanager::secure_server(check_credentials = creds)
-  res_auth = list(user = "test")
+  res_auth = list(user = "tomlumbers")
 
   # create user details
   output$user_info <- renderUI({
@@ -84,24 +84,65 @@ app_server <- function(input, output, session) {
   selected_summary <- reactive({
     refresh()
     sql <- glue::glue("
-      SELECT
-          CASE WHEN SELECTED.USERNAME = '{res_auth[['user']]}' THEN 'USER' ELSE 'OTHER_USERS' END AS USER_CATEGORY,
-          SELECTED.CONCEPT_ID,
-          CONCEPTS.CONCEPT_NAME,
-          AVG(SELECTED.SELECTED) AS AVG_SELECTED,
-          COUNT(DISTINCT SELECTED.USERNAME) AS NUM_RATERS
-      FROM
-          SELECTED
-      INNER JOIN
-          CODES ON SELECTED.CODE_ID = CODES.CODE_ID
-      INNER JOIN
-          CONCEPTS ON SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
-      GROUP BY
-          USER_CATEGORY,
-          SELECTED.CONCEPT_ID,
-          CONCEPTS.CONCEPT_NAME
-      ")
+        WITH user_data AS (
+            SELECT
+                '{res_auth[['user']]}' AS USERNAME,
+                0 AS SELECTED,
+                CODES.CODE_ID,
+                CONCEPTS.CONCEPT_ID
+            FROM
+                CODES
+            CROSS JOIN
+                CONCEPTS
+        ),
+        selected_data AS (
+            SELECT
+                SELECTED.USERNAME,
+                SELECTED.SELECTED,
+                CODES.CODE_ID,
+                CONCEPTS.CONCEPT_ID
+            FROM
+                SELECTED
+            INNER JOIN
+                CODES ON SELECTED.CODE_ID = CODES.CODE_ID
+            INNER JOIN
+                CONCEPTS ON SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
+            UNION ALL
+            SELECT
+                USERNAME,
+                NULL AS SELECTED,
+                CODE_ID,
+                CONCEPT_ID
+            FROM
+                user_data
+            WHERE
+                USERNAME = '{res_auth[['user']]}' AND
+                NOT EXISTS (
+                    SELECT 1
+                    FROM SELECTED
+                    WHERE USERNAME = '{res_auth[['user']]}' AND
+                          SELECTED.CODE_ID = user_data.CODE_ID AND
+                          SELECTED.CONCEPT_ID = user_data.CONCEPT_ID
+                )
+        )
+        SELECT
+            CASE WHEN selected_data.USERNAME = '{res_auth[['user']]}' THEN 'USER' ELSE 'OTHER_USERS' END AS USER_CATEGORY,
+            selected_data.CONCEPT_ID,
+            CONCEPTS.CONCEPT_NAME,
+            AVG(selected_data.SELECTED) AS AVG_SELECTED,
+            COUNT(DISTINCT selected_data.USERNAME) AS NUM_RATERS
+        FROM
+            selected_data
+        INNER JOIN
+            CONCEPTS ON selected_data.CONCEPT_ID = CONCEPTS.CONCEPT_ID
+        GROUP BY
+            USER_CATEGORY,
+            selected_data.CONCEPT_ID,
+            CONCEPTS.CONCEPT_NAME
+    ")
     res <- query_db(sql, type = "get")
+
+
     refresh(FALSE)
     return(res)
   })

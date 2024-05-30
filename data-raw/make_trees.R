@@ -206,3 +206,47 @@ opcs_tree <- function(opcs_dt, regex = ".") {
 # tree[[attr(opcs_tree, "name")]] <- opcs_tree
 
 
+
+#' @title Annotate tree
+#' @param tree a tree
+#' @param annot_dt a data.table, data to use for annotation
+#' @param value_col a string, column name in `annot_dt` with the annotation values. The new attribute name is taken from the value column name.
+#' @param on a named character vector, how to join the data e.g. c("annot_dt_col" = "tree_attribute_name"), can have multiple conditions e.g. c(code=code, code_type=code_type)
+#' @param no_match any value, what to annotate with if there is no join data
+#' @param result for recursive use
+#' @return a nested list, a tree
+#' @export
+#'
+annotate_tree <- function(tree, annot_dt, value_col = "count", on = c("icd10" = "code"), no_match = NA) {
+
+  for (element_name in names(tree)) {
+    element    <- tree[[element_name]]
+
+    filter_condition <- sapply(names(on), function(key) {
+      attr_value <- attr(element, on[[key]])
+      paste0(key, " == '", attr_value, "'")
+    })
+    filter_condition <- paste(filter_condition, collapse = " & ")
+    annot_data <- annot_dt[eval(parse(text = filter_condition)), ..value_col]
+
+    if (nrow(annot_data) == 0) {
+      annot_data <- no_match
+    } else if (nrow(annot_data) > 1) {
+      annot_data <- annot_data[[1]]
+      warning(paste0("Multiple values found for element ", element_name, ". Taking first `[[1]]`. "))
+    } else {
+      annot_data <- annot_data[[1]]
+    }
+    attr(element, value_col) <- annot_data
+
+    # Recursively annotate the subtree
+    if (length(element) > 0) {
+      element <- annotate_tree(element, annot_dt, value_col, on, no_match)
+    }
+
+    tree[[element_name]] <- element
+
+  }
+  return(tree)
+}
+

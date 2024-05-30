@@ -16,9 +16,17 @@ mod_home_ui <- function(id){
                    div(
                      style = "background-color: #f7f7f7; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px;",
                      h3("Introduction:"),
-                     p("...some intro"),
+                     p("The exercise aims to gather expert consesus on which codes define key base phenotypes."),
                      h5("Voting:"),
-                     p("...how to vote")
+                     p("Read the description of the concept and make any comments in the comments box.
+                        Then select the codes that define this concept.
+                        Leave codes that do not define the concept blank.
+                        Regularly save progress by clicking the save button.
+                        Returning to the home page, you can view the agreement in terms of Cohen's kappa
+                        with other raters. The number of other rates contributing to the statistic are
+                        presented at the end of the bars on the plot below. A missing bar indicates that you
+                        have not yet saved any codes against this phenotype/concept.
+                       ")
                    ),
                    hr(),
                    actionButton(ns("refresh"), "Refresh"),
@@ -40,6 +48,7 @@ mod_home_server <- function(id, username, selected_summary){
 
     # Cohen's kappa
     cohens_kappa_plot <- reactive({
+
       summary <- data.table::copy(selected_summary())
       summary <- data.table::dcast(summary, CONCEPT_NAME ~ USER_CATEGORY, value.var = c("AVG_SELECTED", "NUM_RATERS"))
       summary[, Po := pmin(AVG_SELECTED_USER, AVG_SELECTED_OTHER_USERS) + (1 - pmax(AVG_SELECTED_USER, AVG_SELECTED_OTHER_USERS))]

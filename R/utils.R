@@ -40,7 +40,7 @@ tree_attributes <- function(tree, attribute_name, result = list()) {
   for (element_name in names(tree)) {
     element                <- tree[[element_name]]
     attribute_value        <- attr(element, attribute_name)
-    if (is.null(attribute_value) && attribute_name == "stselected") {
+    if (is.null(attribute_value) && attribute_name %in% c("stselected", "stdisabled")) {
       attribute_value <- FALSE
     }
     result[[element_name]] <- attribute_value
@@ -48,3 +48,6 @@ tree_attributes <- function(tree, attribute_name, result = list()) {
   }
   return(result)
 }
+
+
+

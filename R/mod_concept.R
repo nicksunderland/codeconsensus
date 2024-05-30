@@ -24,14 +24,20 @@ mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, con
              h5("Concept term:",        span(concept_term,                    style = "font-weight: normal;")),
              h5("Search expressions:\n",span(paste0(regexes, collapse = " | "), style = "font-weight: normal;"))
            ),
+           # user comments section
            textAreaInput(ns("user_comments"), label = "Comments", width = "100%"),
-           selectInput(ns("plot_type"), label = "Plot selection", choice = c("off", "agreement", "counts", "percentage", "concurrency (counts)", "concurrency (%)")),
+           # selection boxes
+           fluidRow(column(6, selectInput(ns("plot_type"), label = "Plot selection", choices = c("off", "agreement", "counts", "percentage", "concurrency (counts)", "concurrency (%)"))),
+                    column(6, selectInput(ns("code_display"), label = "Code display", choices = c("nhs_counts", "default")))),
+           # conditional plot panel
            conditionalPanel(condition = paste0("input.plot_type != 'off'"), plotOutput(ns("plot")), ns = ns),
+           # save and output messages
            fluidRow(column(12, tags$label("Save selection"))),
            fluidRow(column(2, actionButton(ns("save"), "Save")),
-                    column(10, textOutput(ns("message_box")))),
+                    column(8, textOutput(ns("message_box")))),
+           # the tree
            shinycssloaders::withSpinner(
-             shinyTree::shinyTree(ns("tree"), theme="proton", wholerow = FALSE, search = F, unique = FALSE, checkbox = TRUE, three_state = FALSE),
+             shinyTree::shinyTree(ns("tree"), theme="proton", wholerow = FALSE, search = F, unique = FALSE, checkbox = TRUE, three_state = TRUE, tie_selection = TRUE),
              type = 8
            )
   )
@@ -54,21 +60,39 @@ mod_concept_server <- function(id, concept_name, regexes, username, selected_sum
     # reactive values / expressions
     # -----------------------------
     message <- reactiveVal("")
+    tree <- reactiveVal(NULL)
 
+    # the tree data
+    load_base_tree <- reactive({
+      print("loading base tree")
+      tree_path <- system.file("concepts", paste0(id, ".RDS"), package = "hfphenotyping")
+      tree <- readRDS(tree_path)
+      return(tree)
+    })
+
+    # the concept id for this module
     concept_id <- reactive({
       sql <- glue::glue("SELECT CONCEPT_ID FROM CONCEPTS WHERE CONCEPT_NAME = '{concept_name}'")
       res <- query_db(sql, type = "get")
       return(res$CONCEPT_ID)
     })
 
+    # the code ids for this module
     code_ids <- reactive({
-      tree_codes <- paste0("'", unlist(tree_attributes(tree(), 'code')), "'", collapse = ", ")
+      print("code_ids <- reactive")
+      tree_codes <- paste0("'", unlist(tree_attributes(load_base_tree(), 'code')), "'", collapse = ", ")
       sql <- glue::glue("SELECT CODE_ID, CODE FROM CODES WHERE CODE IN ({tree_codes})")
       res <- query_db(sql, type = "get")
       return(res)
     })
 
+    # the saved selected codes for this module and user
     selected <- reactive({
+      print("selected <- reactive")
+
+      input$save # save will trigger a refresh of selected
+      input$code_display # changing code view will trigger a refresh of selected
+
       # check if this user has previously selected data, if not saved yet use default
       user <- username
       sql <- glue::glue("SELECT COUNT(*) AS USER_COUNT FROM SELECTED WHERE USERNAME = '{user}' AND CONCEPT_ID = {concept_id()}")
@@ -90,19 +114,7 @@ mod_concept_server <- function(id, concept_name, regexes, username, selected_sum
       return(res)
     })
 
-    tree <- reactive({
-      print("loading base tree")
-      tree_path <- system.file("concepts", paste0(id, ".RDS"), package = "hfphenotyping")
-      tree <- readRDS(tree_path)
-      return(tree)
-    })
-
-    # observeEvent(input$tree, {
-    #   print("tree modified")
-    #
-    # })
-
-    # comments
+    # the comments for with concept for this user
     comments <- reactive({
       sql <- glue::glue("SELECT COMMENTS FROM COMMENTS WHERE USERNAME = '{username}' AND CONCEPT_ID = {concept_id()}")
       res <- query_db(sql, type = "get")
@@ -162,25 +174,24 @@ mod_concept_server <- function(id, concept_name, regexes, username, selected_sum
                       y        = "Code")
     })
 
-
-
-    # -----------------------------
-    # CONTROLS
-    # -----------------------------
-    # save button
-    observeEvent(input$save, {
+    # save function
+    save <- function(tree, comments, concept_id, username) {
+      print("save function")
 
       # get the current code select status
       current <- data.table::data.table(USERNAME   = username,
-                                        CODE       = unlist(tree_attributes(input$tree, 'code')),
-                                        SELECTED   = as.integer(unlist(tree_attributes(input$tree, 'stselected'))),
-                                        CONCEPT_ID = concept_id())
+                                        CODE       = unlist(tree_attributes(tree, 'code')),
+                                        DISABLED   = unlist(tree_attributes(tree, 'stdisabled')),
+                                        SELECTED   = as.integer(unlist(tree_attributes(tree, 'stselected'))),
+                                        CONCEPT_ID = concept_id)
+      current <- current[DISABLED == FALSE, ]
+      current[, DISABLED := NULL]
       current[code_ids(), CODE_ID := i.CODE_ID, on = "CODE"]
       current[, CODE := NULL]
 
       # remove the old rows from the database
       code_ids <- paste0(current$CODE_ID, collapse = ", ")
-      sql <- glue::glue("DELETE FROM SELECTED WHERE USERNAME = '{username}' AND CONCEPT_ID = {concept_id()} AND CODE_ID IN ({code_ids})")
+      sql <- glue::glue("DELETE FROM SELECTED WHERE USERNAME = '{username}' AND CONCEPT_ID = {concept_id} AND CODE_ID IN ({code_ids})")
       query_db(query_str = sql, type = "send")
 
       # update with the new rows
@@ -188,16 +199,52 @@ mod_concept_server <- function(id, concept_name, regexes, username, selected_sum
       res <- query_db(query_str = sql, type = "update", value = as.list(current))
 
       # remove the old comments
-      sql <- glue::glue("DELETE FROM COMMENTS WHERE USERNAME = '{username}' AND CONCEPT_ID = {concept_id()}")
+      sql <- glue::glue("DELETE FROM COMMENTS WHERE USERNAME = '{username}' AND CONCEPT_ID = {concept_id}")
       query_db(query_str = sql, type = "send")
 
       # update with new comments
-      vals <- list(USERNAME = username, CONCEPT_ID = concept_id(), COMMENTS = input$user_comments)
+      vals <- list(USERNAME = username, CONCEPT_ID = concept_id, COMMENTS = comments)
       sql <- glue::glue("INSERT INTO COMMENTS ({paste(names(vals), collapse = ', ')}) VALUES ({paste0(rep('?', length(vals)), collapse = ', ')})")
       res1 <- query_db(query_str = sql, type = "update", value = vals)
 
       # report
       if (res & res1) {
+        return(TRUE)
+      } else {
+        return(FALSE)
+      }
+    }
+
+
+    # -----------------------------
+    # CONTROLS
+    # -----------------------------
+    # save button
+    observeEvent(input$save, {
+      print("save button")
+
+      # run save
+      res <- save(input$tree, input$user_comments, concept_id(), username)
+
+      # report
+      if (res) {
+        message("Save successful")
+      } else {
+        message("Error saving...")
+      }
+
+    })
+
+    # changing display of the codes, save tree first
+    observeEvent(input$code_display, {
+      req(input$tree)
+      print("code_display select")
+
+      # run save
+      res <- save(input$tree, input$user_comments, concept_id(), username)
+
+      # report
+      if (res) {
         message("Save successful")
       } else {
         message("Error saving...")
@@ -210,26 +257,33 @@ mod_concept_server <- function(id, concept_name, regexes, username, selected_sum
     # -----------------------------
     # selection tree
     output$tree <- shinyTree::renderTree({
-      message("")
       print("tree render")
 
       # render comments too
       updateTextAreaInput(session = session, "user_comments", value = comments())
 
+      # load if needed
+      if (is.null(tree())) {
+        tree(load_base_tree())
+      }
+
       # get tree
       tree <- modify_selected(tree(), selected())
+      tree <- rename_tree(tree, option = input$code_display)
 
       return(tree)
     })
 
     # message box
-    output$message_box <- renderText({ message() })
+    output$message_box <- renderText({
+      print(paste0("message box render `", message(), "`"))
+      message()
+    })
 
     # plot
     output$plot <- renderPlot({
 
       if (input$plot_type == "agreement") {
-        browser()
         return(agreement_plot())
       }
 
@@ -238,6 +292,52 @@ mod_concept_server <- function(id, concept_name, regexes, username, selected_sum
   })
 }
 
+# rename elements
+rename_tree <- function(tree, option = "default") {
+
+  option <- match.arg(option, choices = c("default", "nhs_counts"))
+
+  renamed_tree <- list()
+  for (name in names(tree)) {
+
+    # get the element to process
+    new_element <- tree[[name]]
+
+    # default is no additional information
+    if (option == "default") {
+      new_name <- paste0(attr(tree[[name]], "code"), " | ", attr(tree[[name]], "description"))
+
+    # else use the option to extract the attribute with the same name (see raw-data folder for how the trees are constructed)
+    } else {
+      count_str <- ""
+      if (!is.null(attr(tree[[name]], option))) {
+        count_str <- paste0("n=", attr(tree[[name]], option), " | ")
+      }
+      new_name <- paste0(attr(tree[[name]], "code"), " | ", count_str, attr(tree[[name]], "description"))
+    }
+
+    # recursive
+    if (length(new_element) > 0 && is.list(new_element)) {
+
+      renamed_tree[[new_name]] <- rename_tree(new_element, option)
+
+      # copy all attributes across, except names as that is what we're changing
+      for (attr_name in names(attributes(new_element))) {
+        if (attr_name != "names") {
+          attr(renamed_tree[[new_name]], attr_name) <- attr(new_element, attr_name)
+        }
+      }
+
+    # exit case for recursion
+    } else {
+
+      renamed_tree[[new_name]] <- new_element
+
+    }
+  }
+
+  return(renamed_tree)
+}
 
 
 # recursively set selected or not
@@ -249,7 +349,9 @@ modify_selected <- function(tree, selected) {
     if (is.null(icon) || length(icon)==0 || is.na(icon)) icon <- "fa fa-battery-empty"
     attr(tree[[name]], "sticon") <- as.character(icon)
     attr(tree[[name]], "stselected") <- status
-    attr(tree[[name]], "stopened") <- FALSE
+    if (is.null(attr(tree[[name]], "stopened"))) {
+      attr(tree[[name]], "stopened") <- FALSE
+    }
     if (is.list(tree[[name]]) && length(tree[[name]]) > 0) {
       tree[[name]] <- modify_selected(tree[[name]], selected) # recursively process
     }
