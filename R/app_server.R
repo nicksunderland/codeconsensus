@@ -17,7 +17,7 @@ app_server <- function(input, output, session) {
   # names(user_info) <- c("uid", "user", "password")
   # creds            <- shinymanager::check_credentials(user_info)
   # res_auth         <- shinymanager::secure_server(check_credentials = creds)
-  res_auth = list(user = "tomlumbers")
+  res_auth = list(user = "default")
 
   # create user details
   output$user_info <- renderUI({
