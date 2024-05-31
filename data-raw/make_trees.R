@@ -10,7 +10,7 @@
 #' @return a TreeElement S3 object
 #' @export
 #'
-TreeElement <- function(code, code_type, description, stselected = FALSE, stopened = TRUE, children = list()) {
+TreeElement <- function(code, code_type, description, sticon = NULL, stselected = FALSE, stopened = TRUE, children = list()) {
   s <- structure(
     .Data      = children,
     class      = "TreeElement",
@@ -18,7 +18,8 @@ TreeElement <- function(code, code_type, description, stselected = FALSE, stopen
     code_type  = code_type,
     description= description,
     stselected = stselected,
-    stopened   = stopened
+    stopened   = stopened,
+    sticon     = sticon
   )
 }
 
@@ -66,7 +67,7 @@ snomed_tree <- function(hierarch_codes) {
   }
 
   # convert
-  tree <- TreeElement("SNOMED", "SNOMED", "coding system", children = convert_to_tree_element(nested_list, hierarch_codes))
+  tree <- TreeElement("SNOMED", "SNOMED", "coding system", sticon = "fa fa-folder-o", children = convert_to_tree_element(nested_list, hierarch_codes))
 
   return(tree)
 }
@@ -127,6 +128,7 @@ icd10_tree <- function(icd10, regex = ".") {
         if (names(icd10)[i] %in% c("chapter", "section")) {
           attr(nested_result, "stselected") <- FALSE
           attr(nested_result, "stdisabled") <- TRUE
+          attr(nested_result, "sticon") <- "fa fa-folder"
         }
         label <- paste0(attr(nested_result, "code"), " | ", attr(nested_result, "description"))
         result[[label]] <- nested_result
@@ -156,7 +158,7 @@ icd10_tree <- function(icd10, regex = ".") {
 #' @export
 #'
 opcs_tree <- function(opcs_dt, regex = ".") {
-  OPCS <- TreeElement("OPCS", "OPCS", "coding system")
+  OPCS <- TreeElement("OPCS", "OPCS", "coding system", sticon = "fa-regular fa-folder")
   current_chapter_name <- NULL
   current_chapter_element <- NULL
 
@@ -174,6 +176,7 @@ opcs_tree <- function(opcs_dt, regex = ".") {
       current_chapter_element <- element
       attr(current_chapter_element, "stselected") <- FALSE
       attr(current_chapter_element, "stdisabled") <- TRUE
+      attr(current_chapter_element, "sticon") <- "fa fa-folder"
       current_chapter_name <- paste0(attr(element, "code"), " | ", attr(element, "description"))
 
     } else {

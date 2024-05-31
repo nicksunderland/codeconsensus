@@ -80,82 +80,14 @@ app_server <- function(input, output, session) {
     return(menu)
   })
 
-  # create a reactive to get the selected codes
-  selected_summary <- reactive({
-    refresh()
-    sql <- glue::glue("
-        WITH user_data AS (
-            SELECT
-                '{res_auth[['user']]}' AS USERNAME,
-                0 AS SELECTED,
-                CODES.CODE_ID,
-                CONCEPTS.CONCEPT_ID
-            FROM
-                CODES
-            CROSS JOIN
-                CONCEPTS
-        ),
-        selected_data AS (
-            SELECT
-                SELECTED.USERNAME,
-                SELECTED.SELECTED,
-                CODES.CODE_ID,
-                CONCEPTS.CONCEPT_ID
-            FROM
-                SELECTED
-            INNER JOIN
-                CODES ON SELECTED.CODE_ID = CODES.CODE_ID
-            INNER JOIN
-                CONCEPTS ON SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
-            UNION ALL
-            SELECT
-                USERNAME,
-                NULL AS SELECTED,
-                CODE_ID,
-                CONCEPT_ID
-            FROM
-                user_data
-            WHERE
-                USERNAME = '{res_auth[['user']]}' AND
-                NOT EXISTS (
-                    SELECT 1
-                    FROM SELECTED
-                    WHERE USERNAME = '{res_auth[['user']]}' AND
-                          SELECTED.CODE_ID = user_data.CODE_ID AND
-                          SELECTED.CONCEPT_ID = user_data.CONCEPT_ID
-                )
-        )
-        SELECT
-            CASE WHEN selected_data.USERNAME = '{res_auth[['user']]}' THEN 'USER' ELSE 'OTHER_USERS' END AS USER_CATEGORY,
-            selected_data.CONCEPT_ID,
-            CONCEPTS.CONCEPT_NAME,
-            AVG(selected_data.SELECTED) AS AVG_SELECTED,
-            COUNT(DISTINCT selected_data.USERNAME) AS NUM_RATERS
-        FROM
-            selected_data
-        INNER JOIN
-            CONCEPTS ON selected_data.CONCEPT_ID = CONCEPTS.CONCEPT_ID
-        GROUP BY
-            USER_CATEGORY,
-            selected_data.CONCEPT_ID,
-            CONCEPTS.CONCEPT_NAME
-    ")
-    res <- query_db(sql, type = "get")
-
-
-    refresh(FALSE)
-    return(res)
-  })
-
   # initialise the home UI element server
-  refresh <- mod_home_server("home", username = res_auth[["user"]], selected_summary = selected_summary)
+  mod_home_server("home", username = res_auth[["user"]])
 
   # initialise the concept UI element server functions
   lapply(concepts, function(x) mod_concept_server(id               = clean_id(x$id, check = TRUE),
                                                   concept_name     = x$name,
                                                   regexes          = x$regexes,
-                                                  username         = res_auth[["user"]],
-                                                  selected_summary = selected_summary))
+                                                  username         = res_auth[["user"]]))
 
   # initialise the derived phenotype UI servers
   mod_derived_server("derived")

@@ -1,0 +1,15 @@
+id: hypertrophic_cardiomyopathy
+name: Hypertrophic cardiomyopathy
+definition: |
+  Hypertrophic cardiomyopathy (HCM) is defined as the presence of increased
+  LV wall thickness (with or without RV hypertrophy) or mass
+  that is not solely explained by abnormal loading conditions. (ESC, 2023)
+pmid: NA
+domain: Disorder
+terminology: SNOMED
+concept_id: "233873004"
+concept_term: Hypertrophic cardiomyopathy
+regexes:
+  - "233873004"
+  - "(?i)hypertrophic (obstructive )?cardiomyopathy"
+  - "(?i)obstructive hypertrophic cardiomyopathy"

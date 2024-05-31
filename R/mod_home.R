@@ -38,13 +38,76 @@ mod_home_ui <- function(id){
 #' home Server Functions
 #' @import ggplot2
 #' @noRd
-mod_home_server <- function(id, username, selected_summary){
+mod_home_server <- function(id, username){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    refresh <- reactiveVal(NULL)
+    # create a reactive to get the selected codes
+    selected_summary <- reactive({
 
-    observeEvent(input$refresh, refresh(TRUE))
+      input$refresh # will trigger a repull of data
+
+      sql <- glue::glue("
+        WITH user_data AS (
+            SELECT
+                '{username}' AS USERNAME,
+                0 AS SELECTED,
+                CODES.CODE_ID,
+                CONCEPTS.CONCEPT_ID
+            FROM
+                CODES
+            CROSS JOIN
+                CONCEPTS
+        ),
+        selected_data AS (
+            SELECT
+                SELECTED.USERNAME,
+                SELECTED.SELECTED,
+                CODES.CODE_ID,
+                CONCEPTS.CONCEPT_ID
+            FROM
+                SELECTED
+            INNER JOIN
+                CODES ON SELECTED.CODE_ID = CODES.CODE_ID
+            INNER JOIN
+                CONCEPTS ON SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
+            UNION ALL
+            SELECT
+                USERNAME,
+                NULL AS SELECTED,
+                CODE_ID,
+                CONCEPT_ID
+            FROM
+                user_data
+            WHERE
+                USERNAME = '{username}' AND
+                NOT EXISTS (
+                    SELECT 1
+                    FROM SELECTED
+                    WHERE USERNAME = '{username}' AND
+                          SELECTED.CODE_ID = user_data.CODE_ID AND
+                          SELECTED.CONCEPT_ID = user_data.CONCEPT_ID
+                )
+        )
+        SELECT
+            CASE WHEN selected_data.USERNAME = '{username}' THEN 'USER' ELSE 'OTHER_USERS' END AS USER_CATEGORY,
+            selected_data.CONCEPT_ID,
+            CONCEPTS.CONCEPT_NAME,
+            AVG(selected_data.SELECTED) AS AVG_SELECTED,
+            COUNT(DISTINCT selected_data.USERNAME) AS NUM_RATERS
+        FROM
+            selected_data
+        INNER JOIN
+            CONCEPTS ON selected_data.CONCEPT_ID = CONCEPTS.CONCEPT_ID
+        GROUP BY
+            USER_CATEGORY,
+            selected_data.CONCEPT_ID,
+            CONCEPTS.CONCEPT_NAME
+    ")
+      res <- query_db(sql, type = "get")
+
+      return(res)
+    })
 
     # Cohen's kappa
     cohens_kappa_plot <- reactive({
@@ -82,8 +145,6 @@ mod_home_server <- function(id, username, selected_summary){
 
     })
 
-
-    return(refresh)
   })
 }
 

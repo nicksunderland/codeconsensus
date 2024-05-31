@@ -27,8 +27,9 @@ mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, con
            # user comments section
            textAreaInput(ns("user_comments"), label = "Comments", width = "100%"),
            # selection boxes
-           fluidRow(column(6, selectInput(ns("plot_type"), label = "Plot selection", choices = c("off", "agreement", "counts", "percentage", "concurrency (counts)", "concurrency (%)"))),
-                    column(6, selectInput(ns("code_display"), label = "Code display", choices = c("nhs_counts", "default")))),
+           fluidRow(column(4, selectInput(ns("plot_type"), label = "Plot selection", choices = c("off", "agreement", "counts", "percentage", "concurrency (counts)", "concurrency (%)"))),
+                    column(4, selectInput(ns("code_display"), label = "Code display", choices = c("nhs_counts", "default"))),
+                    column(4, downloadButton(ns("download"), label = "Download codes"), style = "margin-top: 25px;")),
            # conditional plot panel
            conditionalPanel(condition = paste0("input.plot_type != 'off'"), plotOutput(ns("plot")), ns = ns),
            # save and output messages
@@ -37,7 +38,7 @@ mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, con
                     column(8, textOutput(ns("message_box")))),
            # the tree
            shinycssloaders::withSpinner(
-             shinyTree::shinyTree(ns("tree"), theme="proton", wholerow = FALSE, search = F, unique = FALSE, checkbox = TRUE, three_state = TRUE, tie_selection = TRUE),
+             shinyTree::shinyTree(ns("tree"), theme="proton", wholerow = FALSE, search = FALSE, unique = FALSE, checkbox = TRUE, three_state = FALSE, tie_selection = TRUE),
              type = 8
            )
   )
@@ -49,10 +50,9 @@ mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, con
 #' @param regexes string, regex pattern
 #' @param username string, the current user
 #' @param concept_name string, the concept name specified in teh yaml config
-#' @param selected_summary a reactive
 #' @importFrom glue glue
 #' @noRd
-mod_concept_server <- function(id, concept_name, regexes, username, selected_summary){
+mod_concept_server <- function(id, concept_name, regexes, username){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -93,85 +93,23 @@ mod_concept_server <- function(id, concept_name, regexes, username, selected_sum
       input$save # save will trigger a refresh of selected
       input$code_display # changing code view will trigger a refresh of selected
 
-      # check if this user has previously selected data, if not saved yet use default
-      user <- username
-      sql <- glue::glue("SELECT COUNT(*) AS USER_COUNT FROM SELECTED WHERE USERNAME = '{user}' AND CONCEPT_ID = {concept_id()}")
-      check <- query_db(sql, type = "get")
-      if (check$USER_COUNT == 0) {
-        user <- "default"
-      }
-
       # get the codes and select status
       code_ids <- paste0(code_ids()$CODE_ID, collapse = ", ")
-      sql <- glue::glue("SELECT CODE_ID, SELECTED FROM SELECTED WHERE USERNAME = '{user}' AND CONCEPT_ID = {concept_id()} AND CODE_ID IN ({code_ids})")
+      sql <- glue::glue("SELECT CODE_ID, SELECTED FROM SELECTED WHERE USERNAME = '{username}' AND CONCEPT_ID = {concept_id()} AND CODE_ID IN ({code_ids})")
       res <- query_db(sql, type = "get")
       res[code_ids(), CODE := i.CODE, on = "CODE_ID"]
       res[, CODE_ID := NULL]
-
-      # add average selection here
-      res[other_users_avg(), AVG_SELECTED := i.AVG_SELECTED, on = "CODE"]
 
       return(res)
     })
 
     # the comments for with concept for this user
     comments <- reactive({
+      print("comments <- reactive")
+      input$save # save will trigger a refresh of selected
       sql <- glue::glue("SELECT COMMENTS FROM COMMENTS WHERE USERNAME = '{username}' AND CONCEPT_ID = {concept_id()}")
       res <- query_db(sql, type = "get")
       return(res$COMMENTS)
-    })
-
-    # other users' selection
-    other_users_avg <- reactive({
-      sql <- glue::glue("
-        SELECT
-          SELECTED.CONCEPT_ID,
-          SELECTED.CODE_ID,
-          CODES.CODE,
-          CODES.CODE_DESC,
-          CONCEPTS.CONCEPT_NAME,
-          AVG(SELECTED.SELECTED) AS AVG_SELECTED,
-          COUNT(DISTINCT SELECTED.USERNAME) AS NUM_RATERS
-        FROM
-          SELECTED
-        INNER JOIN
-          CODES ON SELECTED.CODE_ID = CODES.CODE_ID
-        INNER JOIN
-          CONCEPTS ON SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
-        WHERE
-          SELECTED.USERNAME != '{username}' AND SELECTED.CONCEPT_ID = '{concept_id()}'
-        GROUP BY
-          SELECTED.CONCEPT_ID,
-          SELECTED.CODE_ID,
-          CONCEPTS.CONCEPT_NAME,
-          CODES.CODE,
-          CODES.CODE_DESC")
-      res <- query_db(sql, type = "get")
-      return(res)
-    })
-
-    # agreement plot
-    agreement_plot <- reactive({
-
-      req(input$tree)
-
-      # process the data for the current selection
-      avg <- data.table::copy(other_users_avg())
-      current <- data.table::data.table(CODE     = unlist(tree_attributes(input$tree, "code")),
-                                        SELECTED = unlist(tree_attributes(input$tree, "stselected")))
-      avg[current, SELECTED := i.SELECTED, on = "CODE"]
-      avg[, AGREE := AVG_SELECTED > 0.5 & SELECTED | AVG_SELECTED <= 0.5 & !SELECTED]
-      avg[, Y_LABEL := paste0(CODE, " | ", ifelse(nchar(CODE_DESC > 20), paste0(substr(CODE_DESC, 1, 15), "..."), CODE_DESC))]
-      avg[, Y_LABEL := factor(Y_LABEL, levels = Y_LABEL)]
-
-      # plot
-      ggplot2::ggplot(avg, ggplot2::aes(y = Y_LABEL, x = AVG_SELECTED, fill = AGREE)) +
-        ggplot2::geom_col() +
-        ggplot2::scale_fill_manual(values = c("FALSE" = "red", "TRUE" = "darkgreen")) +
-        ggplot2::labs(title    = "Agreement",
-                      subtitle = "(green: >50% agreement with your code selection; red: <=50% agreement)",
-                      x        = "% of other raters choosing this code",
-                      y        = "Code")
     })
 
     # save function
@@ -251,6 +189,16 @@ mod_concept_server <- function(id, concept_name, regexes, username, selected_sum
       }
     })
 
+    # download the codes
+    output$download <- downloadHandler(
+      filename = function() {
+        # paste0(input$dataset, ".tsv")
+      },
+      content = function(file) {
+        # vroom::vroom_write(data(), file)
+      }
+    )
+
 
     # -----------------------------
     # OUTPUTS
@@ -281,13 +229,13 @@ mod_concept_server <- function(id, concept_name, regexes, username, selected_sum
     })
 
     # plot
-    output$plot <- renderPlot({
-
-      if (input$plot_type == "agreement") {
-        return(agreement_plot())
-      }
-
-    })
+    # output$plot <- renderPlot({
+    #
+    #   if (input$plot_type == "agreement") {
+    #     return(NULL)
+    #   }
+    #
+    # })
 
   })
 }
@@ -345,9 +293,6 @@ modify_selected <- function(tree, selected) {
   for (name in names(tree)) {
     code   <- attr(tree[[name]], "code")
     status <- any(as.logical(selected[CODE == code, SELECTED]))
-    icon   <- cut(selected[CODE == code, AVG_SELECTED], breaks = c(0, 0.2, 0.4, 0.6, 0.8, Inf), labels = c("fa fa-battery-empty", "fa fa-battery-quarter", "fa fa-battery-half", "fa fa-battery-three-quarters", "fa fa-battery-full"))
-    if (is.null(icon) || length(icon)==0 || is.na(icon)) icon <- "fa fa-battery-empty"
-    attr(tree[[name]], "sticon") <- as.character(icon)
     attr(tree[[name]], "stselected") <- status
     if (is.null(attr(tree[[name]], "stopened"))) {
       attr(tree[[name]], "stopened") <- FALSE
@@ -359,11 +304,5 @@ modify_selected <- function(tree, selected) {
   return(tree)
 }
 
-
-## To be copied in the UI
-# mod_concept_ui("concept_1")
-
-## To be copied in the server
-# mod_concept_server("concept_1")
 
 

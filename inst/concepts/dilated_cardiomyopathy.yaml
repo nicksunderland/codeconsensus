@@ -1,0 +1,14 @@
+id: dilated_cardiomyopathy
+name: Dilated cardiomyopathy
+definition: |
+  Dilated cardiomyopathy (DCM) is defined as the presence of LV dilatation
+  and global or regional systolic dysfunction unexplained solely by abnormal
+  loading conditions (e.g. hypertension, valve disease, CHD) or CAD. (ESC, 2023)
+pmid: NA
+domain: Disorder
+terminology: SNOMED
+concept_id: "399020009"
+concept_term: Dilated cardiomyopathy
+regexes:
+  - "399020009"
+  - "(?i)dilated cardiomyopathy"
