@@ -17,13 +17,22 @@ app_server <- function(input, output, session) {
   # --------------------------
   user <- reactiveValues(username = NULL, is_rater = NULL)
 
+  rv <- reactiveValues(home_ui       = list(NULL),
+                       diagnosis_uis = list(NULL),
+                       procedure_uis = list(NULL),
+                       derived_uis   = list(NULL))
 
   # --------------------------
   # Enter (view only) button
   # --------------------------
   observeEvent(input$enter_btn, {
 
-    render_main_ui(input$project)
+    # (remake) main uis
+    make_uis(input$project)
+
+    # hide login and show main
+    shinyjs::hide("login_screen")
+    shinyjs::show("main_content")
 
   })
 
@@ -44,8 +53,12 @@ app_server <- function(input, output, session) {
       user[["username"]] <- db_user_data$USERNAME
       user[["is_rater"]] <- as.logical(db_user_data$IS_RATER)
 
-      # render main ui
-      render_main_ui(input$project)
+      # (remake) main uis
+      make_uis(input$project)
+
+      # hide login and show main
+      shinyjs::hide("login_screen")
+      shinyjs::show("main_content")
 
     } else {
 
@@ -78,88 +91,83 @@ app_server <- function(input, output, session) {
   })
 
   # --------------------------
-  # Render UI function
+  # Make UIs function
   # --------------------------
-  render_main_ui <- function(project) {
+  make_uis <- function(project) {
 
-    # render
-    output$main_ui <- renderUI({
+    # get the concepts for this project
+    project_config <- system.file("projects", paste0(project, ".yaml"),  package = "hfphenotyping")
+    config         <- yaml::read_yaml(project_config)
+    concept_dir    <- system.file("concepts", package = "hfphenotyping")
+    concepts_files <- lapply(config$concepts, function(x) file.path(concept_dir, x))
+    concepts       <- lapply(concepts_files, function(x) yaml::read_yaml(x))
 
-      # get the concepts for this project
-      project_config <- system.file("projects", paste0(project, ".yaml"),  package = "hfphenotyping")
-      config         <- yaml::read_yaml(project_config)
-      concept_dir    <- system.file("concepts", package = "hfphenotyping")
-      concepts_files <- lapply(config$concepts, function(x) file.path(concept_dir, x))
-      concepts       <- lapply(concepts_files, function(x) yaml::read_yaml(x))
+    # create the home ui
+    rv$home_ui <- c(rv$home_ui, list(mod_home_ui("home")))
+    mod_home_server("home", concept_names = sapply(concepts, function(x) x$name))
 
-      # create the home ui
-      home <- mod_home_ui("home")
-      mod_home_server("home", concept_names = sapply(concepts, function(x) x$name))
+    for (x in concepts) {
 
-      # create the list of diagnosis concepts uis
-      diagnosis_ui_list <- list()
-      procedure_ui_list <- list()
-      derived_ui_list   <- list()
+      # create the diagnosis and procedure concepts
+      if (x$domain != "Derived") {
 
-      for (x in concepts) {
+        m <- mod_concept_ui(id                  = clean_id(x$id, check = TRUE),
+                            title               = x$name,
+                            definition          = x$definition,
+                            pmid                = x$pmid,
+                            domain              = x$domain,
+                            terminology         = x$terminology,
+                            concept_term        = x$concept_term,
+                            regexes             = x$regexes)
 
-        # create the diagnosis and procedure concepts
-        if (x$domain != "Derived") {
+        mod_concept_server(id                   = clean_id(x$id, check = TRUE),
+                           concept_name         = x$name,
+                           regexes              = x$regexes,
+                           user                 = user)
 
-          m <- mod_concept_ui(id                  = clean_id(x$id, check = TRUE),
-                              title               = x$name,
-                              definition          = x$definition,
-                              pmid                = x$pmid,
-                              domain              = x$domain,
-                              terminology         = x$terminology,
-                              concept_term        = x$concept_term,
-                              regexes             = x$regexes)
+        if (x$domain == "Procedure") {
 
-          mod_concept_server(id                   = clean_id(x$id, check = TRUE),
-                             concept_name         = x$name,
-                             regexes              = x$regexes,
-                             user                 = user)
+          rv$procedure_uis <- c(rv$procedure_uis, list(m))
 
-          if (x$domain == "Procedure") {
-
-            procedure_ui_list <- c(procedure_ui_list, list(m))
-
-          } else {
-
-            diagnosis_ui_list <- c(diagnosis_ui_list, list(m))
-
-          }
-
-          # create the derived phenotypes uis
         } else {
 
-          m <- mod_derived_ui("derived")
-
-          mod_derived_server("derived")
-
-          derived_ui_list <- c(derived_ui_list, list(m))
+          rv$diagnosis_uis <- c(rv$diagnosis_uis, list(m))
 
         }
 
+        # create the derived phenotypes uis
+      } else {
+
+        m <- mod_derived_ui("derived")
+        rv$derived_uis <- c(rv$derived_uis, list(m))
+        mod_derived_server("derived")
+
       }
 
-      # unpack the list into the menu panel
-      menu <- navlistPanel(home,
-                           "Diseases / syndromes",
-                           !!!diagnosis_ui_list,
-                           "Procedures",
-                           !!!procedure_ui_list,
-                           "Derived",
-                           !!!derived_ui_list,
-                           widths = c(3, 9))
-
-      # return the menu panel
-      return(menu)
-    })
-
-    # hide login and show main
-    shinyjs::hide("login_screen")
-    shinyjs::show("main_content")
+    }
   }
+
+
+  # --------------------------
+  # Render UI function
+  # --------------------------
+  output$main_ui <- renderUI({
+
+    req(rv$home_ui, rv$diagnosis_uis, rv$derived_uis)
+
+    # unpack the list into the menu panel
+    menu <- navlistPanel(!!!rv$home_ui,
+                         "Diseases / syndromes",
+                         !!!rv$diagnosis_uis,
+                         "Procedures",
+                         !!!rv$procedure_uis,
+                         "Derived",
+                         !!!rv$derived_uis,
+                         widths = c(3, 9))
+
+    # return the menu panel
+    return(menu)
+  })
+
 
 }

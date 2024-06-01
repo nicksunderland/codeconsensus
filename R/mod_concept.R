@@ -78,7 +78,6 @@ mod_concept_server <- function(id, concept_name, regexes, user){
       return(res$CONCEPT_ID)
     })
 
-
     # the code ids for this module
     code_ids <- reactive({
       print("code_ids <- reactive")
