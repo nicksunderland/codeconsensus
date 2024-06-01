@@ -31,107 +31,79 @@ mod_home_ui <- function(id){
                    hr(),
                    actionButton(ns("refresh"), "Refresh"),
                    # graphs
-                   plotOutput(ns("cohens_kappa_plot"))
+                   shinycssloaders::withSpinner(
+                     plotOutput(ns("kappa_plot")),
+                     type = 8
+                   )
   )
 }
 
 #' home Server Functions
 #' @import ggplot2
 #' @noRd
-mod_home_server <- function(id, username){
+mod_home_server <- function(id, concept_names){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    # create a reactive to get the selected codes
-    selected_summary <- reactive({
+    # create a reactive to calculate the Fleiss' kappa
+    kappa <- reactive({
 
       input$refresh # will trigger a repull of data
 
-      sql <- glue::glue("
-        WITH user_data AS (
-            SELECT
-                '{username}' AS USERNAME,
-                0 AS SELECTED,
-                CODES.CODE_ID,
-                CONCEPTS.CONCEPT_ID
-            FROM
-                CODES
-            CROSS JOIN
-                CONCEPTS
-        ),
-        selected_data AS (
-            SELECT
-                SELECTED.USERNAME,
-                SELECTED.SELECTED,
-                CODES.CODE_ID,
-                CONCEPTS.CONCEPT_ID
-            FROM
-                SELECTED
-            INNER JOIN
-                CODES ON SELECTED.CODE_ID = CODES.CODE_ID
-            INNER JOIN
-                CONCEPTS ON SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
-            UNION ALL
-            SELECT
-                USERNAME,
-                NULL AS SELECTED,
-                CODE_ID,
-                CONCEPT_ID
-            FROM
-                user_data
-            WHERE
-                USERNAME = '{username}' AND
-                NOT EXISTS (
-                    SELECT 1
-                    FROM SELECTED
-                    WHERE USERNAME = '{username}' AND
-                          SELECTED.CODE_ID = user_data.CODE_ID AND
-                          SELECTED.CONCEPT_ID = user_data.CONCEPT_ID
-                )
-        )
-        SELECT
-            CASE WHEN selected_data.USERNAME = '{username}' THEN 'USER' ELSE 'OTHER_USERS' END AS USER_CATEGORY,
-            selected_data.CONCEPT_ID,
-            CONCEPTS.CONCEPT_NAME,
-            AVG(selected_data.SELECTED) AS AVG_SELECTED,
-            COUNT(DISTINCT selected_data.USERNAME) AS NUM_RATERS
-        FROM
-            selected_data
-        INNER JOIN
-            CONCEPTS ON selected_data.CONCEPT_ID = CONCEPTS.CONCEPT_ID
-        GROUP BY
-            USER_CATEGORY,
-            selected_data.CONCEPT_ID,
-            CONCEPTS.CONCEPT_NAME
-    ")
+      names <- paste0("'", concept_names, "'", collapse = ", ")
+      sql <- glue::glue("SELECT
+                            SELECTED.USERNAME,
+                            SELECTED.SELECTED,
+                            CODES.CODE,
+                            CONCEPTS.CONCEPT_NAME
+                         FROM
+                            SELECTED
+                         INNER JOIN
+                            CODES ON SELECTED.CODE_ID = CODES.CODE_ID
+                         INNER JOIN
+                            CONCEPTS ON SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
+                         WHERE
+                            CONCEPTS.CONCEPT_NAME IN ({names})")
+
       res <- query_db(sql, type = "get")
 
-      return(res)
+      res <- data.table::dcast(res, CODE + CONCEPT_NAME ~ USERNAME, value.var = "SELECTED", fill = NA)
+
+      calc_fleiss_kappa <- function(ratings_matrix) {
+        N <- nrow(ratings_matrix)
+        k <- ncol(ratings_matrix)
+
+        p <- rowSums(ratings_matrix, na.rm = TRUE) / k
+        category_counts <- colSums(t(ratings_matrix), na.rm = TRUE)
+        P <- category_counts / (N * k)
+
+        P_o <- mean(p^2 + (1 - p)^2)
+        P_e <- sum(P^2)
+
+        kappa <- (P_o - P_e) / (1 - P_e)
+        return(kappa)
+      }
+
+      kappas <- res[, .(kappa = calc_fleiss_kappa(as.matrix(.SD[, -c("CODE"), with = FALSE]))), by = "CONCEPT_NAME"]
+
+      return(kappas)
     })
 
-    # Cohen's kappa
-    cohens_kappa_plot <- reactive({
 
-      summary <- data.table::copy(selected_summary())
-      summary <- data.table::dcast(summary, CONCEPT_NAME ~ USER_CATEGORY, value.var = c("AVG_SELECTED", "NUM_RATERS"))
-      summary[, Po := pmin(AVG_SELECTED_USER, AVG_SELECTED_OTHER_USERS) + (1 - pmax(AVG_SELECTED_USER, AVG_SELECTED_OTHER_USERS))]
-      summary[, Pe := (1 - pmax(AVG_SELECTED_USER, AVG_SELECTED_OTHER_USERS)) * pmin(AVG_SELECTED_USER, AVG_SELECTED_OTHER_USERS) + pmax(AVG_SELECTED_USER, AVG_SELECTED_OTHER_USERS) * (1 - pmin(AVG_SELECTED_USER, AVG_SELECTED_OTHER_USERS))]
-      summary[, kappa := (Po - Pe) / (1 - Pe)]
 
-      # plotting
+    output$kappa_plot <- renderPlot({
+
       breaks <- c(0, 0.2, 0.4, 0.6, 0.8, 1)
       labels <- c("0 - Poor", "0.2 - Fair", "0.4 - Moderate", "0.6 - Substantial", "0.8 - Almost perfect", "1.0 - Perfect")
-      ggplot2::ggplot(summary, ggplot2::aes(y = as.factor(CONCEPT_NAME),
+      ggplot2::ggplot(kappa(), ggplot2::aes(y = as.factor(CONCEPT_NAME),
                                             x = kappa,
                                             fill = kappa)) +
         ggplot2::geom_col() +
-        ggplot2::geom_text(ggplot2::aes(label = paste0("*", NUM_RATERS_OTHER_USERS)), hjust = -0.2) +
         ggplot2::scale_fill_gradient2(low = scales::muted("red"),
                                       mid = "white",
                                       high = scales::muted("blue"), limits = c(0,1), midpoint = 0.5) +
-        ggplot2::labs(title = paste0("Agreement for user: ", username),
-                      subtitle = "*number of other raters",
-                      x     = "Agreement (Cohen's kappa)",
+        ggplot2::labs(title = "Inter-rater agreement",
+                      x     = "Agreement (Fleiss' kappa)",
                       y     = "Concept") +
         ggplot2::scale_x_continuous(breaks = breaks, labels = labels, limits = c(0,1)) +
         ggplot2::theme_minimal() +
@@ -139,17 +111,6 @@ mod_home_server <- function(id, username){
 
     })
 
-    output$cohens_kappa_plot <- renderPlot({
-
-      cohens_kappa_plot()
-
-    })
-
   })
 }
 
-## To be copied in the UI
-# mod_home_ui("home_1")
-
-## To be copied in the server
-# mod_home_server("home_1")

@@ -1,0 +1,15 @@
+id: restrictive_cardiomyopathy
+name: Restrictive cardiomyopathy
+definition: |
+  Restrictive cardiomyopathy (RCM) is defined as restrictive left and/or
+  RV pathophysiology in the presence of normal or reduced diastolic volumes
+  (of one or both ventricles), normal or reduced systolic volumes,
+  and normal ventricular wall thickness. (ESC, 2023)
+pmid: NA
+domain: Disorder
+terminology: SNOMED
+concept_id: "415295002"
+concept_term: Hypertrophic cardiomyopathy
+regexes:
+  - "415295002"
+  - "(?i)(restrictive|constrictive) cardiomyopathy"

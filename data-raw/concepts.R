@@ -7,7 +7,7 @@ library(xml2)
 devtools::load_all()
 source(system.file("data-raw", "make_trees.R", package = "hfphenotyping"))
 
-OVERWRITE = T
+OVERWRITE = F
 
 # first we need the data sources, which are the SNOMED, ICD-10, and OPCS codes from the NHS
 # TRUD website (https://isd.digital.nhs.uk/trud). You will need an account set up.
@@ -37,7 +37,7 @@ for (config in configs) {
 
   conf    <- yaml::read_yaml(config)
   outfile <- file.path(dirname(config), paste0(conf$id, ".RDS"))
-  regex   <- paste0(conf$regexes, collapse = "|")
+  regex   <- paste0("(", conf$regexes, ")", collapse = "|")
   folder_icon <- "fa fa-folder"
 
 

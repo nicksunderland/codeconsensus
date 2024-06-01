@@ -26,7 +26,11 @@ query_db <- function(query_str = NULL, type = "get", table = NULL, value = NULL)
   # get the results
   if (type == "get") {
 
-    results <- RJDBC::dbGetQuery(con, query_str)
+    if (is.null(value)) {
+      results <- RJDBC::dbGetQuery(con, query_str)
+    } else {
+      results <- do.call(RJDBC::dbGetQuery, c(list(con, query_str), unname(value)))
+    }
     results <- data.table::as.data.table(results)
 
   } else if (type == "read") {

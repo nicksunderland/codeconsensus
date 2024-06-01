@@ -1,0 +1,19 @@
+id: "congenital_heart_disease"
+name: "Congenital heart disease"
+definition: |
+  Congenital heart disease is a fault or problem with the heart that's there from birth.
+pmid: NA
+domain: Disorder
+terminology: SNOMED
+concept_id: "13213009"
+concept_term: "Congenital heart disease"
+regexes:
+  - "13213009"
+  - "(?i)congenital heart disease"
+  - "(?i)congenital .*(heart|cardiac)"
+  - "(?i)congenital .*(pulmonary|tricuspid|aortic|mitral) .*valves?"
+  - "(?i)(congenital|transposition) .*great (arter[y|ies]|veins?)"
+  - "(?i)fontan|norwood|fallot|blalock|mustard|senning|nikaidoh|jatene|rastelli"
+  - "(?i)(double outlet|single) .*ventricle"
+  - "(?i)(atrial|ventric[ulare]+|aortopulmonary) septal defect"
+  - "(?i)cor triatriatum|truncus arteriosus"

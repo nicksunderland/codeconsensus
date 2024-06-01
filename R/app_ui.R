@@ -3,19 +3,45 @@
 #' @param request Internal parameter for `{shiny}`.
 #'     DO NOT REMOVE.
 #' @import shiny
+#' @import shinyjs
 #' @noRd
 app_ui <- function(request) {
   tagList(
     # Leave this function for adding external resources
     golem_add_external_resources(),
+    # Initialize shinyjs
+    shinyjs::useShinyjs(),
     # Your application UI logic
     fluidPage(
-      title = "Phenotyping",
-      titlePanel("Phenotyping by consensus"),
-      h6("bug reports: nicholas.sunderland@bristol.ac.uk"),
-      uiOutput("user_info"),
+      title = "CodeConsensus",
+      # top bar
+      titlePanel("CodeConsensus"),
+      fluidRow(column(6, h6("bug reports: nicholas.sunderland@bristol.ac.uk")),
+               column(5, uiOutput("user_info", class = "text-right")),
+               column(1, actionLink("login_page", "Login"))),
       hr(),
-      uiOutput("menu")
+      # login screen
+      div(id = "login_screen",
+          fluidRow(
+            column(12, offset = 0, align = "center",
+                   radioButtons("project", "Project",
+                                inline = TRUE,
+                                choices = list("ESC computable guideline" = "esc_guideline",
+                                               "NIH cardiomyopathy" = "nih_cardiomyopathy",
+                                               "Cardiovascular initiative" = "cv_initiative")),
+                   hr(),
+                   actionButton("enter_btn", "Enter (view only)"),
+                   hr(),
+                   p("or"),
+                   hr(),
+                   textInput("username", NULL, width = "25%", placeholder = "username"),
+                   passwordInput("password", NULL, width = "25%", placeholder = "password"),
+                   actionButton("login_btn", "Login")
+            )
+          )
+      ),
+      # placeholder for dynamic UI
+      div(id = "main_content", uiOutput("main_ui"), style = "display:none;")
     )
   )
 }

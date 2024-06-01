@@ -1,0 +1,14 @@
+id: "amyloidosis"
+name: "Amyloidosis"
+definition: |
+  Amyloidosis is a disease characterized by a buildup of abnormal amyloid deposits in the body.
+pmid: NA
+domain: Disorder
+terminology: SNOMED
+concept_id: "17602002"
+concept_term: "Valvular heart disease"
+regexes:
+  - "17602002"
+  - "16573007"
+  - "(?i)(cardiac )?amyloidosis"
+

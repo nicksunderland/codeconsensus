@@ -1,0 +1,7 @@
+id: "cv_initiative"
+name: "Cardiovascular initiative"
+concepts:
+  - "heart_failure.yaml"
+  - "dilated_cardiomyopathy.yaml"
+  - "hypertrophic_cardiomyopathy.yaml"
+  - "restrictive_cardiomyopathy.yaml"

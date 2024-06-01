@@ -8,7 +8,7 @@ Imports:
     config (>= 0.3.2),
     RJDBC,
     data.table,
-    shinymanager,
+    shinyjs,
     golem (>= 0.4.1),
     yaml,
     shiny (>= 1.8.1.1),
