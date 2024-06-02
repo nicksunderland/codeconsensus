@@ -246,7 +246,7 @@ mod_concept_server <- function(id, concept_name, regexes, user){
     # CONTROLS
     # -----------------------------
     # save button
-    observeEvent(input$save, {
+    session$userData$observer_store[[id]] <- observeEvent(input$save, {
       print("save button")
       save(tree = input$tree, concept_id = concept_id(), comments = input$user_comments, username = user[["username"]], is_rater = user[["is_rater"]])
     })

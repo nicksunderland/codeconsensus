@@ -15,12 +15,14 @@ app_server <- function(input, output, session) {
   # --------------------------
   # Reactive values
   # --------------------------
+  # user information
   user <- reactiveValues(username = NULL, is_rater = NULL)
 
-  rv <- reactiveValues(home_ui       = list(NULL),
-                       diagnosis_uis = list(NULL),
-                       procedure_uis = list(NULL),
-                       derived_uis   = list(NULL))
+  # lists of the different types of ui
+  rv <- reactiveValues(home_ui       = list(),
+                       diagnosis_uis = list(),
+                       procedure_uis = list(),
+                       derived_uis   = list())
 
   # --------------------------
   # Enter (view only) button
@@ -95,6 +97,37 @@ app_server <- function(input, output, session) {
   # --------------------------
   make_uis <- function(project) {
 
+    # delete old uis if present
+    if (any(sapply(reactiveValuesToList(rv), length) > 0)) {
+      print("cleaning up / deleting old modules")
+
+      # for each type of module
+      for (v in names(rv)) {
+
+        # for each concept module
+        for (id in names(rv[[v]])) {
+
+          # remove the UI
+          removeUI(selector = paste0("#", id))
+
+          # remove the inputs
+          invisible(lapply(grep(id, names(input), value = TRUE), function(i) { .subset2(input, "impl")$.values$remove(i) }))
+
+          # remove the observers, names still exist so must clear the list after this nested loop
+          lapply(session$userData$observer_store, function(i) { i$destroy() })
+
+        }
+
+        # empty the module type list
+        rv[[v]] <- list()
+
+      }
+
+      # clear the observer store list
+      session$userData$observer_store <- NULL
+
+    }
+
     # get the concepts for this project
     project_config <- system.file("projects", paste0(project, ".yaml"),  package = "hfphenotyping")
     config         <- yaml::read_yaml(project_config)
@@ -103,7 +136,7 @@ app_server <- function(input, output, session) {
     concepts       <- lapply(concepts_files, function(x) yaml::read_yaml(x))
 
     # create the home ui
-    rv$home_ui <- c(rv$home_ui, list(mod_home_ui("home")))
+    rv$home_ui <- c(rv$home_ui, list(home = mod_home_ui("home")))
     mod_home_server("home", concept_names = sapply(concepts, function(x) x$name))
 
     for (x in concepts) {
@@ -119,6 +152,7 @@ app_server <- function(input, output, session) {
                             terminology         = x$terminology,
                             concept_term        = x$concept_term,
                             regexes             = x$regexes)
+        setNames(m, clean_id(x$id, check = TRUE))
 
         mod_concept_server(id                   = clean_id(x$id, check = TRUE),
                            concept_name         = x$name,
@@ -139,6 +173,7 @@ app_server <- function(input, output, session) {
       } else {
 
         m <- mod_derived_ui("derived")
+        setNames(m, clean_id(x$id, check = TRUE))
         rv$derived_uis <- c(rv$derived_uis, list(m))
         mod_derived_server("derived")
 
@@ -156,13 +191,13 @@ app_server <- function(input, output, session) {
     req(rv$home_ui, rv$diagnosis_uis, rv$derived_uis)
 
     # unpack the list into the menu panel
-    menu <- navlistPanel(!!!rv$home_ui,
+    menu <- navlistPanel(!!!unname(rv$home_ui),
                          "Diseases / syndromes",
-                         !!!rv$diagnosis_uis,
+                         !!!unname(rv$diagnosis_uis),
                          "Procedures",
-                         !!!rv$procedure_uis,
+                         !!!unname(rv$procedure_uis),
                          "Derived",
-                         !!!rv$derived_uis,
+                         !!!unname(rv$derived_uis),
                          widths = c(3, 9))
 
     # return the menu panel
