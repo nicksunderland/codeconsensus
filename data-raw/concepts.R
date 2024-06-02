@@ -7,7 +7,7 @@ library(xml2)
 devtools::load_all()
 source(system.file("data-raw", "make_trees.R", package = "hfphenotyping"))
 
-OVERWRITE = F
+OVERWRITE = TRUE
 
 # first we need the data sources, which are the SNOMED, ICD-10, and OPCS codes from the NHS
 # TRUD website (https://isd.digital.nhs.uk/trud). You will need an account set up.
@@ -27,10 +27,9 @@ if (!file.exists(SNOMED_RDS)) {
 configs <- list.files("/Users/xx20081/git/hfphenotyping/inst/concepts", pattern = ".*\\.(yaml|yml)$", full.names = TRUE)
 configs <- configs[!file.info(configs)$isdir]
 
-# NHS digital ICD10, OPCS4 and SNOMED counts
-icd10_counts  <- fread(file.path(dir, "NHS_digital_code_counts", "icd10_counts.tsv"))
-opcs4_counts  <- fread(file.path(dir, "NHS_digital_code_counts", "opcs4_counts.tsv"))
-snomed_counts <- fread(file.path(dir, "NHS_digital_code_counts", "snomed_counts.tsv"))
+# NHS digital & UKBB ICD10, OPCS4 and SNOMED counts
+nhs_counts  <- nhs_counts
+ukbb_counts <- ukbb_counts
 
 # produce the trees for each config
 for (config in configs) {
@@ -59,7 +58,6 @@ for (config in configs) {
     concept        <- SNOMEDconcept(regex, SNOMED = SNOMED, exact = FALSE)
     hierarch_codes <- showCodelistHierarchy(concept)
     snomed         <- snomed_tree(hierarch_codes)
-    snomed         <- annotate_tree(snomed, snomed_counts[, .(code, code_type="SNOMED", nhs_counts=count)], value_col = "nhs_counts", on = c("code" = "code", "code_type" = "code_type"), no_match = NA_real_)
     attr(snomed, "stselected") <- FALSE
     attr(snomed, "stdisabled") <- TRUE
     attr(snomed, "sticon") <- folder_icon
@@ -73,7 +71,6 @@ for (config in configs) {
     icd10 <- xml2::as_list(icd10)
     icd10 <- icd10[[1]]
     icd10 <- icd10_tree(icd10, regex = regex)
-    icd10 <- annotate_tree(icd10, icd10_counts[, .(code, code_type="ICD10", nhs_counts=count)], value_col = "nhs_counts", on = c("code" = "code", "code_type" = "code_type"), no_match = NA_real_)
     attr(icd10, "stselected") <- FALSE
     attr(icd10, "stdisabled") <- TRUE
     attr(icd10, "sticon") <- folder_icon
@@ -84,12 +81,15 @@ for (config in configs) {
     cat("[i] Extracting OPCS-4\n")
     opcs <- fread(file.path(dir, "OPCS410 Data files txt", "OPCS410 CodesAndTitles Nov 2022 V1.0.txt"), col.names = c("CODE", "DESCRIPTION"), header = FALSE)
     opcs <- opcs_tree(opcs, regex = regex)
-    opcs <- annotate_tree(opcs, opcs4_counts[, .(code, code_type="OPCS4", nhs_counts=count)], value_col = "nhs_counts", on = c("code" = "code", "code_type" = "code_type"), no_match = NA_real_)
     attr(opcs, "stselected") <- FALSE
     attr(opcs, "stdisabled") <- TRUE
     attr(opcs, "sticon") <- folder_icon
     label <- paste0(attr(opcs, "code"), " | ", attr(opcs, "description"))
     tree[[label]] <- opcs
+
+    # annotate numbers
+    tree <- annotate_tree(tree, nhs_counts[,  .(code, code_type, nhs_counts=count) ], value_col = "nhs_counts",  on = c("code" = "code", "code_type" = "code_type"), no_match = NA_real_)
+    tree <- annotate_tree(tree, ukbb_counts[, .(code, code_type, ukbb_counts=count)], value_col = "ukbb_counts", on = c("code" = "code", "code_type" = "code_type"), no_match = NA_real_)
 
     # save
     cat("[i] saving .RDS file\n")

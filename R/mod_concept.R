@@ -27,7 +27,7 @@ mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, con
            # user comments section
            textAreaInput(ns("user_comments"), label = "Comments", width = "100%"),
            # selection boxes
-           fluidRow(column(4, selectInput(ns("plot_type"), label = "Plot selection", choices = c("off", "agreement", "counts", "percentage", "concurrency (counts)", "concurrency (%)"))),
+           fluidRow(column(4, selectInput(ns("plot_type"), label = "Plot selection", choices = c("off", "counts"))),
                     column(4, selectInput(ns("code_display"), label = "Code display", choices = c("nhs_counts", "ukbb_counts", "default"))),
                     column(4, downloadButton(ns("download"), label = "Download codes"), style = "margin-top: 25px;")),
            # conditional plot panel
@@ -60,6 +60,7 @@ mod_concept_server <- function(id, concept_name, regexes, user){
     # reactive values / expressions
     # -----------------------------
     message      <- reactiveVal("")
+    concept_name <- reactiveVal(concept_name)
     tree         <- reactiveVal(NULL)
     # concept_name <- reactiveVal(concept_name)
 
@@ -73,7 +74,7 @@ mod_concept_server <- function(id, concept_name, regexes, user){
 
     # the concept id for this module
     concept_id <- reactive({
-      sql <- glue::glue("SELECT CONCEPT_ID FROM CONCEPTS WHERE CONCEPT_NAME = '{concept_name}'")
+      sql <- glue::glue("SELECT CONCEPT_ID FROM CONCEPTS WHERE CONCEPT_NAME = '{concept_name()}'")
       res <- query_db(sql, type = "get")
       return(res$CONCEPT_ID)
     })
@@ -108,10 +109,8 @@ mod_concept_server <- function(id, concept_name, regexes, user){
                               SELECTED
                            INNER JOIN
                               CODES ON SELECTED.CODE_ID = CODES.CODE_ID
-                           INNER JOIN
-                              CONCEPTS ON SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
                            WHERE
-                              USERNAME = '{user[['username']]}' AND CONCEPT_NAME = '{concept_name}' AND CODE IN ({tree_codes})")
+                              SELECTED.USERNAME = '{user[['username']]}' AND SELECTED.CONCEPT_ID = '{concept_id()}' AND CODES.CODE IN ({tree_codes})")
 
       } else {
 
@@ -125,12 +124,10 @@ mod_concept_server <- function(id, concept_name, regexes, user){
                               SELECTED
                            INNER JOIN
                               CODES ON SELECTED.CODE_ID = CODES.CODE_ID
-                           INNER JOIN
-                              CONCEPTS ON SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
                            WHERE
-                              CONCEPT_NAME = '{concept_name}' AND CODE IN ({tree_codes})
+                              SELECTED.CONCEPT_ID = '{concept_id()}' AND CODES.CODE IN ({tree_codes})
                            GROUP BY
-                              CONCEPTS.CONCEPT_NAME, CODES.CODE, CODES.CODE_TYPE")
+                              SELECTED.CONCEPT_ID, CODES.CODE, CODES.CODE_TYPE")
 
       }
 
@@ -165,6 +162,7 @@ mod_concept_server <- function(id, concept_name, regexes, user){
     # code counts
     counts <- reactive({
       req(tree(), input$code_display)
+
       # get the internal package data (see /data folder)
       tree_codes <- data.table::data.table(code      = unlist(tree_attributes(tree(), "code")),
                                            code_type = unlist(tree_attributes(tree(), "code_type")))
@@ -178,9 +176,9 @@ mod_concept_server <- function(id, concept_name, regexes, user){
         code_counts <- tree_codes[ukbb_counts, count := i.count, on = "code"]
 
       }
-      code_counts <- code_counts[!is.na(count), ]
       code_counts <- code_counts[order(-count), head(.SD, 20), by = code_type]
       code_counts[, code := factor(code, levels = code[order(code_type, count)])]
+      code_counts <- code_counts[!is.na(count), ]
       return(code_counts)
     })
 
@@ -207,6 +205,8 @@ mod_concept_server <- function(id, concept_name, regexes, user){
 
         # if a rater, save comments and codes
         if (is_rater) {
+
+          # browser()
 
           # get the current code select status
           current <- data.table::data.table(USERNAME   = username,
@@ -251,21 +251,6 @@ mod_concept_server <- function(id, concept_name, regexes, user){
       save(tree = input$tree, concept_id = concept_id(), comments = input$user_comments, username = user[["username"]], is_rater = user[["is_rater"]])
     })
 
-    # changing display of the codes, save tree first
-    # observeEvent(input$code_display, {
-    #   req(input$tree)
-    #   print("code_display select")
-    #
-    #   # run save
-    #   res <- save(input$tree, input$user_comments, concept_id(), username)
-    #
-    #   # report
-    #   if (res) {
-    #     message("Save successful")
-    #   } else {
-    #     message("Error saving...")
-    #   }
-    # })
 
     # download the codes
     output$download <- downloadHandler(
@@ -289,13 +274,17 @@ mod_concept_server <- function(id, concept_name, regexes, user){
       # render comments too
       updateTextAreaInput(session = session, "user_comments", value = comments())
 
+
+
       # load if needed
       if (is.null(tree())) {
         tree(load_base_tree())
       }
 
       # get tree
-      # browser()
+      # if (user[["username"]] == "default") {
+      #   browser()
+      # }
 
       tree <- modify_tree(tree(), selected(), label_option = input$code_display, disable_tree = is.null(user[["is_rater"]]) || !user[["is_rater"]])
       # tree <- rename_tree(tree, label_option = input$code_display)
@@ -311,6 +300,8 @@ mod_concept_server <- function(id, concept_name, regexes, user){
 
     # plot
     output$plot <- renderPlot({
+
+      validate(need(nrow(counts()) > 0, "No data available."))
 
       if (input$plot_type == "counts") {
         ggplot2::ggplot(counts(), ggplot2::aes(x = count, y = code, fill = code_type)) +
