@@ -7,7 +7,7 @@ library(xml2)
 devtools::load_all()
 source(system.file("data-raw", "make_trees.R", package = "hfphenotyping"))
 
-OVERWRITE = TRUE
+OVERWRITE = F
 
 # first we need the data sources, which are the SNOMED, ICD-10, and OPCS codes from the NHS
 # TRUD website (https://isd.digital.nhs.uk/trud). You will need an account set up.
@@ -40,6 +40,25 @@ for (config in configs) {
   folder_icon <- "fa fa-folder"
 
 
+  # populate the CONCEPTS database
+  sql <- glue::glue("SELECT * FROM CONCEPTS WHERE CONCEPT = '{conf$id}' AND CONCEPT_CODE = '{conf$concept_id}'")
+  this_concept <- query_db(sql, type = "get")
+  if (nrow(this_concept) == 0) {
+    sql     <- "SELECT MAX(CONCEPT_ID) AS max_concept_id FROM CONCEPTS"
+    max_id  <- query_db(sql, type = "get")$MAX_CONCEPT_ID
+    entry   <- list(CONCEPT      = conf$id,
+                    CONCEPT_ID   = if (is.na(max_id)) 1 else max_id + 1,
+                    CONCEPT_CODE = conf$concept_id)
+    cols <- paste0(names(entry), collapse = ", ")
+    placeholders <- paste0(rep('?', length(entry)), collapse = ", ")
+    sql <- glue::glue("INSERT INTO CONCEPTS ({cols}) VALUES ({placeholders})")
+    query_db(query_str = sql, type = "update", value = entry)
+  }
+
+  # if a derived concept, exit here
+  if (conf$domain == "Derived") next
+
+  # produce the tree
   if (!OVERWRITE & file.exists(outfile)) {
 
     tree <- readRDS(outfile)
@@ -95,21 +114,6 @@ for (config in configs) {
     cat("[i] saving .RDS file\n")
     saveRDS(tree, outfile)
 
-  }
-
-  # populate the CONCEPTS database
-  sql <- glue::glue("SELECT * FROM CONCEPTS WHERE CONCEPT_NAME = '{conf$name}' AND CONCEPT_CODE = '{conf$concept_id}'")
-  this_concept <- query_db(sql, type = "get")
-  if (nrow(this_concept) == 0) {
-    sql     <- "SELECT MAX(CONCEPT_ID) AS max_concept_id FROM CONCEPTS"
-    max_id  <- query_db(sql, type = "get")$MAX_CONCEPT_ID
-    entry   <- list(CONCEPT_NAME = conf$name,
-                    CONCEPT_ID   = if (is.na(max_id)) 1 else max_id + 1,
-                    CONCEPT_CODE = conf$concept_id)
-    cols <- paste0(names(entry), collapse = ", ")
-    placeholders <- paste0(rep('?', length(entry)), collapse = ", ")
-    sql <- glue::glue("INSERT INTO CONCEPTS ({cols}) VALUES ({placeholders})")
-    query_db(query_str = sql, type = "update", value = entry)
   }
 
   # populate the CODE database

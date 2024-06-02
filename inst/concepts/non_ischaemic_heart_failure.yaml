@@ -12,4 +12,4 @@ regexes:
 include:
   - "heart_failure"
 exclude:
-  - "non_ischaemic_heart_failure"
+  - "myocardial_infarction"

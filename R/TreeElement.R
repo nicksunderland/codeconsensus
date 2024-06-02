@@ -18,6 +18,7 @@ TreeElement <- function(code, code_type, description, sticon = NULL, stselected 
     code_type  = code_type,
     description= description,
     stselected = stselected,
+    stdisabled = stdisabled,
     stopened   = stopened,
     sticon     = sticon
   )

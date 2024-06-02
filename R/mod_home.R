@@ -41,7 +41,7 @@ mod_home_ui <- function(id){
 #' home Server Functions
 #' @import ggplot2
 #' @noRd
-mod_home_server <- function(id, concept_names){
+mod_home_server <- function(id, concepts){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -50,12 +50,12 @@ mod_home_server <- function(id, concept_names){
 
       input$refresh # will trigger a repull of data
 
-      names <- paste0("'", concept_names, "'", collapse = ", ")
+      names <- paste0("'", concepts, "'", collapse = ", ")
       sql <- glue::glue("SELECT
                             SELECTED.USERNAME,
                             SELECTED.SELECTED,
                             CODES.CODE,
-                            CONCEPTS.CONCEPT_NAME
+                            CONCEPTS.CONCEPT
                          FROM
                             SELECTED
                          INNER JOIN
@@ -63,11 +63,11 @@ mod_home_server <- function(id, concept_names){
                          INNER JOIN
                             CONCEPTS ON SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
                          WHERE
-                            CONCEPTS.CONCEPT_NAME IN ({names})")
+                            CONCEPTS.CONCEPT IN ({names})")
 
       res <- query_db(sql, type = "get")
 
-      res <- data.table::dcast(res, CODE + CONCEPT_NAME ~ USERNAME, value.var = "SELECTED", fill = NA)
+      res <- data.table::dcast(res, CODE + CONCEPT ~ USERNAME, value.var = "SELECTED", fill = NA)
 
       calc_fleiss_kappa <- function(ratings_matrix) {
         N <- nrow(ratings_matrix)
@@ -84,7 +84,7 @@ mod_home_server <- function(id, concept_names){
         return(kappa)
       }
 
-      kappas <- res[, .(kappa = calc_fleiss_kappa(as.matrix(.SD[, -c("CODE"), with = FALSE]))), by = "CONCEPT_NAME"]
+      kappas <- res[, .(kappa = calc_fleiss_kappa(as.matrix(.SD[, -c("CODE"), with = FALSE]))), by = "CONCEPT"]
 
       return(kappas)
     })
@@ -95,7 +95,7 @@ mod_home_server <- function(id, concept_names){
 
       breaks <- c(0, 0.2, 0.4, 0.6, 0.8, 1)
       labels <- c("0 - Poor", "0.2 - Fair", "0.4 - Moderate", "0.6 - Substantial", "0.8 - Almost perfect", "1.0 - Perfect")
-      ggplot2::ggplot(kappa(), ggplot2::aes(y = as.factor(CONCEPT_NAME),
+      ggplot2::ggplot(kappa(), ggplot2::aes(y = as.factor(CONCEPT),
                                             x = kappa,
                                             fill = kappa)) +
         ggplot2::geom_col() +

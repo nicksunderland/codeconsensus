@@ -3,7 +3,6 @@
 #' @param input,output,session Internal parameters for {shiny}.
 #'     DO NOT REMOVE.
 #' @import shiny
-#' @import shinymanager
 #' @import data.table
 #' @importFrom config get
 #' @importFrom yaml read_yaml
@@ -137,7 +136,7 @@ app_server <- function(input, output, session) {
 
     # create the home ui
     rv$home_ui <- c(rv$home_ui, list(home = mod_home_ui("home")))
-    mod_home_server("home", concept_names = sapply(concepts, function(x) x$name))
+    mod_home_server("home", concepts = sapply(concepts, function(x) x$id))
 
     for (x in concepts) {
 
@@ -153,10 +152,10 @@ app_server <- function(input, output, session) {
       setNames(m, clean_id(x$id, check = TRUE))
 
       mod_concept_server(id                   = clean_id(x$id, check = TRUE),
-                         concept_name         = x[["name"]],
                          include              = x[["include"]],
                          exclude              = x[["exclude"]],
-                         user                 = user)
+                         user                 = user,
+                         derived              = x[["domain"]] == "Derived")
 
       if (x$domain == "Procedure") {
 

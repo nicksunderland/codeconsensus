@@ -1,5 +1,12 @@
 Setting up database
 
+
+
+good blog:
+https://savvinov.com/2020/07/13/installing-r-shiny-server-on-oci-compute-instance-always-free-tier/
+
+
+
 |> Database homepage
 |> Network section
 | |> Turn off Mutual TLS (mTLS) authentication (set to Not required)

@@ -28,13 +28,13 @@ mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, con
            textAreaInput(ns("user_comments"), label = "Comments", width = "100%"),
            # selection boxes
            fluidRow(column(4, selectInput(ns("plot_type"), label = "Plot selection", choices = c("off", "counts"))),
-                    column(4, selectInput(ns("code_display"), label = "Code display", choices = c("nhs_counts", "ukbb_counts", "default"))),
+                    column(4, selectInput(ns("code_display"), label = "Code display", choices = c("default", "nhs_counts", "ukbb_counts"))),
                     column(4, downloadButton(ns("download"), label = "Download codes"), style = "margin-top: 25px;")),
            # conditional plot panel
            conditionalPanel(condition = paste0("input.plot_type != 'off'"), plotOutput(ns("plot")), ns = ns),
            # save and output messages
            fluidRow(column(12, tags$label("Save selection"))),
-           fluidRow(column(2, actionButton(ns("save"), "Save")),
+           fluidRow(column(2, actionButton(ns("save"), "Save/Refresh")),
                     column(8, textOutput(ns("message_box")))),
            # the tree
            shinycssloaders::withSpinner(
@@ -48,10 +48,11 @@ mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, con
 #' @title concept Server Functions
 #' @param id string, id of this module
 #' @param user reactiveValues, the current user
-#' @param concept_name string, the concept name specified in teh yaml config
+#' @param include string, vector of ids for the inclusion concepts
+#' @param exclude string, vector of ids for the exclusion concepts
 #' @importFrom glue glue
 #' @noRd
-mod_concept_server <- function(id, concept_name, include, exclude, user){
+mod_concept_server <- function(id, include, exclude, user, derived){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -59,11 +60,12 @@ mod_concept_server <- function(id, concept_name, include, exclude, user){
     # reactive values / expressions
     # -----------------------------
     message      <- reactiveVal("")
-    concept_name <- reactiveVal(concept_name)
+    concept      <- reactiveVal(concept)
+    subconcepts  <- reactiveVal(c(include, exclude))
     include_ids  <- reactiveVal(include)
     exclude_ids  <- reactiveVal(exclude)
+    derived      <- reactiveVal(derived)
     tree         <- reactiveVal(NULL)
-    # concept_name <- reactiveVal(concept_name)
 
     # the tree data
     load_base_tree <- reactive({
@@ -94,7 +96,7 @@ mod_concept_server <- function(id, concept_name, include, exclude, user){
           exclude[[paste0(attr(t, "code"), " | ", attr(t, "description"))]] <- t
         }
 
-        tree[[paste0(attr(include, "code"), " | ", attr(include, "description"))]] <- exclude
+        tree[[paste0(attr(exclude, "code"), " | ", attr(exclude, "description"))]] <- exclude
 
       }
 
@@ -102,9 +104,16 @@ mod_concept_server <- function(id, concept_name, include, exclude, user){
       return(tree)
     })
 
-    # the concept id for this module
     concept_id <- reactive({
-      sql <- glue::glue("SELECT CONCEPT_ID FROM CONCEPTS WHERE CONCEPT_NAME = '{concept_name()}'")
+      sql <- glue::glue("SELECT CONCEPT_ID FROM CONCEPTS WHERE CONCEPT = '{id}'")
+      res <- query_db(sql, type = "get")
+      return(res$CONCEPT_ID)
+    })
+
+    # the subconcept ids for this module
+    subconcept_ids <- reactive({
+      subconcepts <- paste0("'", subconcepts(), "'", collapse = ", ")
+      sql <- glue::glue("SELECT CONCEPT_ID FROM CONCEPTS WHERE CONCEPT IN ({subconcepts})")
       res <- query_db(sql, type = "get")
       return(res$CONCEPT_ID)
     })
@@ -130,6 +139,7 @@ mod_concept_server <- function(id, concept_name, include, exclude, user){
       if (!is.null(user[["username"]]) && user[["is_rater"]]) {
 
         # user logged in and is a rater
+        subconcept_ids <- paste0("'", subconcept_ids(), "'", collapse = ", ")
         sql <- glue::glue("SELECT
                               CODES.CODE,
                               CODES.CODE_TYPE,
@@ -140,11 +150,12 @@ mod_concept_server <- function(id, concept_name, include, exclude, user){
                            INNER JOIN
                               CODES ON SELECTED.CODE_ID = CODES.CODE_ID
                            WHERE
-                              SELECTED.USERNAME = '{user[['username']]}' AND SELECTED.CONCEPT_ID = '{concept_id()}' AND CODES.CODE IN ({tree_codes})")
+                              SELECTED.USERNAME = '{user[['username']]}' AND SELECTED.CONCEPT_ID IN ({subconcept_ids}) AND CODES.CODE IN ({tree_codes})")
 
       } else {
 
         # user is not a rater, present rater results
+        subconcept_ids <- paste0("'", subconcept_ids(), "'", collapse = ", ")
         sql <- glue::glue("SELECT
                               CODES.CODE,
                               CODES.CODE_TYPE,
@@ -155,7 +166,7 @@ mod_concept_server <- function(id, concept_name, include, exclude, user){
                            INNER JOIN
                               CODES ON SELECTED.CODE_ID = CODES.CODE_ID
                            WHERE
-                              SELECTED.CONCEPT_ID = '{concept_id()}' AND CODES.CODE IN ({tree_codes})
+                              SELECTED.CONCEPT_ID IN ({subconcept_ids}) AND CODES.CODE IN ({tree_codes})
                            GROUP BY
                               SELECTED.CONCEPT_ID, CODES.CODE, CODES.CODE_TYPE")
 
@@ -213,7 +224,7 @@ mod_concept_server <- function(id, concept_name, include, exclude, user){
     })
 
     # save function
-    save <- function(tree, concept_id, comments, username = NULL, is_rater = NULL) {
+    save <- function(tree, concept_id, comments, derived = FALSE, username = NULL, is_rater = NULL) {
       print("save function")
 
       # can only save things if logged in
@@ -234,9 +245,7 @@ mod_concept_server <- function(id, concept_name, include, exclude, user){
         res1 <- TRUE
 
         # if a rater, save comments and codes
-        if (is_rater) {
-
-          # browser()
+        if (is_rater & !derived) {
 
           # get the current code select status
           current <- data.table::data.table(USERNAME   = username,
@@ -278,7 +287,12 @@ mod_concept_server <- function(id, concept_name, include, exclude, user){
     # save button
     session$userData$observer_store[[id]] <- observeEvent(input$save, {
       print("save button")
-      save(tree = input$tree, concept_id = concept_id(), comments = input$user_comments, username = user[["username"]], is_rater = user[["is_rater"]])
+      save(tree       = input$tree,
+           concept_id = concept_id(),
+           comments   = input$user_comments,
+           username   = user[["username"]],
+           is_rater   = user[["is_rater"]],
+           derived    = derived())
     })
 
 
@@ -304,20 +318,12 @@ mod_concept_server <- function(id, concept_name, include, exclude, user){
       # render comments too
       updateTextAreaInput(session = session, "user_comments", value = comments())
 
-
-
       # load if needed
       if (is.null(tree())) {
         tree(load_base_tree())
       }
 
-      # get tree
-      # if (user[["username"]] == "default") {
-      #   browser()
-      # }
-
-      tree <- modify_tree(tree(), selected(), label_option = input$code_display, disable_tree = is.null(user[["is_rater"]]) || !user[["is_rater"]])
-      # tree <- rename_tree(tree, label_option = input$code_display)
+      tree <- modify_tree(tree(), selected(), label_option = input$code_display, disable_tree = is.null(user[["is_rater"]]) || !user[["is_rater"]] || derived())
 
       return(tree)
     })
