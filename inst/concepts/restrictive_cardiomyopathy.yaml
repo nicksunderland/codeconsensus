@@ -13,3 +13,6 @@ concept_term: Hypertrophic cardiomyopathy
 regexes:
   - "415295002"
   - "(?i)(restrictive|constrictive) cardiomyopathy"
+include:
+  - "restrictive_cardiomyopathy"
+exclude:

@@ -12,3 +12,6 @@ concept_term: Dilated cardiomyopathy
 regexes:
   - "399020009"
   - "(?i)dilated cardiomyopathy"
+include:
+  - "dilated_cardiomyopathy"
+exclude:

@@ -12,3 +12,6 @@ regexes:
   - "(?i)percutaneous coronary intervention"
   - "(?i)percutaneous .*angioplasty .*coronary"
   - "K[456][0359][0-9]"
+include:
+  - "procedure_perc_angioplasty_coronary"
+exclude:

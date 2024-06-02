@@ -17,3 +17,6 @@ regexes:
   - "(?i)(double outlet|single) .*ventricle"
   - "(?i)(atrial|ventric[ulare]+|aortopulmonary) septal defect"
   - "(?i)cor triatriatum|truncus arteriosus"
+include:
+  - "congenital_heart_disease"
+exclude:

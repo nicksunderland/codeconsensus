@@ -12,3 +12,6 @@ regexes:
   - "(?i)athero(ma|sclerosis) .*coronar(y|ies)"
   - "(?i)coronar(y|ies) .*athero(ma|sclerosis)"
   - "(?i)coronary artery disease"
+include:
+  - "atherosclerosis_coronary"
+exclude:

@@ -12,3 +12,6 @@ regexes:
   - "L1[89][0-9]"
   - "315362007"
   - "(?i)repair of thoracoabdominal aortic aneurysm"
+include:
+  - "open_aortic_intervention"
+exclude:

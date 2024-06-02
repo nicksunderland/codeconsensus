@@ -12,3 +12,6 @@ regexes:
   - "(?i)percutaneous transluminal angioplasty"
   - "L[567][1346][0-9]"
   - "(?i)percutaneous procedure on artery of extremity"
+include:
+  - "procedure_perc_angioplasty_peripheral"
+exclude:

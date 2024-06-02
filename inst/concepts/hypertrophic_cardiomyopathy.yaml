@@ -13,3 +13,6 @@ regexes:
   - "233873004"
   - "(?i)hypertrophic (obstructive )?cardiomyopathy"
   - "(?i)obstructive hypertrophic cardiomyopathy"
+include:
+  - "hypertrophic_cardiomyopathy"
+exclude:

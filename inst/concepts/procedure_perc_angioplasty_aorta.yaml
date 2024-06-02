@@ -13,3 +13,6 @@ regexes:
   - "L2[678][0-9]"
   - "444588006"
   - "(?i)endovascular repair of abdominal aortic aneurysm"
+include:
+  - "procedure_perc_angioplasty_aorta"
+exclude:

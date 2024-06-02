@@ -11,3 +11,6 @@ regexes:
   - "81817003"
   - "(?i)athero(ma|sclerosis) .*aort(ic|a)"
   - "(?i)aort(ic|a) .*athero(ma|sclerosis)"
+include:
+  - "atherosclerosis_aorta"
+exclude:

@@ -11,4 +11,6 @@ regexes:
   - "17602002"
   - "16573007"
   - "(?i)(cardiac )?amyloidosis"
-
+include:
+  - "amyloidosis"
+exclude:

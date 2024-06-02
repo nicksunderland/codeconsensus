@@ -14,3 +14,6 @@ regexes:
   - "(?i)heart failure"
   - "(?i)ventricular failure"
   - "(?i)biventricular cardiac pacemaker"
+include:
+  - "heart_failure"
+exclude:

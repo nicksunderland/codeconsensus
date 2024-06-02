@@ -10,3 +10,6 @@ concept_term: Age
 regexes:
   - "397659008"
   - "(?i)^age$"
+include:
+  - "age"
+exclude:

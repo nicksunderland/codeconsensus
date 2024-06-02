@@ -15,3 +15,6 @@ regexes:
   - "(?i)sub-?arachnoid hae?morrhae?ge"
   - "(?i)sub-?dural hae?morrhae?ge"
   - "(?i)extra-?dural hae?morrhae?ge"
+include:
+  - "stroke_haemorrhagic"
+exclude:

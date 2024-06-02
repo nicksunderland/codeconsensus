@@ -11,3 +11,6 @@ valueset_definition: ...
 regexes:
   - "22298006"
   - "myocardial infarction"
+include:
+  - "myocardial_infarction"
+exclude:

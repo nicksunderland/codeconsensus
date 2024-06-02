@@ -11,3 +11,6 @@ regexes:
   - "690791000119107"
   - "(?i)penetrating aortic ulcer"
   - "(?i)penetrating ulcer of aorta"
+include:
+  - "penetrating_ulcer_of_aorta"
+exclude:

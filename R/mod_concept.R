@@ -47,12 +47,11 @@ mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, con
 
 #' @title concept Server Functions
 #' @param id string, id of this module
-#' @param regexes string, regex pattern
 #' @param user reactiveValues, the current user
 #' @param concept_name string, the concept name specified in teh yaml config
 #' @importFrom glue glue
 #' @noRd
-mod_concept_server <- function(id, concept_name, regexes, user){
+mod_concept_server <- function(id, concept_name, include, exclude, user){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -61,14 +60,45 @@ mod_concept_server <- function(id, concept_name, regexes, user){
     # -----------------------------
     message      <- reactiveVal("")
     concept_name <- reactiveVal(concept_name)
+    include_ids  <- reactiveVal(include)
+    exclude_ids  <- reactiveVal(exclude)
     tree         <- reactiveVal(NULL)
     # concept_name <- reactiveVal(concept_name)
 
     # the tree data
     load_base_tree <- reactive({
       print("loading base tree")
-      tree_path <- system.file("concepts", paste0(id, ".RDS"), package = "hfphenotyping")
-      tree <- readRDS(tree_path)
+
+      # the base tree
+      tree <- TreeElement("Tree", "Tree", "", stdisabled = TRUE, sticon = "fa fa-folder", children = list())
+
+      # the inclusion concepts tree
+      include <- TreeElement("Include", "INCLUDE", "concepts", sticon = "fa fa-folder", stdisabled = TRUE)
+
+      # populate inclusion tree
+      for (id in include_ids()) {
+        tree_path <- system.file("concepts", paste0(id, ".RDS"), package = "hfphenotyping")
+        t <- TreeElement(sub("_", " ", id), "CONCEPT", "concept", stdisabled = TRUE, sticon = "fa fa-folder", children = readRDS(tree_path))
+        include[[paste0(attr(t, "code"), " | ", attr(t, "description"))]] <- t
+      }
+      tree[[paste0(attr(include, "code"), " | ", attr(include, "description"))]] <- include
+
+      # populate exclusion tree
+      if (length(exclude_ids()) > 0) {
+
+        exclude <- TreeElement("Exclude", "EXCLUDE", "concepts", sticon = "fa fa-folder", stdisabled = TRUE)
+
+        for (id in exclude_ids()) {
+          tree_path <- system.file("concepts", paste0(id, ".RDS"), package = "hfphenotyping")
+          t <- TreeElement(sub("_", " ", id), "CONCEPT", "concept", stdisabled = TRUE, sticon = "fa fa-folder", children = readRDS(tree_path))
+          exclude[[paste0(attr(t, "code"), " | ", attr(t, "description"))]] <- t
+        }
+
+        tree[[paste0(attr(include, "code"), " | ", attr(include, "description"))]] <- exclude
+
+      }
+
+      # return tree
       return(tree)
     })
 

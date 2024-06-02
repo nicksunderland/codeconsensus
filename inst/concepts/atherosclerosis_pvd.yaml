@@ -13,3 +13,6 @@ regexes:
   - "(?i).*athero(ma|sclerosis) .*arter(ies|y) .*extremities"
   - "(?i).*athero(ma|sclerosis) .*(renal|other) .*arter(ies|y)"
   - "(?i)generalized and unspecified atherosclerosis"
+include:
+  - "atherosclerosis_pvd"
+exclude:

@@ -142,45 +142,39 @@ app_server <- function(input, output, session) {
     for (x in concepts) {
 
       # create the diagnosis and procedure concepts
-      if (x$domain != "Derived") {
+      m <- mod_concept_ui(id                  = clean_id(x[["id"]], check = TRUE),
+                          title               = x[["name"]],
+                          definition          = x[["definition"]],
+                          pmid                = x[["pmid"]],
+                          domain              = x[["domain"]],
+                          terminology         = x[["terminology"]],
+                          concept_term        = x[["concept_term"]],
+                          regexes             = x[["regexes"]])
+      setNames(m, clean_id(x$id, check = TRUE))
 
-        m <- mod_concept_ui(id                  = clean_id(x$id, check = TRUE),
-                            title               = x$name,
-                            definition          = x$definition,
-                            pmid                = x$pmid,
-                            domain              = x$domain,
-                            terminology         = x$terminology,
-                            concept_term        = x$concept_term,
-                            regexes             = x$regexes)
-        setNames(m, clean_id(x$id, check = TRUE))
+      mod_concept_server(id                   = clean_id(x$id, check = TRUE),
+                         concept_name         = x[["name"]],
+                         include              = x[["include"]],
+                         exclude              = x[["exclude"]],
+                         user                 = user)
 
-        mod_concept_server(id                   = clean_id(x$id, check = TRUE),
-                           concept_name         = x$name,
-                           regexes              = x$regexes,
-                           user                 = user)
+      if (x$domain == "Procedure") {
 
-        if (x$domain == "Procedure") {
+        rv$procedure_uis <- c(rv$procedure_uis, list(m))
 
-          rv$procedure_uis <- c(rv$procedure_uis, list(m))
+      } else if (x$domain == "Derived") {
 
-        } else {
+        rv$derived_uis <- c(rv$derived_uis, list(m))
 
-          rv$diagnosis_uis <- c(rv$diagnosis_uis, list(m))
-
-        }
-
-        # create the derived phenotypes uis
       } else {
 
-        m <- mod_derived_ui("derived")
-        setNames(m, clean_id(x$id, check = TRUE))
-        rv$derived_uis <- c(rv$derived_uis, list(m))
-        mod_derived_server("derived")
+        rv$diagnosis_uis <- c(rv$diagnosis_uis, list(m))
 
       }
 
-    }
-  }
+    } # end loop concept configs
+
+  } # end make_uis
 
 
   # --------------------------

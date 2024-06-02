@@ -12,3 +12,6 @@ regexes:
   - "38341003"
   - "(?i)hypertensi(on|ve)"
   - "(?i)systemic arterial hypertension"
+include:
+  - "systemic_arterial_hypertension"
+exclude:

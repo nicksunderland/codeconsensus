@@ -11,3 +11,6 @@ regexes:
   - "73211009"
   - "diabetes mellitus"
   - "diabetic (retinopathy|cataract|arthropathy|.*neuropathy|.*angiopathy)"
+include:
+  - "diabetes_mellitus"
+exclude:

@@ -11,3 +11,6 @@ regexes:
   - "22701007"
   - "Operative procedure on artery of extremity"
   - "L[1256][0123689][0-9]"
+include:
+  - "procedure_open_peripheral_vascular"
+exclude:

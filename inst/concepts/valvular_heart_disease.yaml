@@ -13,3 +13,6 @@ regexes:
   - "(?i)(pulmonary|tricuspid|aortic|mitral|prosthetic) .*(valves?|stenosis|regurg)"
   - "(?i)TAVI|TAVR|valv(ulaoplasty|otomy)|annuloplasty|leaflet re(construc|sec)tion|commissurotomy"
   - "(?i)endocardial structures?"
+include:
+  - "valvular_heart_disease"
+exclude:

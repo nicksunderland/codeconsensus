@@ -11,3 +11,6 @@ regexes:
   - "232717009"
   - "(?i)coronary artery bypass grafting"
   - "CABG"
+include:
+  - "procedure_open_cabg"
+exclude:

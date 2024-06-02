@@ -12,4 +12,6 @@ regexes:
   - "(?i)ischa?emic stroke"
   - "(?i)cerebrae?l infarct(ion)?"
   - "(?i)stroke"
-
+include:
+  - "stroke_ischaemic"
+exclude:

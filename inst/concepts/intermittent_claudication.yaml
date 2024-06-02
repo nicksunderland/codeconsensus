@@ -11,3 +11,6 @@ valueset_definition: ...
 regexes:
   - "63491006"
   - "intermittent claudication"
+include:
+  - "intermittent_claudication"
+exclude:

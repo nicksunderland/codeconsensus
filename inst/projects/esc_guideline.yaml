@@ -9,7 +9,7 @@ concepts:
   - "diabetes_mellitus.yaml"
   - "heart_failure.yaml"
   - "intermittent_claudication.yaml"
-  - "lvsd.yaml"
+  - "left_ventricular_systolic_dysfunction.yaml"
   - "myocardial_infarction.yaml"
   - "penetrating_ulcer_of_aorta.yaml"
   - "procedure_open_aorta.yaml"
