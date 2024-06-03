@@ -202,7 +202,10 @@ mod_concept_server <- function(id, include, exclude, user, derived){
 
     # code counts
     counts <- reactive({
+
+      # validation
       req(tree(), input$code_display)
+      validate(need(input$code_display %in% c("nhs_counts", "ukbb_counts"), "Please choose a data source from `Code display`"))
 
       # get the internal package data (see /data folder)
       tree_codes <- data.table::data.table(code      = unlist(tree_attributes(tree(), "code")),
