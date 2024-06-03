@@ -141,7 +141,7 @@ app_server <- function(input, output, session) {
     for (x in concepts) {
 
       # create the diagnosis and procedure concepts
-      m <- mod_concept_ui(id                  = clean_id(x[["id"]], check = TRUE),
+      m <- mod_concept_ui(id                  = x[["id"]],
                           title               = x[["name"]],
                           definition          = x[["definition"]],
                           pmid                = x[["pmid"]],
@@ -151,7 +151,7 @@ app_server <- function(input, output, session) {
                           regexes             = x[["regexes"]])
       setNames(m, clean_id(x$id, check = TRUE))
 
-      mod_concept_server(id                   = clean_id(x$id, check = TRUE),
+      mod_concept_server(id                   = x[["id"]],
                          include              = x[["include"]],
                          exclude              = x[["exclude"]],
                          user                 = user,

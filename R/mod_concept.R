@@ -60,7 +60,7 @@ mod_concept_server <- function(id, include, exclude, user, derived){
     # reactive values / expressions
     # -----------------------------
     message      <- reactiveVal("")
-    concept      <- reactiveVal(concept)
+    concept      <- reactiveVal(id)
     subconcepts  <- reactiveVal(c(include, exclude))
     include_ids  <- reactiveVal(include)
     exclude_ids  <- reactiveVal(exclude)
