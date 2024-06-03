@@ -24,6 +24,17 @@ app_ui <- function(request) {
       div(id = "login_screen",
           fluidRow(
             column(12, offset = 0, align = "center",
+                   tags$style(HTML("
+                      /* Custom CSS styles for radio buttons */
+                      #project {
+                        border: 1px solid #ccc;
+                        border-radius: 10px;
+                        padding: 10px;
+                        background-color: #f5f5f5;
+                        text-align: center;
+                        margin-bottom: 10px;
+                      }
+                    ")),
                    radioButtons("project", "Project",
                                 inline = TRUE,
                                 choices = list("ESC computable guideline" = "esc_guideline",

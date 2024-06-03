@@ -106,7 +106,7 @@ mod_concept_server <- function(id, include, exclude, user, derived){
       # populate inclusion tree
       for (id in include_ids()) {
         tree_path <- system.file("concepts", paste0(id, ".RDS"), package = "hfphenotyping")
-        t <- TreeElement(gsub("_", " ", id), "CONCEPT", "concept", stdisabled = TRUE, sticon = "fa fa-folder", children = readRDS(tree_path))
+        t <- TreeElement(gsub("_", " ", id), "CONCEPT", "concept", stdisabled = TRUE, stopened = FALSE, sticon = "fa fa-folder", children = readRDS(tree_path))
         include[[paste0(attr(t, "code"), " | ", attr(t, "description"))]] <- t
       }
       tree[[paste0(attr(include, "code"), " | ", attr(include, "description"))]] <- include
@@ -118,7 +118,7 @@ mod_concept_server <- function(id, include, exclude, user, derived){
 
         for (id in exclude_ids()) {
           tree_path <- system.file("concepts", paste0(id, ".RDS"), package = "hfphenotyping")
-          t <- TreeElement(gsub("_", " ", id), "CONCEPT", "concept", stdisabled = TRUE, sticon = "fa fa-folder", children = readRDS(tree_path))
+          t <- TreeElement(gsub("_", " ", id), "CONCEPT", "concept", stdisabled = TRUE, stopened = FALSE, sticon = "fa fa-folder", children = readRDS(tree_path))
           exclude[[paste0(attr(t, "code"), " | ", attr(t, "description"))]] <- t
         }
 
@@ -138,40 +138,52 @@ mod_concept_server <- function(id, include, exclude, user, derived){
       print("selected <- reactive")
 
       # check if logged in, or just viewing (username==NULL) - display average of raters if just viewing
-      tree_codes <- paste0("'", unlist(tree_attributes(load_tree(), 'code')), "'", collapse = ", ")
-      if (!is.null(user[["username"]]) && user[["is_rater"]]) {
+      tree_codes     <- paste0("'", unlist(tree_attributes(load_tree(), 'code')), "'", collapse = ", ")
+      subconcept_ids <- paste0("'", subconcept_ids(), "'", collapse = ", ")
+      user_is_rater  <- !is.null(user[["username"]]) && user[["is_rater"]]
+
+      if (user_is_rater) {
 
         # user logged in and is a rater
-        subconcept_ids <- paste0("'", subconcept_ids(), "'", collapse = ", ")
         sql <- glue::glue("SELECT
                               CODES.CODE,
                               CODES.CODE_TYPE,
+                              CONCEPTS.CONCEPT,
                               SELECTED.SELECTED,
                               NULL AS DISABLED
                            FROM
                               SELECTED
                            INNER JOIN
                               CODES ON SELECTED.CODE_ID = CODES.CODE_ID
+                           INNER JOIN
+                              CONCEPTS ON SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
                            WHERE
-                              SELECTED.USERNAME = '{user[['username']]}' AND SELECTED.CONCEPT_ID IN ({subconcept_ids}) AND CODES.CODE IN ({tree_codes})")
+                              SELECTED.USERNAME = '{user[['username']]}'
+                              AND SELECTED.SELECTED = 1
+                              AND SELECTED.CONCEPT_ID IN ({subconcept_ids})
+                              AND CODES.CODE IN ({tree_codes})")
 
       } else {
 
         # user is not a rater, present rater results
-        subconcept_ids <- paste0("'", subconcept_ids(), "'", collapse = ", ")
         sql <- glue::glue("SELECT
                               CODES.CODE,
                               CODES.CODE_TYPE,
+                              CONCEPTS.CONCEPT,
                               CASE WHEN AVG(SELECTED.SELECTED) > 0.5 THEN 1 ELSE 0 END AS SELECTED,
                               1 AS DISABLED
                            FROM
                               SELECTED
                            INNER JOIN
                               CODES ON SELECTED.CODE_ID = CODES.CODE_ID
+                           INNER JOIN
+                              CONCEPTS ON SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
                            WHERE
-                              SELECTED.CONCEPT_ID IN ({subconcept_ids}) AND CODES.CODE IN ({tree_codes})
+                              SELECTED.CONCEPT_ID IN ({subconcept_ids})
+                              AND CODES.CODE IN ({tree_codes})
                            GROUP BY
-                              SELECTED.CONCEPT_ID, CODES.CODE, CODES.CODE_TYPE")
+                              SELECTED.CONCEPT_ID, CONCEPTS.CONCEPT, CODES.CODE, CODES.CODE_TYPE")
+
 
       }
 
@@ -258,6 +270,11 @@ mod_concept_server <- function(id, include, exclude, user, derived){
                                         DISABLED   = unlist(tree_attributes(tree, 'stdisabled')),
                                         SELECTED   = as.integer(unlist(tree_attributes(tree, 'stselected'))),
                                         CONCEPT_ID = concept_id)
+
+      # can occur if nothing selected
+      if (nrow(current) == 0) return(list(res = FALSE, dat = current))
+
+      # clean up
       current <- current[DISABLED == FALSE, ]
       current[code_ids, CODE_ID := i.CODE_ID, on = "CODE"]
 
@@ -280,22 +297,6 @@ mod_concept_server <- function(id, include, exclude, user, derived){
     # -----------------------------
     # CONTROLS / OBSERVERS
     # -----------------------------
-    # observe the user value and enable/disable the save button
-    session$userData$observer_store[[paste0("user_", id)]] <- observe({
-      if (is.null(user[["username"]])) {
-        shinyjs::disable("save")
-      } else {
-        shinyjs::enable("save")
-      }
-    })
-
-    # observe the user comments
-    session$userData$observer_store[[paste0("user_comments_", id)]] <- observeEvent(input$user_comments, {
-      req(input$user_comments)
-      print("observer user_comments")
-      comments(input$user_comments)
-    })
-
     # save button
     session$userData$observer_store[[paste0("save_", id)]] <- observeEvent(input$save, {
       print("save button")
@@ -307,7 +308,7 @@ mod_concept_server <- function(id, include, exclude, user, derived){
       }
 
       # only save if data different
-      if (!is.null(comments()) && input$user_comments != comments()) {
+      if (!is.null(comments())) {
 
         res <- save_comments(concept_id = concept_id(), username = user[["username"]], comments = input$user_comments)
 
@@ -316,7 +317,7 @@ mod_concept_server <- function(id, include, exclude, user, derived){
           showNotification("Saved comments", type = "message", duration = 10)
           comments(input$user_comments)
         } else {
-          showNotification("Error saving comments, problem sending data to database, please report bug", type = "error", duration = 30)
+          showNotification("Error saving comments, problem sending data to database", type = "error", duration = 30)
         }
       }
 
@@ -331,7 +332,7 @@ mod_concept_server <- function(id, include, exclude, user, derived){
           tree(input$tree)
           selected(res[["dat"]])
         } else {
-          showNotification("Error saving selection, problem sending data to database, please report bug", type = "error", duration = 30)
+          showNotification("Error saving selection, problem sending data to database", type = "error", duration = 30)
         }
 
       }
@@ -341,10 +342,12 @@ mod_concept_server <- function(id, include, exclude, user, derived){
     # download button
     output$download <- downloadHandler(
       filename = function() {
-        # paste0(input$dataset, ".tsv")
+        paste0("codes_", id, "_", Sys.Date(), ".tsv")
       },
       content = function(file) {
-        # vroom::vroom_write(data(), file)
+        out <- selected()
+        out <- out[SELECTED == 1, ]
+        data.table::fwrite(out[, .(CONCEPT, CODE, CODE_TYPE)], file, sep="\t", row.names=FALSE)
       }
     )
 
@@ -402,56 +405,100 @@ mod_concept_server <- function(id, include, exclude, user, derived){
 }
 
 
-# recursively set selected or not
+# optimised version
 modify_tree <- function(tree, selected, label_option = "default", disable_tree = FALSE) {
-
   option <- match.arg(label_option, choices = c("default", "nhs_counts", "ukbb_counts"))
 
-  for (name in names(tree)) {
+  # Pre-compute status and disabled information for fast lookup
+  selected_status <- setNames(as.logical(selected$SELECTED), paste(selected$CODE, selected$CODE_TYPE))
+  selected_disabled <- setNames(as.logical(selected$DISABLED), paste(selected$CODE, selected$CODE_TYPE))
 
-    # current element
-    element <- tree[[name]]
-    tree[[name]] <- NULL
+  # Recursive function to modify the tree in place
+  modify_tree_recursive <- function(sub_tree) {
+    for (name in names(sub_tree)) {
+      element <- sub_tree[[name]]
 
-    # get details for this code
-    code      <- attr(element, "code")
-    code_type <- attr(element, "code_type")
-    desc      <- attr(element, "description")
-    lab_opt   <- if(label_option != "default" && !is.null(attr(element, label_option))) paste0("n=", attr(element, label_option)) else NULL
-    status    <- any(as.logical(selected[CODE == code & CODE_TYPE == code_type, SELECTED]))
-    disabled  <- any(as.logical(selected[CODE == code & CODE_TYPE == code_type, DISABLED]))
+      code      <- attr(element, "code")
+      code_type <- attr(element, "code_type")
+      desc      <- attr(element, "description")
+      lab_opt   <- if (label_option != "default" && !is.null(attr(element, label_option))) paste0("n=", attr(element, label_option)) else NULL
+      key       <- paste(code, code_type)
+      status    <- selected_status[key]
+      disabled  <- selected_disabled[key]
+      new_name  <- paste0(c(code, lab_opt, desc), collapse = " | ")
 
-    # default is no additional information
-    new_name <- paste0(c(code, lab_opt, desc), collapse = " | ")
+      # Only set attributes if they change
+      if ((!is.null(attr(element, "stselected")) && !is.null(status) && !is.na(status)) && attr(element, "stselected") != status) {
+        attr(element, "stselected") <- status
+      }
 
-    # update attributes
-    attr(element, "stselected") <- status
-    if (disable_tree) {
-      attr(element, "stdisabled") <- TRUE
+      if (disable_tree) {
+        if (is.null(attr(element, "stdisabled")) || attr(element, "stdisabled") != TRUE) {
+          attr(element, "stdisabled") <- TRUE
+        }
+      } else {
+        if (!is.null(attr(element, "stdisabled")) && !is.na(disabled) && attr(element, "stdisabled") != disabled) {
+          attr(element, "stdisabled") <- disabled
+        }
+      }
+
+      if (is.list(element) && length(element) > 0) {
+        # Recursively process the subtree
+        sub_tree[[new_name]] <- modify_tree_recursive(element)
+      } else {
+        sub_tree[[new_name]] <- element
+      }
+
+      # Remove the old name entry
+      if (new_name != name) {
+        sub_tree[[name]] <- NULL
+      }
     }
 
-    # recursively processs
-    if (is.list(element) && length(element) > 0) {
-      tree[[new_name]] <- modify_tree(element, selected, label_option, disable_tree) # recursively process
-    } else {
-      tree[[new_name]] <- element
-    }
-
+    return(sub_tree)
   }
 
-  return(tree)
+  return(modify_tree_recursive(tree))
 }
 
-#       # copy all attributes across, except names as that is what we're changing
-#       for (attr_name in names(attributes(new_element))) {
-#         if (attr_name != "names") {
-#           attr(modified_tree[[new_name]], attr_name) <- attr(new_element, attr_name)
-#         }
-#         if (attr_name == "stselected") {
-#           attr(modified_tree[[new_name]], "stselected") <- status
-#         } else if (attr_name == "stdisabled" && disabled) {
-#           attr(modified_tree[[new_name]], "stdisabled") <- disabled
-#         }
 
-
-
+# slow version
+# # recursively set selected or not
+# modify_tree <- function(tree, selected, label_option = "default", disable_tree = FALSE) {
+#
+#   option <- match.arg(label_option, choices = c("default", "nhs_counts", "ukbb_counts"))
+#
+#   for (name in names(tree)) {
+#
+#     # current element
+#     element <- tree[[name]]
+#     tree[[name]] <- NULL
+#
+#     # get details for this code
+#     code      <- attr(element, "code")
+#     code_type <- attr(element, "code_type")
+#     desc      <- attr(element, "description")
+#     lab_opt   <- if(label_option != "default" && !is.null(attr(element, label_option))) paste0("n=", attr(element, label_option)) else NULL
+#     status    <- any(as.logical(selected[CODE == code & CODE_TYPE == code_type, SELECTED]))
+#     disabled  <- any(as.logical(selected[CODE == code & CODE_TYPE == code_type, DISABLED]))
+#
+#     # default is no additional information
+#     new_name <- paste0(c(code, lab_opt, desc), collapse = " | ")
+#
+#     # update attributes
+#     attr(element, "stselected") <- status
+#     if (disable_tree) {
+#       attr(element, "stdisabled") <- TRUE
+#     }
+#
+#     # recursively processs
+#     if (is.list(element) && length(element) > 0) {
+#       tree[[new_name]] <- modify_tree(element, selected, label_option, disable_tree) # recursively process
+#     } else {
+#       tree[[new_name]] <- element
+#     }
+#
+#   }
+#
+#   return(tree)
+# }

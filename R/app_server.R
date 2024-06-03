@@ -103,29 +103,27 @@ app_server <- function(input, output, session) {
       # for each type of module
       for (v in names(rv)) {
 
-        # for each concept module
-        for (id in names(rv[[v]])) {
+        module_ids <- names(rv[[v]])
 
-          # remove the UI
+        # remove the UI elements
+        lapply(module_ids, function(id) {
           removeUI(selector = paste0("#", id))
-
-          # remove the inputs
-          invisible(lapply(grep(id, names(input), value = TRUE), function(i) { .subset2(input, "impl")$.values$remove(i) }))
-
-
-
-        }
+          invisible(lapply(grep(id, names(input), value = TRUE), function(i) {
+            .subset2(input, "impl")$.values$remove(i)
+          }))
+        })
 
         # empty the module type list
         rv[[v]] <- list()
-
       }
 
-      # remove the observers, names still exist so must clear the list to NULL
-      lapply(session$userData$observer_store, function(i) { i$destroy() })
-      session$userData$observer_store <- NULL
+      # remove the observers
+      if (!is.null(session$userData$observer_store)) {
+        lapply(session$userData$observer_store, function(i) { i$destroy() })
+        session$userData$observer_store <- NULL
+      }
 
-    }
+    } # end cleaning up old UIs
 
     # get the concepts for this project
     project_config <- system.file("projects", paste0(project, ".yaml"),  package = "hfphenotyping")
@@ -137,6 +135,11 @@ app_server <- function(input, output, session) {
     # create the home ui
     rv$home_ui <- c(rv$home_ui, list(home = mod_home_ui("home")))
     mod_home_server("home", concepts = sapply(concepts, function(x) x$id))
+
+    # Preallocate lists for different domains
+    diagnosis_uis <- list()
+    procedure_uis <- list()
+    derived_uis <- list()
 
     for (x in concepts) {
 
@@ -157,21 +160,21 @@ app_server <- function(input, output, session) {
                          user                 = user,
                          derived              = x[["domain"]] == "Derived")
 
+      # Categorize UIs based on domain
       if (x$domain == "Procedure") {
-
-        rv$procedure_uis <- c(rv$procedure_uis, list(m))
-
+        procedure_uis <- c(procedure_uis, list(m))
       } else if (x$domain == "Derived") {
-
-        rv$derived_uis <- c(rv$derived_uis, list(m))
-
+        derived_uis <- c(derived_uis, list(m))
       } else {
-
-        rv$diagnosis_uis <- c(rv$diagnosis_uis, list(m))
-
+        diagnosis_uis <- c(diagnosis_uis, list(m))
       }
 
     } # end loop concept configs
+
+    # Update reactive values outside the loop
+    rv$procedure_uis <- procedure_uis
+    rv$derived_uis   <- derived_uis
+    rv$diagnosis_uis <- diagnosis_uis
 
   } # end make_uis
 
