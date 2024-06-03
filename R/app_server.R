@@ -112,8 +112,7 @@ app_server <- function(input, output, session) {
           # remove the inputs
           invisible(lapply(grep(id, names(input), value = TRUE), function(i) { .subset2(input, "impl")$.values$remove(i) }))
 
-          # remove the observers, names still exist so must clear the list after this nested loop
-          lapply(session$userData$observer_store, function(i) { i$destroy() })
+
 
         }
 
@@ -122,7 +121,8 @@ app_server <- function(input, output, session) {
 
       }
 
-      # clear the observer store list
+      # remove the observers, names still exist so must clear the list to NULL
+      lapply(session$userData$observer_store, function(i) { i$destroy() })
       session$userData$observer_store <- NULL
 
     }

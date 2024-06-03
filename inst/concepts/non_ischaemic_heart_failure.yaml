@@ -13,3 +13,4 @@ include:
   - "heart_failure"
 exclude:
   - "myocardial_infarction"
+  - "congenital_heart_disease"
