@@ -23,12 +23,13 @@ app_server <- function(input, output, session) {
                        procedure_uis = list(),
                        derived_uis   = list())
 
+
   # --------------------------
   # Enter (view only) button
   # --------------------------
   observeEvent(input$enter_btn, {
 
-    # (remake) main uis
+    # (re)make main uis
     make_uis(input$project)
 
     # hide login and show main
@@ -54,7 +55,7 @@ app_server <- function(input, output, session) {
       user[["username"]] <- db_user_data$USERNAME
       user[["is_rater"]] <- as.logical(db_user_data$IS_RATER)
 
-      # (remake) main uis
+      # (re)make the main uis
       make_uis(input$project)
 
       # hide login and show main
@@ -79,7 +80,7 @@ app_server <- function(input, output, session) {
     user[["username"]] <- NULL
     user[["is_rater"]] <- NULL
 
-    # hide login and show main
+    # hide main and show login
     shinyjs::hide("main_content")
     shinyjs::show("login_screen")
 
@@ -96,7 +97,7 @@ app_server <- function(input, output, session) {
   # --------------------------
   make_uis <- function(project) {
 
-    # delete old uis if present
+    # delete old uis if present - this happens if switching projects or users via the initial landing page
     if (any(sapply(reactiveValuesToList(rv), length) > 0)) {
       print("cleaning up / deleting old modules")
 
@@ -105,7 +106,7 @@ app_server <- function(input, output, session) {
 
         module_ids <- names(rv[[v]])
 
-        # remove the UI elements
+        # remove all the UI elements
         lapply(module_ids, function(id) {
           removeUI(selector = paste0("#", id))
           invisible(lapply(grep(id, names(input), value = TRUE), function(i) {
@@ -117,7 +118,7 @@ app_server <- function(input, output, session) {
         rv[[v]] <- list()
       }
 
-      # remove the observers
+      # remove all the observers
       if (!is.null(session$userData$observer_store)) {
         lapply(session$userData$observer_store, function(i) { i$destroy() })
         session$userData$observer_store <- NULL
@@ -136,14 +137,14 @@ app_server <- function(input, output, session) {
     rv$home_ui <- c(rv$home_ui, list(home = mod_home_ui("home")))
     mod_home_server("home", concepts = sapply(concepts, function(x) x$id))
 
-    # Preallocate lists for different domains
+    # preallocate lists for different UI/concept types
     diagnosis_uis <- list()
     procedure_uis <- list()
-    derived_uis <- list()
+    derived_uis   <- list()
 
     for (x in concepts) {
 
-      # create the diagnosis and procedure concepts
+      # create the concept module
       m <- mod_concept_ui(id                  = x[["id"]],
                           title               = x[["name"]],
                           definition          = x[["definition"]],
@@ -160,7 +161,7 @@ app_server <- function(input, output, session) {
                          user                 = user,
                          derived              = x[["domain"]] == "Derived")
 
-      # Categorize UIs based on domain
+      # categorize UIs based on type/domain
       if (x$domain == "Procedure") {
         procedure_uis <- c(procedure_uis, list(m))
       } else if (x$domain == "Derived") {
@@ -171,7 +172,7 @@ app_server <- function(input, output, session) {
 
     } # end loop concept configs
 
-    # Update reactive values outside the loop
+    # update reactive values outside the loop
     rv$procedure_uis <- procedure_uis
     rv$derived_uis   <- derived_uis
     rv$diagnosis_uis <- diagnosis_uis
@@ -196,7 +197,7 @@ app_server <- function(input, output, session) {
                          !!!unname(rv$derived_uis),
                          widths = c(3, 9))
 
-    # return the menu panel
+    # return the navlistPanel
     return(menu)
   })
 

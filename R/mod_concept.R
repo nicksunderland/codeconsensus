@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-#' @importFrom shinyTree shinyTree dfToTree
+#' @importFrom shinyTree shinyTree
 #' @import data.table
 mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, concept_term, valueset_definition, regexes){
   ns <- NS(id)
@@ -216,7 +216,7 @@ mod_concept_server <- function(id, include, exclude, user, derived){
       comments(str)
     })
 
-    # code counts
+    # code counts (stored data in internal data objects `nhs_counts`, `ukbb_counts`, ... etc)
     counts <- reactive({
 
       # validation
@@ -271,7 +271,7 @@ mod_concept_server <- function(id, include, exclude, user, derived){
                                         SELECTED   = as.integer(unlist(tree_attributes(tree, 'stselected'))),
                                         CONCEPT_ID = concept_id)
 
-      # can occur if nothing selected
+      # can occur if nothing selected in the tree
       if (nrow(current) == 0) return(list(res = FALSE, dat = current))
 
       # clean up
@@ -288,7 +288,7 @@ mod_concept_server <- function(id, include, exclude, user, derived){
       sql <- glue::glue("INSERT INTO SELECTED ({paste(cols, collapse = ', ')}) VALUES ({paste0(rep('?', length(cols)), collapse = ', ')})")
       res <- query_db(query_str = sql, type = "update", value = as.list(current[, .SD, .SDcols = cols]))
 
-      # return list of save result and current select data
+      # return list of save result (logical indicating success) and current select data
       return(list(res = res,
                   dat = current[, .(CODE, CODE_TYPE, SELECTED, DISABLED)]))
     }
@@ -307,12 +307,12 @@ mod_concept_server <- function(id, include, exclude, user, derived){
         return(NULL)
       }
 
-      # only save if data different
+      # save comments
       if (!is.null(comments())) {
 
         res <- save_comments(concept_id = concept_id(), username = user[["username"]], comments = input$user_comments)
 
-        # report and reset local
+        # report and reset local comments reactiveVal
         if (res) {
           showNotification("Saved comments", type = "message", duration = 10)
           comments(input$user_comments)
@@ -321,12 +321,14 @@ mod_concept_server <- function(id, include, exclude, user, derived){
         }
       }
 
-      # can only save selected if a rater, not a derived concept, and only save if data different
+      # can only save selected if user is a rater and not a derived concept (as should just update the base concept(s))
       if (!is.null(tree()) && user[["is_rater"]] && !derived()) {
 
+        # try to save the tree node selected status to the database
+        # `res` is a list(res = logical_indicating_successful_save, dat = the_saved_data.table)
         res <- save_selected(tree = input$tree, username = user[["username"]], concept_id = concept_id(), code_ids = code_ids())
 
-        # report and set local
+        # report and set local reactiveVals
         if (res[["res"]]) {
           showNotification("Saved selection", type = "message", duration = 10)
           tree(input$tree)
