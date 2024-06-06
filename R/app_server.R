@@ -25,6 +25,18 @@ app_server <- function(input, output, session) {
 
 
   # --------------------------
+  # Create porject radiobuttons
+  # --------------------------
+  output$project_radiobuttons <- renderUI({
+    project_configs <- list.files(system.file("projects", package = "hfphenotyping"), pattern = ".ya?ml$", full.names = TRUE)
+    project_names   <- sapply(project_configs, function(x) yaml::read_yaml(x)$name)
+    project_ids     <- lapply(project_configs, function(x) yaml::read_yaml(x)$id)
+    names(project_ids) <- project_names
+    radioButtons("project", "Project", inline = TRUE, choices = project_ids)
+  })
+
+
+  # --------------------------
   # Enter (view only) button
   # --------------------------
   observeEvent(input$enter_btn, {

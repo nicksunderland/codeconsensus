@@ -37,7 +37,6 @@ for (config in configs) {
   conf    <- yaml::read_yaml(config)
   outfile <- file.path(dirname(config), paste0(conf$id, ".RDS"))
   regex   <- paste0("(", conf$regexes, ")", collapse = "|")
-  folder_icon <- "fa fa-folder"
 
 
   # populate the CONCEPTS database
@@ -67,21 +66,11 @@ for (config in configs) {
 
     cat("Extracting with regex: `", regex, "`\n")
 
-    # tree
-    tree <- TreeElement("tree", "tree", "tree")
-    attr(tree, "stselected") <- FALSE
-    attr(tree, "stdisabled") <- TRUE
-
     # extract the concept
     cat("[i] Extracting SNOMED\n")
     concept        <- SNOMEDconcept(regex, SNOMED = SNOMED, exact = FALSE)
     hierarch_codes <- showCodelistHierarchy(concept)
     snomed         <- snomed_tree(hierarch_codes)
-    attr(snomed, "stselected") <- FALSE
-    attr(snomed, "stdisabled") <- TRUE
-    attr(snomed, "sticon") <- folder_icon
-    label          <- paste0(attr(snomed, "code"), " | ", attr(snomed, "description"))
-    tree[[label]] <- snomed
 
     # read the ICD10
     cat("[i] Extracting ICD-10\n")
@@ -89,37 +78,26 @@ for (config in configs) {
     icd10 <- xml2::read_xml(icd10_xml_file)
     icd10 <- xml2::as_list(icd10)
     icd10 <- icd10[[1]]
-    icd10 <- icd10_tree(icd10, regex = regex)
-    attr(icd10, "stselected") <- FALSE
-    attr(icd10, "stdisabled") <- TRUE
-    attr(icd10, "sticon") <- folder_icon
-    label <- paste0(attr(icd10, "code"), " | ", attr(icd10, "description"))
-    tree[[label]] <- icd10
+    icd10 <- make_icd10_tree(icd10, regex = regex)
 
     # read the OPCS (NHS TRUD)
     cat("[i] Extracting OPCS-4\n")
     opcs <- fread(file.path(dir, "OPCS410 Data files txt", "OPCS410 CodesAndTitles Nov 2022 V1.0.txt"), col.names = c("CODE", "DESCRIPTION"), header = FALSE)
     opcs <- opcs_tree(opcs, regex = regex)
-    attr(opcs, "stselected") <- FALSE
-    attr(opcs, "stdisabled") <- TRUE
-    attr(opcs, "sticon") <- folder_icon
-    label <- paste0(attr(opcs, "code"), " | ", attr(opcs, "description"))
-    tree[[label]] <- opcs
 
-    # annotate numbers
-    tree <- annotate_tree(tree, nhs_counts[,  .(code, code_type, nhs_counts=count) ], value_col = "nhs_counts",  on = c("code" = "code", "code_type" = "code_type"), no_match = NA_real_)
-    tree <- annotate_tree(tree, ukbb_counts[, .(code, code_type, ukbb_counts=count)], value_col = "ukbb_counts", on = c("code" = "code", "code_type" = "code_type"), no_match = NA_real_)
+    # annotate the tree with data
+    tree <- annotate_tree(tree = list(snomed, icd10, opcs), annot_dt = nhs_counts, annot_name = "nhs_count", value_col = "count", on = c("code" = "code", "code_type" = "code_type"), no_match = 0)
+    tree <- annotate_tree(tree = tree, annot_dt = ukbb_counts, annot_name = "ukbb_count", value_col = "count", on = c("code" = "code", "code_type" = "code_type"), no_match = 0)
 
     # save
     cat("[i] saving .RDS file\n")
     saveRDS(tree, outfile)
-
   }
 
   # populate the CODE database
-  these_codes <- data.table::data.table(CODE_DESC = as.character(tree_attributes(tree, "description")),
+  these_codes <- data.table::data.table(CODE_DESC = as.character(tree_attributes(tree, "desc")),
                                         CODE      = as.character(tree_attributes(tree, "code")),
-                                        DISABLED  = unlist(tree_attributes(tree, "stdisabled")),
+                                        DISABLED  = unlist(tree_attributes(tree, "disabled")),
                                         CODE_TYPE = as.character(tree_attributes(tree, "code_type")))
   these_codes <- these_codes[DISABLED == FALSE, ]
   these_codes[, DISABLED := NULL]

@@ -29,7 +29,7 @@ code_from_label <- function(label) {
 
 
 #' @title Get tree attributes
-#' @param tree a tree
+#' @param tree a js tree object
 #' @param attribute_name str, the attribute name (label, code, code_type, description, stselected, stopened)
 #' @param result for recursive use
 #' @return a list of name = attribute
@@ -37,15 +37,39 @@ code_from_label <- function(label) {
 #'
 tree_attributes <- function(tree, attribute_name, result = list()) {
 
-  for (element_name in names(tree)) {
-    element                <- tree[[element_name]]
-    attribute_value        <- attr(element, attribute_name)
-    if (is.null(attribute_value) && attribute_name %in% c("stselected", "stdisabled")) {
-      attribute_value <- FALSE
-    }
-    result[[element_name]] <- attribute_value
-    result                 <- tree_attributes(element, attribute_name, result)
+  if ("x" %in% names(tree)) {
+    tree <- tree$x$data
   }
+
+  for (i in seq_along(tree)) {
+
+    if (attribute_name %in% names(tree[[i]]$data)) {
+
+      if (is.null(tree[[i]]$data[[attribute_name]])) {
+        result[[tree[[i]]$text]] <- NA
+      } else {
+        result[[tree[[i]]$text]] <- tree[[i]]$data[[attribute_name]]
+      }
+
+    } else if (attribute_name %in% names(tree[[i]]$state)) {
+
+      if (is.null(tree[[i]]$state[[attribute_name]]) && attribute_name %in% c("selected", "disabled")) {
+        attribute_value <- FALSE
+      } else {
+        attribute_value <- tree[[i]]$state[[attribute_name]]
+      }
+
+      if (is.null(attribute_value)) {
+        result[[tree[[i]]$text]] <- NA
+      } else {
+        result[[tree[[i]]$text]] <- attribute_value
+      }
+
+    }
+
+    result <- tree_attributes(tree[[i]]$children, attribute_name, result)
+  }
+
   return(result)
 }
 

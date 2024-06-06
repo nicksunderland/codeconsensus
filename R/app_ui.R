@@ -35,11 +35,7 @@ app_ui <- function(request) {
                         margin-bottom: 10px;
                       }
                     ")),
-                   radioButtons("project", "Project",
-                                inline = TRUE,
-                                choices = list("ESC computable guideline" = "esc_guideline",
-                                               "NIH cardiomyopathy" = "nih_cardiomyopathy",
-                                               "Cardiovascular initiative" = "cv_initiative")),
+                   uiOutput("project_radiobuttons"),
                    hr(),
                    actionButton("enter_btn", "Enter (view only)"),
                    hr(),

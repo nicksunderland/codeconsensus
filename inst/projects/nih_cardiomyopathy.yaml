@@ -1,5 +1,5 @@
-id: "esc_guideline"
-name: "ESC computable guideline"
+id: "nih_cardiomyopathy"
+name: "NIH Cardiomyopathy"
 concepts:
   - "atherosclerosis_coronary.yaml"
   - "heart_failure.yaml"
@@ -7,7 +7,6 @@ concepts:
   - "myocardial_infarction.yaml"
   - "procedure_open_cabg.yaml"
   - "procedure_perc_angioplasty_coronary.yaml"
-  - "systemic_arterial_hypertension.yaml"
   - "amyloidosis.yaml"
   - "congenital_heart_disease.yaml"
   - "dilated_cardiomyopathy.yaml"

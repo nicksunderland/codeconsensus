@@ -25,23 +25,57 @@ snomed_tree <- function(hierarch_codes) {
       concept_row <- hierarch_codes[rowid == x$rowid]
       code        <- as.character(concept_row$conceptId)
       desc        <- concept_row$term
-      label       <- paste0(code, " | ", desc)
 
       if (!is.null(x$children) && length(x$children) > 0) {
         children <- convert_to_tree_element(x$children, hierarch_codes)
-        element <- TreeElement(code, "SNOMED", desc, children = children)
+        element <- TreeNode(text = paste0(code, " | ", desc),
+                            type = "code",
+                            data = list(code       = code,
+                                        code_type  = "SNOMED",
+                                        desc       = desc,
+                                        ukbb_count = NULL,
+                                        nhs_count  = NULL),
+                            checked  = FALSE,
+                            selected = FALSE,
+                            opened   = FALSE,
+                            disabled = FALSE,
+                            children = children)
+
       } else {
-        element <- TreeElement(code, "SNOMED", desc)
+        element <- TreeNode(text = paste0(code, " | ", desc),
+                            type = "code",
+                            data = list(code       = code,
+                                        code_type  = "SNOMED",
+                                        desc       = desc,
+                                        ukbb_count = NULL,
+                                        nhs_count  = NULL),
+                            checked  = FALSE,
+                            selected = FALSE,
+                            opened   = FALSE,
+                            disabled = FALSE,
+                            children = list())
       }
 
-      result[[label]] <- element
+      result <- c(result, list(element))
     }
 
     return(result)
   }
 
   # convert
-  tree <- TreeElement("SNOMED", "SNOMED", "coding system", sticon = "fa fa-folder-o", children = convert_to_tree_element(nested_list, hierarch_codes))
+  tree <- TreeNode(text = "SNOMED",
+                   type = "root",
+                   data = list(code       = "SNOMED",
+                               code_type  = "SNOMED",
+                               desc       = NULL,
+                               ukbb_count = NULL,
+                               nhs_count  = NULL),
+                   checked  = FALSE,
+                   selected = FALSE,
+                   opened   = TRUE,
+                   disabled = TRUE,
+                   children = convert_to_tree_element(nested_list, hierarch_codes))
+
 
   return(tree)
 }
@@ -75,9 +109,21 @@ snomed_tree <- function(hierarch_codes) {
 #' @return a nested list
 #' @export
 #'
-icd10_tree <- function(icd10, regex = ".") {
+# base tree node
+make_icd10_tree <- function(icd10, regex = ".") {
 
-  result <- TreeElement("ICD10", "ICD10", "coding system")
+  result <- TreeNode(text = "ICD10",
+                     type = "root",
+                     data = list(code       = "ICD10",
+                                 code_type  = "ICD10",
+                                 desc       = NULL,
+                                 ukbb_count = NULL,
+                                 nhs_count  = NULL),
+                     checked  = FALSE,
+                     selected = FALSE,
+                     opened   = TRUE,
+                     disabled = TRUE,
+                     children = list())
 
   for (i in seq_along(icd10)) {
 
@@ -90,24 +136,23 @@ icd10_tree <- function(icd10, regex = ".") {
         diag_code <- clean_id(sub(".*\\((.*)\\).*", "\\1", desc), to_lower = FALSE)
       }
 
-      nested_result <- icd10_tree(icd10[[i]], regex)
-      attr(nested_result, "code") <- diag_code
-      attr(nested_result, "code_type") <- "ICD10"
-      attr(nested_result, "description") <- desc
+      nested_result           <- make_icd10_tree(icd10[[i]], regex = regex)
+      nested_result$data$desc <- desc
+      nested_result$text      <- paste0(c(diag_code, desc), collapse = " | ")
 
-      # print(nested_result)
-
-      # If there are nested results or the current name matches the regex
-      if (grepl(regex, desc, perl = TRUE) | grepl(regex, diag_code, perl = TRUE) | length(nested_result) > 0) {
+      if (grepl(regex, desc, perl = TRUE) | grepl(regex, diag_code, perl = TRUE) | length(nested_result$children) > 0) {
+        print(desc)
         if (names(icd10)[i] %in% c("chapter", "section")) {
-          attr(nested_result, "stselected") <- FALSE
-          attr(nested_result, "stdisabled") <- TRUE
-          attr(nested_result, "sticon") <- "fa fa-folder"
+          nested_result$type            <- "chapter"
+          nested_result$state$disabled  <- TRUE
+          nested_result$state$opened    <- FALSE
+        } else {
+          nested_result$type            <- "code"
+          nested_result$state$disabled  <- FALSE
         }
-        label <- paste0(attr(nested_result, "code"), " | ", attr(nested_result, "description"))
-        result[[label]] <- nested_result
-      }
 
+        result$children <- c(result$children, list(nested_result))
+      }
     }
   }
   return(result)
@@ -132,7 +177,15 @@ icd10_tree <- function(icd10, regex = ".") {
 #' @export
 #'
 opcs_tree <- function(opcs_dt, regex = ".") {
-  OPCS <- TreeElement("OPCS", "OPCS", "coding system", sticon = "fa-regular fa-folder")
+
+  OPCS <- TreeNode(text = "OPCS4",
+                   type = "root",
+                   data = list(code       = "OPCS4",
+                               code_type  = "OPCS4",
+                               desc       = NULL,
+                               ukbb_count = NULL,
+                               nhs_count  = NULL))
+
   current_chapter_name <- NULL
   current_chapter_element <- NULL
 
@@ -141,35 +194,41 @@ opcs_tree <- function(opcs_dt, regex = ".") {
     description <- opcs_dt$DESCRIPTION[i]
 
     clean_code <- sub("\\.", "", code)
-    element <- TreeElement(code        = clean_code,
-                           code_type   = "OPCS4",
-                           description = description)
+    element <- TreeNode(text = paste0(c(clean_code, description), collapse = " | "),
+                        type = "code",
+                        data = list(code       = clean_code,
+                                    code_type  = "OPCS4",
+                                    desc       = description,
+                                    ukbb_count = NULL,
+                                    nhs_count  = NULL),
+                        checked  = FALSE,
+                        selected = FALSE,
+                        opened   = TRUE,
+                        disabled = FALSE,
+                        children = list())
 
     if (!grepl("\\.", code, perl = TRUE)) {
       # Chapter level code
+      chapter_idx <- length(OPCS$children) + 1
       current_chapter_element <- element
-      attr(current_chapter_element, "stselected") <- FALSE
-      attr(current_chapter_element, "stdisabled") <- TRUE
-      attr(current_chapter_element, "sticon") <- "fa fa-folder"
-      current_chapter_name <- paste0(attr(element, "code"), " | ", attr(element, "description"))
+      current_chapter_element$type <- "chapter"
+      current_chapter_element$state$disabled <- TRUE
 
     } else {
 
       # skip if fails regex
-      if (!grepl(regex, clean_code) && !grepl(regex, description)) {
+      if (!grepl(regex, clean_code) & !grepl(regex, description)) {
         next
       } else {
         # add the chapter
-        if (!is.null(attr(current_chapter_element, "code"))) {
-          OPCS[[current_chapter_name]] <- current_chapter_element
+        if (!is.null(current_chapter_element)) {
+          OPCS$children <- c(OPCS$children, list(current_chapter_element))
           current_chapter_element <- NULL
         }
         # add the procedure
-        label <- paste0(attr(element, "code"), " | ", attr(element, "description"))
-        OPCS[[current_chapter_name]][[label]] <- element
+        OPCS$children[[chapter_idx]]$children <- c(OPCS$children[[chapter_idx]]$children, list(element))
 
       }
-
     }
   }
 
@@ -187,26 +246,27 @@ opcs_tree <- function(opcs_dt, regex = ".") {
 #' @title Annotate tree
 #' @param tree a tree
 #' @param annot_dt a data.table, data to use for annotation
-#' @param value_col a string, column name in `annot_dt` with the annotation values. The new attribute name is taken from the value column name.
-#' @param on a named character vector, how to join the data e.g. c("annot_dt_col" = "tree_attribute_name"), can have multiple conditions e.g. c(code=code, code_type=code_type)
+#' @param value_col a string, column name in `annot_dt` with the annotation values.
+#' @param on a named character vector, how to join the data e.g. c("annot_dt_col" = "node$data$name"), can have multiple conditions e.g. c(code=code, code_type=code_type)
+#' @param annot_name new attribute name (inserted into node$data)
 #' @param no_match any value, what to annotate with if there is no join data
-#' @param result for recursive use
 #' @return a nested list, a tree
 #' @export
 #'
-annotate_tree <- function(tree, annot_dt, value_col = "count", on = c("icd10" = "code"), no_match = NA) {
+annotate_tree <- function(tree, annot_dt, value_col = "count", on = c("code" = "code", "code_type" = "code_type"), annot_name = "value", no_match = 0) {
 
-  for (element_name in names(tree)) {
-    element    <- tree[[element_name]]
+  for (i in seq_along(tree)) {
 
     filter_condition <- sapply(names(on), function(key) {
-      attr_value <- attr(element, on[[key]])
-      paste0(key, " == '", attr_value, "'")
+      attr_value <- tree[[i]]$data[[on[[key]]]]
+      paste0(key, " == '", as.character(attr_value), "'")
     })
     filter_condition <- paste(filter_condition, collapse = " & ")
     annot_data <- annot_dt[eval(parse(text = filter_condition)), ..value_col]
 
-    if (nrow(annot_data) == 0) {
+    if (tree[[i]]$type != "code") {
+      annot_data <- NULL
+    } else if (nrow(annot_data) == 0 || all(is.na(annot_data))) {
       annot_data <- no_match
     } else if (nrow(annot_data) > 1) {
       annot_data <- annot_data[[1]]
@@ -214,14 +274,12 @@ annotate_tree <- function(tree, annot_dt, value_col = "count", on = c("icd10" = 
     } else {
       annot_data <- annot_data[[1]]
     }
-    attr(element, value_col) <- annot_data
+    tree[[i]]$data[[annot_name]] <- annot_data
 
     # Recursively annotate the subtree
-    if (length(element) > 0) {
-      element <- annotate_tree(element, annot_dt, value_col, on, no_match)
+    if (length(tree[[i]]$children) > 0) {
+      tree[[i]]$children <- annotate_tree(tree[[i]]$children, annot_dt, value_col, on, annot_name, no_match)
     }
-
-    tree[[element_name]] <- element
 
   }
   return(tree)

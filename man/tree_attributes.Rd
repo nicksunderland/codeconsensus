@@ -7,7 +7,7 @@
 tree_attributes(tree, attribute_name, result = list())
 }
 \arguments{
-\item{tree}{a tree}
+\item{tree}{a js tree object}
 
 \item{attribute_name}{str, the attribute name (label, code, code_type, description, stselected, stopened)}
 

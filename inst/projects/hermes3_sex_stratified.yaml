@@ -1,0 +1,9 @@
+id: "hermes3_sex_stratified"
+name: "HERMES 3.0 sex stratified"
+concepts:
+  - "heart_failure.yaml"
+  - "atherosclerosis_coronary.yaml"
+  - "myocardial_infarction.yaml"
+  - "procedure_open_cabg.yaml"
+  - "procedure_perc_angioplasty_coronary.yaml"
+  - "congenital_heart_disease.yaml"
