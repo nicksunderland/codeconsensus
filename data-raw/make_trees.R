@@ -72,7 +72,7 @@ snomed_tree <- function(hierarch_codes) {
                                nhs_count  = NULL),
                    checked  = FALSE,
                    selected = FALSE,
-                   opened   = TRUE,
+                   opened   = FALSE,
                    disabled = TRUE,
                    children = convert_to_tree_element(nested_list, hierarch_codes))
 
@@ -121,7 +121,7 @@ make_icd10_tree <- function(icd10, regex = ".") {
                                  nhs_count  = NULL),
                      checked  = FALSE,
                      selected = FALSE,
-                     opened   = TRUE,
+                     opened   = FALSE,
                      disabled = TRUE,
                      children = list())
 
@@ -137,14 +137,14 @@ make_icd10_tree <- function(icd10, regex = ".") {
       }
 
       nested_result           <- make_icd10_tree(icd10[[i]], regex = regex)
+      nested_result$data$code <- diag_code
       nested_result$data$desc <- desc
       nested_result$text      <- paste0(c(diag_code, desc), collapse = " | ")
 
       if (grepl(regex, desc, perl = TRUE) | grepl(regex, diag_code, perl = TRUE) | length(nested_result$children) > 0) {
-        print(desc)
         if (names(icd10)[i] %in% c("chapter", "section")) {
           nested_result$type            <- "chapter"
-          nested_result$state$disabled  <- TRUE
+          nested_result$state$disabled  <- FALSE
           nested_result$state$opened    <- FALSE
         } else {
           nested_result$type            <- "code"
@@ -203,7 +203,7 @@ opcs_tree <- function(opcs_dt, regex = ".") {
                                     nhs_count  = NULL),
                         checked  = FALSE,
                         selected = FALSE,
-                        opened   = TRUE,
+                        opened   = FALSE,
                         disabled = FALSE,
                         children = list())
 
@@ -212,7 +212,6 @@ opcs_tree <- function(opcs_dt, regex = ".") {
       chapter_idx <- length(OPCS$children) + 1
       current_chapter_element <- element
       current_chapter_element$type <- "chapter"
-      current_chapter_element$state$disabled <- TRUE
 
     } else {
 

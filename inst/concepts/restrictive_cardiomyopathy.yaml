@@ -11,8 +11,12 @@ terminology: SNOMED
 concept_id: "415295002"
 concept_term: Hypertrophic cardiomyopathy
 regexes:
-  - "415295002"
-  - "(?i)(restrictive|constrictive) cardiomyopathy"
+  all:
+    - "(?i)(restrictive|constrictive) cardiomyopathy"
+  SNOMED:
+    - "415295002"
+  ICD10:
+  OPCS4:
 include:
   - "restrictive_cardiomyopathy"
 exclude:

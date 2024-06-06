@@ -8,9 +8,13 @@ terminology: SNOMED
 concept_id: "690791000119107"
 concept_term: Penetrating aortic ulcer
 regexes:
-  - "690791000119107"
-  - "(?i)penetrating aortic ulcer"
-  - "(?i)penetrating ulcer of aorta"
+  all:
+    - "(?i)penetrating aortic ulcer"
+    - "(?i)penetrating ulcer of aorta"
+  SNOMED:
+    - "690791000119107"
+  ICD10:
+  OPCS4:
 include:
   - "penetrating_ulcer_of_aorta"
 exclude:

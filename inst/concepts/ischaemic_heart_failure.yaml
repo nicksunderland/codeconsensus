@@ -1,12 +1,12 @@
-id: non_ischaemic_heart_failure
-name: Non-ischaemic heart Failure
+id: ischaemic_heart_failure
+name: Ischaemic heart Failure
 definition: |
-  Non-ischaemic heart Failure definition...
+  Ischaemic heart Failure definition...
 pmid: NA
 domain: Derived
 terminology: NA
 concept_id: "NA"
-concept_term: Non-ischaemic heart Failure
+concept_term: Ischaemic heart Failure
 regexes:
   all:
   SNOMED:
@@ -14,9 +14,9 @@ regexes:
   OPCS4:
 include:
   - "heart_failure"
-exclude:
   - "myocardial_infarction"
-  - "atherosclerosis_coronary"
   - "procedure_open_cabg"
   - "procedure_perc_angioplasty_coronary"
+  - "atherosclerosis_coronary"
+exclude:
   - "congenital_heart_disease"

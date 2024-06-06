@@ -8,8 +8,12 @@ terminology: SNOMED
 concept_id: "194828000"
 concept_term: Angina
 regexes:
-  - "194828000"
-  - "(?i)angina"
+  all:
+    - "(?i)angina"
+  SNOMED:
+    - "194828000"
+  ICD10:
+  OPCS4:
 include:
   - "angina_pectoris"
 exclude:

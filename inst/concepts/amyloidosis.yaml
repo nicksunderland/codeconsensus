@@ -8,9 +8,13 @@ terminology: SNOMED
 concept_id: "17602002"
 concept_term: "Valvular heart disease"
 regexes:
-  - "17602002"
-  - "16573007"
-  - "(?i)(cardiac )?amyloidosis"
+  all:
+    - "(?i)(cardiac )?amyloidosis"
+  SNOMED:
+    - "17602002"
+    - "16573007"
+  ICD10:
+  OPCS4:
 include:
   - "amyloidosis"
 exclude:

@@ -7,7 +7,7 @@ library(xml2)
 devtools::load_all()
 source(system.file("data-raw", "make_trees.R", package = "hfphenotyping"))
 
-OVERWRITE = F
+OVERWRITE = T
 
 # first we need the data sources, which are the SNOMED, ICD-10, and OPCS codes from the NHS
 # TRUD website (https://isd.digital.nhs.uk/trud). You will need an account set up.
@@ -32,11 +32,12 @@ nhs_counts  <- nhs_counts
 ukbb_counts <- ukbb_counts
 
 # produce the trees for each config
-for (config in configs) {
+for (config in configs[c(5,10,13,15,16,19,22,7)]) {
 
   conf    <- yaml::read_yaml(config)
   outfile <- file.path(dirname(config), paste0(conf$id, ".RDS"))
-  regex   <- paste0("(", conf$regexes, ")", collapse = "|")
+  regex   <- conf$regexes[!sapply(conf$regexes, is.null)]
+  regex   <- lapply(regex, function(x) paste0("(", x, ")", collapse = "|"))
 
 
   # populate the CONCEPTS database
@@ -64,11 +65,12 @@ for (config in configs) {
 
   } else {
 
-    cat("Extracting with regex: `", regex, "`\n")
+    cat("Extracting `", conf$id, "`\n")
 
     # extract the concept
     cat("[i] Extracting SNOMED\n")
-    concept        <- SNOMEDconcept(regex, SNOMED = SNOMED, exact = FALSE)
+    snomed_regex   <- paste0(c(regex$all, regex$SNOMED), collapse = "|")
+    concept        <- SNOMEDconcept(snomed_regex, SNOMED = SNOMED, exact = FALSE)
     hierarch_codes <- showCodelistHierarchy(concept)
     snomed         <- snomed_tree(hierarch_codes)
 
@@ -78,21 +80,38 @@ for (config in configs) {
     icd10 <- xml2::read_xml(icd10_xml_file)
     icd10 <- xml2::as_list(icd10)
     icd10 <- icd10[[1]]
-    icd10 <- make_icd10_tree(icd10, regex = regex)
+    icd10_regex <- paste0(c(regex$all, regex$ICD10), collapse = "|")
+    icd10 <- make_icd10_tree(icd10, regex = icd10_regex)
 
     # read the OPCS (NHS TRUD)
     cat("[i] Extracting OPCS-4\n")
     opcs <- fread(file.path(dir, "OPCS410 Data files txt", "OPCS410 CodesAndTitles Nov 2022 V1.0.txt"), col.names = c("CODE", "DESCRIPTION"), header = FALSE)
-    opcs <- opcs_tree(opcs, regex = regex)
+    opcs_regex <- paste0(c(regex$all, regex$OPCS4), collapse = "|")
+    opcs <- opcs_tree(opcs, regex = opcs_regex)
 
     # annotate the tree with data
     tree <- annotate_tree(tree = list(snomed, icd10, opcs), annot_dt = nhs_counts, annot_name = "nhs_count", value_col = "count", on = c("code" = "code", "code_type" = "code_type"), no_match = 0)
     tree <- annotate_tree(tree = tree, annot_dt = ukbb_counts, annot_name = "ukbb_count", value_col = "count", on = c("code" = "code", "code_type" = "code_type"), no_match = 0)
 
+    # add to a concept level
+    concept_tree <- TreeNode(text = conf$name,
+                             type = "root",
+                             data = list(code       = conf$name,
+                                         code_type  = "concept",
+                                         desc       = NULL,
+                                         ukbb_count = NULL,
+                                         nhs_count  = NULL),
+                             checked  = FALSE,
+                             selected = FALSE,
+                             opened   = TRUE,
+                             disabled = TRUE,
+                             children = tree)
+
     # save
     cat("[i] saving .RDS file\n")
-    saveRDS(tree, outfile)
+    saveRDS(list(concept_tree), outfile)
   }
+
 
   # populate the CODE database
   these_codes <- data.table::data.table(CODE_DESC = as.character(tree_attributes(tree, "desc")),

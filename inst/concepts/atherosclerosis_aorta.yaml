@@ -8,9 +8,13 @@ terminology: SNOMED
 concept_id: "81817003"
 concept_term: Atherosclerosis of aorta
 regexes:
-  - "81817003"
-  - "(?i)athero(ma|sclerosis) .*aort(ic|a)"
-  - "(?i)aort(ic|a) .*athero(ma|sclerosis)"
+  all:
+    - "(?i)athero(ma|sclerosis) .*aort(ic|a)"
+    - "(?i)aort(ic|a) .*athero(ma|sclerosis)"
+  SNOMED:
+    - "81817003"
+  ICD10:
+  OPCS4:
 include:
   - "atherosclerosis_aorta"
 exclude:

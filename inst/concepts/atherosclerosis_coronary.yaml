@@ -8,10 +8,16 @@ terminology: SNOMED
 concept_id: "443502000"
 concept_term: Coronary atherosclerosis
 regexes:
-  - "443502000"
-  - "(?i)athero(ma|sclerosis) .*coronar(y|ies)"
-  - "(?i)coronar(y|ies) .*athero(ma|sclerosis)"
-  - "(?i)coronary artery disease"
+  all:
+    - "(?i)athero(ma|sclerosis) .*coronar(y|ies)"
+    - "(?i)coronar(y|ies) .*athero(ma|sclerosis)"
+    - "(?i)coronary artery disease"
+    -  "ischa?emic cardiomyopathy"
+  SNOMED:
+    - "443502000"
+  ICD10:
+    - "I255"
+  OPCS4:
 include:
   - "atherosclerosis_coronary"
 exclude:

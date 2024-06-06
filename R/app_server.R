@@ -29,8 +29,8 @@ app_server <- function(input, output, session) {
   # --------------------------
   output$project_radiobuttons <- renderUI({
     project_configs <- list.files(system.file("projects", package = "hfphenotyping"), pattern = ".ya?ml$", full.names = TRUE)
-    project_names   <- sapply(project_configs, function(x) yaml::read_yaml(x)$name)
-    project_ids     <- lapply(project_configs, function(x) yaml::read_yaml(x)$id)
+    project_names   <- sapply(project_configs, function(x) yaml::read_yaml(paste0(sub(".yaml$", "", x), ".yaml"))$name)
+    project_ids     <- lapply(project_configs, function(x) yaml::read_yaml(paste0(sub(".yaml$", "", x), ".yaml"))$id)
     names(project_ids) <- project_names
     radioButtons("project", "Project", inline = TRUE, choices = project_ids)
   })
@@ -142,7 +142,7 @@ app_server <- function(input, output, session) {
     project_config <- system.file("projects", paste0(project, ".yaml"),  package = "hfphenotyping")
     config         <- yaml::read_yaml(project_config)
     concept_dir    <- system.file("concepts", package = "hfphenotyping")
-    concepts_files <- lapply(config$concepts, function(x) file.path(concept_dir, x))
+    concepts_files <- lapply(config$concepts, function(x) file.path(concept_dir, paste0(x, ".yaml")))
     concepts       <- lapply(concepts_files, function(x) yaml::read_yaml(x))
 
     # create the home ui

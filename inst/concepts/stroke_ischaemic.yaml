@@ -8,10 +8,14 @@ terminology: SNOMED
 concept_id: 422504002
 concept_term: Ischaemic stroke
 regexes:
-  - "422504002"
-  - "(?i)ischa?emic stroke"
-  - "(?i)cerebrae?l infarct(ion)?"
-  - "(?i)stroke"
+  all:
+    - "(?i)ischa?emic stroke"
+    - "(?i)cerebrae?l infarct(ion)?"
+    - "(?i)stroke"
+  SNOMED:
+    - "422504002"
+  ICD10:
+  OPCS4:
 include:
   - "stroke_ischaemic"
 exclude:

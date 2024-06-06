@@ -8,10 +8,14 @@ terminology: SNOMED
 concept_id: "415070008"
 concept_term: Percutaneous coronary intervention
 regexes:
-  - "415070008"
-  - "(?i)percutaneous coronary intervention"
-  - "(?i)percutaneous .*angioplasty .*coronary"
-  - "K[456][0359][0-9]"
+  all:
+    - "(?i)percutaneous coronary intervention"
+    - "(?i)(percutaneous|transluminal) .*(angioplasty|thrombolysis|therapeutic|atherectomy|operations) .*coronar(y|ies)"
+    - "(?i)(percutaneous|transluminal) .*coronar(y|ies) .*(angioplasty|thrombolysis|therapeutic|atherectomy|operations)"
+  SNOMED:
+    - "415070008"
+  ICD10:
+  OPCS4:
 include:
   - "procedure_perc_angioplasty_coronary"
 exclude:

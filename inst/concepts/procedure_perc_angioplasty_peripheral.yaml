@@ -8,10 +8,14 @@ terminology: SNOMED
 concept_id: "5431005"
 concept_term: Percutaneous procedure on artery of extremity
 regexes:
-  - "5431005"
-  - "(?i)percutaneous transluminal angioplasty"
-  - "L[567][1346][0-9]"
-  - "(?i)percutaneous procedure on artery of extremity"
+  all:
+    - "(?i)percutaneous transluminal angioplasty"
+    - "(?i)percutaneous procedure on artery of extremity"
+  SNOMED:
+    - "5431005"
+  ICD10:
+  OPCS4:
+    - "L[567][1346][0-9]"
 include:
   - "procedure_perc_angioplasty_peripheral"
 exclude:

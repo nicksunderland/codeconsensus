@@ -8,8 +8,12 @@ terminology: LOINC
 concept_id: "30525-0"
 concept_term: Age
 regexes:
-  - "397659008"
-  - "(?i)^age$"
+  all:
+    - "(?i)^age$"
+  SNOMED:
+    - "397659008"
+  ICD10:
+  OPCS4:
 include:
   - "age"
 exclude:

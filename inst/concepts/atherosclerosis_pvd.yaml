@@ -8,11 +8,15 @@ terminology: SNOMED
 concept_id: "840580004"
 concept_term: Peripheral arterial disease
 regexes:
-  - "840580004"
-  - "(?i)peripher(al|ies) arter(ial|y) disease"
-  - "(?i).*athero(ma|sclerosis) .*arter(ies|y) .*extremities"
-  - "(?i).*athero(ma|sclerosis) .*(renal|other) .*arter(ies|y)"
-  - "(?i)generalized and unspecified atherosclerosis"
+  all:
+    - "(?i)peripher(al|ies) arter(ial|y) disease"
+    - "(?i).*athero(ma|sclerosis) .*arter(ies|y) .*extremities"
+    - "(?i).*athero(ma|sclerosis) .*(renal|other) .*arter(ies|y)"
+    - "(?i)generalized and unspecified atherosclerosis"
+  SNOMED:
+    - "840580004"
+  ICD10:
+  OPCS4:
 include:
   - "atherosclerosis_pvd"
 exclude:

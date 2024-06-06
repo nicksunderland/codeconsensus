@@ -10,9 +10,13 @@ terminology: SNOMED
 concept_id: "233873004"
 concept_term: Hypertrophic cardiomyopathy
 regexes:
-  - "233873004"
-  - "(?i)hypertrophic (obstructive )?cardiomyopathy"
-  - "(?i)obstructive hypertrophic cardiomyopathy"
+  all:
+    - "(?i)hypertrophic (obstructive )?cardiomyopathy"
+    - "(?i)obstructive hypertrophic cardiomyopathy"
+  SNOMED:
+    - "233873004"
+  ICD10:
+  OPCS4:
 include:
   - "hypertrophic_cardiomyopathy"
 exclude:

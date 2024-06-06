@@ -10,8 +10,12 @@ terminology: SNOMED
 concept_id: "399020009"
 concept_term: Dilated cardiomyopathy
 regexes:
-  - "399020009"
-  - "(?i)dilated cardiomyopathy"
+  all:
+    - "(?i)dilated cardiomyopathy"
+  SNOMED:
+    - "399020009"
+  ICD10:
+  OPCS4:
 include:
   - "dilated_cardiomyopathy"
 exclude:

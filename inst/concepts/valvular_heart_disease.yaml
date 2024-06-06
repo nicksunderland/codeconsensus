@@ -9,10 +9,14 @@ terminology: SNOMED
 concept_id: "368009"
 concept_term: "Valvular heart disease"
 regexes:
-  - "368009"
-  - "(?i)(pulmonary|tricuspid|aortic|mitral|prosthetic) .*(valves?|stenosis|regurg)"
-  - "(?i)TAVI|TAVR|valv(ulaoplasty|otomy)|annuloplasty|leaflet re(construc|sec)tion|commissurotomy"
-  - "(?i)endocardial structures?"
+  all:
+    - "(?i)(pulmonary|tricuspid|aortic|mitral|prosthetic) .*(valves?|stenosis|regurg)"
+    - "(?i)TAVI|TAVR|valv(ulaoplasty|otomy)|annuloplasty|leaflet re(construc|sec)tion|commissurotomy"
+    - "(?i)endocardial structures?"
+  SNOMED:
+   - "368009"
+  ICD10:
+  OPCS4:
 include:
   - "valvular_heart_disease"
 exclude:

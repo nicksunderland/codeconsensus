@@ -8,13 +8,17 @@ terminology: SNOMED
 concept_id: "274100004"
 concept_term: Cerebral hemorrhage
 regexes:
-  - "274100004"
-  - "(?i)intra-?cranial hae?morrhae?ge"
-  - "(?i)(intra-?)?cerebrae?l hae?morrhae?ge"
-  - "(?i)hae?morrhae?g(e|ic) stroke"
-  - "(?i)sub-?arachnoid hae?morrhae?ge"
-  - "(?i)sub-?dural hae?morrhae?ge"
-  - "(?i)extra-?dural hae?morrhae?ge"
+  all:
+    - "(?i)intra-?cranial hae?morrhae?ge"
+    - "(?i)(intra-?)?cerebrae?l hae?morrhae?ge"
+    - "(?i)hae?morrhae?g(e|ic) stroke"
+    - "(?i)sub-?arachnoid hae?morrhae?ge"
+    - "(?i)sub-?dural hae?morrhae?ge"
+    - "(?i)extra-?dural hae?morrhae?ge"
+  SNOMED:
+    - "274100004"
+  ICD10:
+  OPCS4:
 include:
   - "stroke_haemorrhagic"
 exclude:

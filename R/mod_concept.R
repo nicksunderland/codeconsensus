@@ -22,7 +22,7 @@ mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, con
              h5("Domain:",              span(domain,                          style = "font-weight: normal;")),
              h5("Terminology:",         span(terminology,                     style = "font-weight: normal;")),
              h5("Concept term:",        span(concept_term,                    style = "font-weight: normal;")),
-             h5("Search expressions:\n",span(paste0("(", regexes, ")", collapse = " | "), style = "font-weight: normal;"))
+             h5("Search expressions:\n",span(paste0("(", unlist(regexes), ")", collapse = " | "), style = "font-weight: normal;"))
            ),
            # user comments section
            textAreaInput(ns("user_comments"), label = "Comments", width = "100%"),
@@ -36,7 +36,8 @@ mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, con
            # save and output messages
            fluidRow(column(12, tags$label("Save selection"))),
            fluidRow(column(2, actionButton(ns("save"), "Save/Refresh")),
-                    column(8, textOutput(ns("message_box")))),
+                    column(3, checkboxInput(ns("three_state"), label = "Cascade selection", value = TRUE)),
+                    column(7, textOutput(ns("message_box")))),
            # the tree
            shinycssloaders::withSpinner(
              jsTreeR::jstreeOutput(ns("tree")),
@@ -147,7 +148,8 @@ mod_concept_server <- function(id, include, exclude, user, derived){
       }
 
       # to jsTree
-      tree <- jsTreeR::jstree(tree, types = NodeTypes, theme = "proton", checkboxes = TRUE)
+      tree <- jsTreeR::jstree(tree, types = NodeTypes, theme = "proton", checkboxes = TRUE, checkWithText = TRUE,
+                              coreOptions = list(expand_selected_onload = FALSE))
 
       # return
       js_tree(tree)
@@ -346,15 +348,26 @@ mod_concept_server <- function(id, include, exclude, user, derived){
         paste0("codes_", id, "_", Sys.Date(), ".tsv")
       },
       content = function(file) {
-        out <- selected()
-        out <- out[SELECTED == 1, ]
-        data.table::fwrite(out[, .(CONCEPT, CODE, CODE_TYPE)], file, sep="\t", row.names=FALSE)
+        out <- data.table::data.table(PHENO     = id,
+                                      CONCEPT   = sapply(input$tree_selected_paths, function(x) sub("^(?:Ex|In)clude/(.*?)/.*", "\\1", x$path)),
+                                      CODE      = unlist(tree_attributes(input$tree_selected, "code")),
+                                      CODE_TYPE = unlist(tree_attributes(input$tree_selected, "code_type")),
+                                      DESC      = unlist(tree_attributes(input$tree_selected, "desc")),
+                                      INCLUDE   = sapply(input$tree_selected_paths, function(x) grepl("^Include", x$path)),
+                                      EXCLUDE   = sapply(input$tree_selected_paths, function(x) grepl("^Exclude", x$path)))
+
+        data.table::fwrite(out, file, sep="\t", row.names=FALSE)
       }
     )
 
     # count filter slider
     session$userData$observer_store[[paste0("count_slider_", id)]] <- observeEvent(input$count_slider, {
       session$sendCustomMessage(ns("hideNodes"), input$count_slider[1])
+    })
+
+    # cascading checkbox
+    session$userData$observer_store[[paste0("three_state_", id)]] <- observeEvent(input$three_state, {
+      session$sendCustomMessage(ns("toggleThreeState"), input$three_state)
     })
 
     # code display select box
@@ -365,10 +378,25 @@ mod_concept_server <- function(id, include, exclude, user, derived){
     })
 
 
+    # custom JS functions: CustomMessageHandler connected to sendCustomMessage event above
     onrender <- reactive({
       print("onrender <- reactive")
       glue::glue("
         function(el, x) {{
+
+          Shiny.addCustomMessageHandler('{ns('toggleThreeState')}', function(checked) {{
+            var tree = $.jstree.reference(el.id);
+            //console.log(checked);
+            if (checked) {{
+              tree.settings.checkbox.three_state = true;
+              tree.settings.checkbox.cascade = 'up+down+undetermined';
+            }} else {{
+              tree.settings.checkbox.three_state = false;
+              tree.settings.checkbox.cascade = '';
+            }}
+            //console.log(tree);
+          }});
+
           Shiny.addCustomMessageHandler('{ns('hideNodes')}', function(count_slider) {{
             var tree = $.jstree.reference(el.id);
             var json = tree.get_json(null, {{flat: true}});
@@ -376,10 +404,9 @@ mod_concept_server <- function(id, include, exclude, user, derived){
               var id = json[i].id;
               var count = parseFloat(json[i].data.{input$code_display});
               var count_slider = parseFloat(count_slider);
-              console.log(count);
-              console.log(count_slider);
-              console.log(count !== null && !isNaN(count) && count < count_slider);
-              console.log(tree)
+              //console.log(count);
+              //console.log(count_slider);
+              //console.log(count !== null && !isNaN(count) && count < count_slider);
               if(count !== null && !isNaN(count) && count < count_slider) {{
                 tree.hide_node(id);
               }} else {{
@@ -387,6 +414,7 @@ mod_concept_server <- function(id, include, exclude, user, derived){
               }}
            }}
          }});
+
        }}")
       })
 
@@ -472,8 +500,8 @@ modify_tree <- function(tree, selected, label_option = "default", disable_tree =
       # if setting the initial select status
       if (!is.null(selected)) {
         key       <- paste(sub_tree[[i]]$data$code, sub_tree[[i]]$data$code_type)
-        status    <- selected_status[key]
-        disabled  <- selected_disabled[key]
+        status    <- unname(selected_status[key])
+        disabled  <- unname(selected_disabled[key])
 
         if ((!is.null(sub_tree[[i]]$state$selected) && !is.null(status) && !is.na(status)) && sub_tree[[i]]$state$selected != status) {
           sub_tree[[i]]$state$selected <- status

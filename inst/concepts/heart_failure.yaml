@@ -10,10 +10,20 @@ terminology: SNOMED
 concept_id: "84114007"
 concept_term: Heart failure
 regexes:
-  - "84114007"
-  - "(?i)heart failure"
-  - "(?i)ventricular failure"
-  - "(?i)biventricular cardiac pacemaker"
+  all:
+    - "(?i)heart failure"
+    - "(?i)ventricular failure"
+    - "(?i)biventricular cardiac pacemaker"
+    - "(?i)heart.* transplant"
+    - "(?i)transplant(ation)? .*heart"
+    - "(?i)heart .*assist operation"
+  SNOMED:
+    - "84114007"
+  ICD10:
+    - "T86[23]"
+    - "Z94[13]"
+  OPCS4:
+    - "K[0567][0-4][0-9]"
 include:
   - "heart_failure"
 exclude:

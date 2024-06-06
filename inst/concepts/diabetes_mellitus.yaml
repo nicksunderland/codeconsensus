@@ -8,9 +8,13 @@ terminology: SNOMED
 concept_id: 73211009
 concept_term: Diabetes mellitus
 regexes:
-  - "73211009"
-  - "diabetes mellitus"
-  - "diabetic (retinopathy|cataract|arthropathy|.*neuropathy|.*angiopathy)"
+  all:
+    - "diabetes mellitus"
+    - "diabetic (retinopathy|cataract|arthropathy|.*neuropathy|.*angiopathy)"
+  SNOMED:
+    - "73211009"
+  ICD10:
+  OPCS4:
 include:
   - "diabetes_mellitus"
 exclude:

@@ -8,9 +8,13 @@ terminology: SNOMED
 concept_id: "22701007"
 concept_term: Operative procedure on artery of extremity
 regexes:
-  - "22701007"
-  - "Operative procedure on artery of extremity"
-  - "L[1256][0123689][0-9]"
+  all:
+    - "Operative procedure on artery of extremity"
+  SNOMED:
+    - "22701007"
+  ICD10:
+  OPCS4:
+    - "L[1256][0123689][0-9]"
 include:
   - "procedure_open_peripheral_vascular"
 exclude:

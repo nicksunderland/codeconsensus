@@ -8,11 +8,15 @@ terminology: OPCS
 concept_id: "444588006"
 concept_term: Angioplasty of aorta
 regexes:
-  - "(?i)angioplasty of aorta"
-  - "EVAR"
-  - "L2[678][0-9]"
-  - "444588006"
-  - "(?i)endovascular repair of abdominal aortic aneurysm"
+  all:
+    - "(?i)angioplasty of aorta"
+    - "EVAR"
+    - "(?i)endovascular repair of abdominal aortic aneurysm"
+  SNOMED:
+    - "444588006"
+  ICD10:
+  OPCS4:
+    - "L2[678][0-9]"
 include:
   - "procedure_perc_angioplasty_aorta"
 exclude:

@@ -8,10 +8,14 @@ terminology: SNOMED
 concept_id: "315362007"
 concept_term: Angioplasty of aorta
 regexes:
-  - "(?i)open repair of aorta"
-  - "L1[89][0-9]"
-  - "315362007"
-  - "(?i)repair of thoracoabdominal aortic aneurysm"
+  all:
+    - "(?i)open repair of aorta"
+    - "(?i)repair of thoracoabdominal aortic aneurysm"
+  SNOMED:
+    - "315362007"
+  ICD10:
+  OPCS4:
+    - "L1[89][0-9]"
 include:
   - "open_aortic_intervention"
 exclude:

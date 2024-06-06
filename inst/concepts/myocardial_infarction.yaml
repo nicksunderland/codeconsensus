@@ -9,8 +9,12 @@ concept_id: "22298006"
 concept_term: Myocardial infarction
 valueset_definition: ...
 regexes:
-  - "22298006"
-  - "myocardial infarction"
+  all:
+    - "myocardial infarction"
+  SNOMED:
+    - "22298006"
+  ICD10:
+  OPCS4:
 include:
   - "myocardial_infarction"
 exclude:

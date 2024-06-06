@@ -9,9 +9,13 @@ terminology: SNOMED
 concept_id: "38341003"
 concept_term: Systemic arterial hypertension
 regexes:
-  - "38341003"
-  - "(?i)hypertensi(on|ve)"
-  - "(?i)systemic arterial hypertension"
+  all:
+    - "(?i)hypertensi(on|ve)"
+    - "(?i)systemic arterial hypertension"
+  SNOMED:
+    - "38341003"
+  ICD10:
+  OPCS4:
 include:
   - "systemic_arterial_hypertension"
 exclude:
