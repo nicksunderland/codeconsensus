@@ -440,7 +440,7 @@ mod_concept_server <- function(id, include, exclude, user, derived){
                           disable_tree = is.null(user[["is_rater"]]) || !user[["is_rater"]] || derived())
 
       # apply js on render rules
-      tree <- tree |> htmlwidgets::onRender(onrender())
+      tree <- htmlwidgets::onRender(tree, onrender())
 
       # return
       return(tree)
