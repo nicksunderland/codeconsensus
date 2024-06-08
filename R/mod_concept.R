@@ -36,12 +36,12 @@ mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, con
            # save and output messages
            fluidRow(column(12, tags$label("Save selection"))),
            fluidRow(column(2, actionButton(ns("save"), "Save/Refresh")),
-                    column(3, checkboxInput(ns("three_state"), label = "Cascade selection", value = TRUE)),
-                    column(7, textOutput(ns("message_box")))),
+                    column(3, checkboxInput(ns("cascade"), "Cascade", value = FALSE)),
+                    column(3, checkboxInput(ns("expand"), "Expand all", value = FALSE)),
+                    column(6, textOutput(ns("message_box")))),
            # the tree
            shinycssloaders::withSpinner(
              jsTreeR::jstreeOutput(ns("tree")),
-             #shinyTree::shinyTree(ns("tree"), theme="proton", wholerow = FALSE, search = FALSE, unique = FALSE, checkbox = TRUE, three_state = TRUE, tie_selection = TRUE),
              type = 8
            )
   )
@@ -322,6 +322,10 @@ mod_concept_server <- function(id, include, exclude, user, derived){
 
         # remove the old rows from the database
         code_id_str <- paste0(current$CODE_ID, collapse = ", ")
+        if (any(is.na(current$CODE_ID))) {
+          # find this bug....
+          browser()
+        }
         sql <- glue::glue("DELETE FROM SELECTED WHERE USERNAME = '{user[['username']]}' AND CONCEPT_ID = {concept_id()} AND CODE_ID IN ({code_id_str})")
         query_db(query_str = sql, type = "send")
 
@@ -365,9 +369,14 @@ mod_concept_server <- function(id, include, exclude, user, derived){
       session$sendCustomMessage(ns("hideNodes"), input$count_slider[1])
     })
 
-    # cascading checkbox
-    session$userData$observer_store[[paste0("three_state_", id)]] <- observeEvent(input$three_state, {
-      session$sendCustomMessage(ns("toggleThreeState"), input$three_state)
+    # expand selection option
+    session$userData$observer_store[[paste0("expand_", id)]] <- observeEvent(input$expand, {
+      session$sendCustomMessage(ns("expandNodes"), input$expand)
+    })
+
+    # cascade selection option
+    session$userData$observer_store[[paste0("cascade_", id)]] <- observeEvent(input$cascade, {
+      session$sendCustomMessage(ns("cascadeNodes"), input$cascade)
     })
 
     # code display select box
@@ -384,19 +393,37 @@ mod_concept_server <- function(id, include, exclude, user, derived){
       glue::glue("
         function(el, x) {{
 
-          Shiny.addCustomMessageHandler('{ns('toggleThreeState')}', function(checked) {{
+          // turn off cascading as will auto select parent codes which may not always be relevant
+          var tree = $.jstree.reference(el.id);
+          tree.settings.checkbox.three_state = false; // prevent cascading
+          tree.settings.checkbox.cascade = 'undetermined'; // show parent nodes with children selected with a square
+          //console.log(tree);
+
+          Shiny.addCustomMessageHandler('{ns('cascadeNodes')}', function(cascade) {{
             var tree = $.jstree.reference(el.id);
-            //console.log(checked);
-            if (checked) {{
-              tree.settings.checkbox.three_state = true;
-              tree.settings.checkbox.cascade = 'up+down+undetermined';
-            }} else {{
-              tree.settings.checkbox.three_state = false;
-              tree.settings.checkbox.cascade = '';
+            if (tree) {{
+              if (cascade) {{
+                tree.settings.checkbox.three_state = true;
+                tree.settings.checkbox.cascade = 'undetermined+up+down';
+              }} else {{
+                tree.settings.checkbox.three_state = false;
+                tree.settings.checkbox.cascade = 'undetermined';
+              }}
             }}
-            //console.log(tree);
           }});
 
+          Shiny.addCustomMessageHandler('{ns('expandNodes')}', function(expand) {{
+            var tree = $.jstree.reference(el.id);
+            if (tree) {{
+              if (expand) {{
+                tree.open_all();
+              }} else {{
+                tree.close_all();
+              }}
+            }}
+          }});
+
+          // the slot to receive a `session$sendCustomMessage(ns('hideNodes') ...`
           Shiny.addCustomMessageHandler('{ns('hideNodes')}', function(count_slider) {{
             var tree = $.jstree.reference(el.id);
             var json = tree.get_json(null, {{flat: true}});

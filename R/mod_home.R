@@ -55,6 +55,7 @@ mod_home_server <- function(id, concepts){
                             SELECTED.USERNAME,
                             SELECTED.SELECTED,
                             CODES.CODE,
+                            CODES.CODE_TYPE,
                             CONCEPTS.CONCEPT
                          FROM
                             SELECTED
@@ -66,8 +67,8 @@ mod_home_server <- function(id, concepts){
                             CONCEPTS.CONCEPT IN ({names})")
 
       res <- query_db(sql, type = "get")
-
-      res <- data.table::dcast(res, CODE + CONCEPT ~ USERNAME, value.var = "SELECTED", fill = NA)
+      res <- unique(res, by = c("USERNAME", "CODE", "CODE_TYPE", "CONCEPT"))
+      res <- data.table::dcast(res, CODE + CODE_TYPE + CONCEPT ~ USERNAME, value.var = "SELECTED", fill = NA)
 
       calc_fleiss_kappa <- function(ratings_matrix) {
         N <- nrow(ratings_matrix)
@@ -84,7 +85,7 @@ mod_home_server <- function(id, concepts){
         return(kappa)
       }
 
-      kappas <- res[, .(kappa = calc_fleiss_kappa(as.matrix(.SD[, -c("CODE"), with = FALSE]))), by = "CONCEPT"]
+      kappas <- res[, .(kappa = calc_fleiss_kappa(as.matrix(.SD[, -c("CODE", "CODE_TYPE"), with = FALSE]))), by = "CONCEPT"]
 
       return(kappas)
     })

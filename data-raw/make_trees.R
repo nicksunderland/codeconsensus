@@ -180,6 +180,10 @@ opcs_tree <- function(opcs_dt, regex = ".") {
 
   OPCS <- TreeNode(text = "OPCS4",
                    type = "root",
+                   opened   = FALSE,
+                   checked  = FALSE,
+                   selected = FALSE,
+                   disabled = TRUE,
                    data = list(code       = "OPCS4",
                                code_type  = "OPCS4",
                                desc       = NULL,

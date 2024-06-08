@@ -7,7 +7,7 @@ library(xml2)
 devtools::load_all()
 source(system.file("data-raw", "make_trees.R", package = "hfphenotyping"))
 
-OVERWRITE = T
+OVERWRITE = F
 
 # first we need the data sources, which are the SNOMED, ICD-10, and OPCS codes from the NHS
 # TRUD website (https://isd.digital.nhs.uk/trud). You will need an account set up.
@@ -32,7 +32,7 @@ nhs_counts  <- nhs_counts
 ukbb_counts <- ukbb_counts
 
 # produce the trees for each config
-for (config in configs[c(5,10,13,15,16,19,22,7)]) {
+for (config in configs[[7]]){ #[c(5,10,13,15,16,19,22,7)]) {
 
   conf    <- yaml::read_yaml(config)
   outfile <- file.path(dirname(config), paste0(conf$id, ".RDS"))
@@ -61,7 +61,7 @@ for (config in configs[c(5,10,13,15,16,19,22,7)]) {
   # produce the tree
   if (!OVERWRITE & file.exists(outfile)) {
 
-    tree <- readRDS(outfile)
+    concept_tree <- readRDS(outfile)
 
   } else {
 
@@ -114,10 +114,10 @@ for (config in configs[c(5,10,13,15,16,19,22,7)]) {
 
 
   # populate the CODE database
-  these_codes <- data.table::data.table(CODE_DESC = as.character(tree_attributes(tree, "desc")),
-                                        CODE      = as.character(tree_attributes(tree, "code")),
-                                        DISABLED  = unlist(tree_attributes(tree, "disabled")),
-                                        CODE_TYPE = as.character(tree_attributes(tree, "code_type")))
+  these_codes <- data.table::data.table(CODE_DESC = as.character(tree_attributes(concept_tree, "desc")),
+                                        CODE      = as.character(tree_attributes(concept_tree, "code")),
+                                        DISABLED  = unlist(tree_attributes(concept_tree, "disabled")),
+                                        CODE_TYPE = as.character(tree_attributes(concept_tree, "code_type")))
   these_codes <- these_codes[DISABLED == FALSE, ]
   these_codes[, DISABLED := NULL]
   saved_codes <- query_db(type = "read", table = "CODES")

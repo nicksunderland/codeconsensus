@@ -11,8 +11,9 @@ concept_id: "84114007"
 concept_term: Heart failure
 regexes:
   all:
-    - "(?i)heart failure"
-    - "(?i)ventricular failure"
+    - "(?i)(heart|cardiac|ventricular) failure"
+    - "(?i)cardiac insufficiency"
+    - " HF "
     - "(?i)biventricular cardiac pacemaker"
     - "(?i)heart.* transplant"
     - "(?i)transplant(ation)? .*heart"
