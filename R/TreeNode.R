@@ -13,6 +13,21 @@ NodeTypes <- list(
     icon    = "fa fa-clone",
     a_attr  = list(),
     li_attr = list()
+  ),
+  code_red = list(
+    icon    = "fa fa-clone",
+    a_attr  = list(style = "color: red;"),
+    li_attr = list()
+  ),
+  code_orange = list(
+    icon    = "fa fa-clone",
+    a_attr  = list(style = "color: orange;"),
+    li_attr = list()
+  ),
+  code_green = list(
+    icon    = "fa fa-clone",
+    a_attr  = list(style = "color: green;"),
+    li_attr = list()
   )
 )
 

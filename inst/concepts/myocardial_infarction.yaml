@@ -10,7 +10,10 @@ concept_term: Myocardial infarction
 valueset_definition: ...
 regexes:
   all:
-    - "myocardial infarction"
+    - "(?i)myocardial infarction"
+    - "(?i)acute ischa?emic heart disease"
+    - "(?i)acute .*coronary .*(disease|dysfunction)"
+    - "(?i)dressler"
   SNOMED:
     - "22298006"
   ICD10:

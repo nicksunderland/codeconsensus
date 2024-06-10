@@ -12,11 +12,13 @@ regexes:
   SNOMED:
   ICD10:
   OPCS4:
-include:
-  - "heart_failure"
+exclude:
+  - "congenital_heart_disease"
   - "myocardial_infarction"
   - "procedure_open_cabg"
   - "procedure_perc_angioplasty_coronary"
   - "atherosclerosis_coronary"
-exclude:
-  - "congenital_heart_disease"
+include:
+  - "heart_failure"
+
+

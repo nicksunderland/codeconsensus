@@ -54,6 +54,7 @@ mod_home_server <- function(id, concepts){
       sql <- glue::glue("SELECT
                             SELECTED.USERNAME,
                             SELECTED.SELECTED,
+                            SELECTED.CODE_ID,
                             CODES.CODE,
                             CODES.CODE_TYPE,
                             CONCEPTS.CONCEPT

@@ -3,7 +3,7 @@
 #' @return a nested list
 #' @export
 #'
-snomed_tree <- function(hierarch_codes) {
+snomed_tree <- function(hierarch_codes, concept_id) {
 
   # nested list of the row index within hierarch_codes
   build_nested_list <- function(hierarch_codes, row_id) {
@@ -16,7 +16,7 @@ snomed_tree <- function(hierarch_codes) {
   nested_list <- lapply(hierarch_codes[is.na(parentrowid), rowid], function(parent) build_nested_list(hierarch_codes, parent))
 
   # convert to TreeElements
-  convert_to_tree_element <- function(nested_list, hierarch_codes) {
+  convert_to_tree_element <- function(nested_list, hierarch_codes, concept_id) {
     result <- list()
 
     for (i in seq_along(nested_list)) {
@@ -27,12 +27,13 @@ snomed_tree <- function(hierarch_codes) {
       desc        <- concept_row$term
 
       if (!is.null(x$children) && length(x$children) > 0) {
-        children <- convert_to_tree_element(x$children, hierarch_codes)
+        children <- convert_to_tree_element(x$children, hierarch_codes, concept_id)
         element <- TreeNode(text = paste0(code, " | ", desc),
                             type = "code",
                             data = list(code       = code,
                                         code_type  = "SNOMED",
                                         desc       = desc,
+                                        concept_id = concept_id,
                                         ukbb_count = NULL,
                                         nhs_count  = NULL),
                             checked  = FALSE,
@@ -47,6 +48,7 @@ snomed_tree <- function(hierarch_codes) {
                             data = list(code       = code,
                                         code_type  = "SNOMED",
                                         desc       = desc,
+                                        concept_id = concept_id,
                                         ukbb_count = NULL,
                                         nhs_count  = NULL),
                             checked  = FALSE,
@@ -68,13 +70,14 @@ snomed_tree <- function(hierarch_codes) {
                    data = list(code       = "SNOMED",
                                code_type  = "SNOMED",
                                desc       = NULL,
+                               concept_id = concept_id,
                                ukbb_count = NULL,
                                nhs_count  = NULL),
                    checked  = FALSE,
                    selected = FALSE,
                    opened   = FALSE,
                    disabled = TRUE,
-                   children = convert_to_tree_element(nested_list, hierarch_codes))
+                   children = convert_to_tree_element(nested_list, hierarch_codes, concept_id))
 
 
   return(tree)
@@ -110,13 +113,14 @@ snomed_tree <- function(hierarch_codes) {
 #' @export
 #'
 # base tree node
-make_icd10_tree <- function(icd10, regex = ".") {
+make_icd10_tree <- function(icd10, concept_id, regex = ".") {
 
   result <- TreeNode(text = "ICD10",
                      type = "root",
                      data = list(code       = "ICD10",
                                  code_type  = "ICD10",
                                  desc       = NULL,
+                                 concept_id = concept_id,
                                  ukbb_count = NULL,
                                  nhs_count  = NULL),
                      checked  = FALSE,
@@ -136,7 +140,7 @@ make_icd10_tree <- function(icd10, regex = ".") {
         diag_code <- clean_id(sub(".*\\((.*)\\).*", "\\1", desc), to_lower = FALSE)
       }
 
-      nested_result           <- make_icd10_tree(icd10[[i]], regex = regex)
+      nested_result           <- make_icd10_tree(icd10[[i]], concept_id = concept_id, regex = regex)
       nested_result$data$code <- diag_code
       nested_result$data$desc <- desc
       nested_result$text      <- paste0(c(diag_code, desc), collapse = " | ")
@@ -176,7 +180,7 @@ make_icd10_tree <- function(icd10, regex = ".") {
 #' @return a nested list
 #' @export
 #'
-opcs_tree <- function(opcs_dt, regex = ".") {
+opcs_tree <- function(opcs_dt, concept_id, regex = ".") {
 
   OPCS <- TreeNode(text = "OPCS4",
                    type = "root",
@@ -187,6 +191,7 @@ opcs_tree <- function(opcs_dt, regex = ".") {
                    data = list(code       = "OPCS4",
                                code_type  = "OPCS4",
                                desc       = NULL,
+                               concept_id = concept_id,
                                ukbb_count = NULL,
                                nhs_count  = NULL))
 
@@ -203,6 +208,7 @@ opcs_tree <- function(opcs_dt, regex = ".") {
                         data = list(code       = clean_code,
                                     code_type  = "OPCS4",
                                     desc       = description,
+                                    concept_id = concept_id,
                                     ukbb_count = NULL,
                                     nhs_count  = NULL),
                         checked  = FALSE,
@@ -244,6 +250,149 @@ opcs_tree <- function(opcs_dt, regex = ".") {
 # opcs_tree <- opcs_tree(opcs, regex = "pacemaker")
 # tree[[attr(opcs_tree, "name")]] <- opcs_tree
 
+
+
+
+#' @title ICD9 tree
+#' @param icd9_dt a data.table of ICD9 codes with columns CODE and DESCRIPTION
+#' @param regex regular expression to search for
+#' @return a nested list
+#' @export
+#'
+icd9_tree <- function(icd9_dt, concept_id, regex = ".") {
+
+  ICD9 <- TreeNode(text = "ICD9",
+                   type = "root",
+                   opened   = FALSE,
+                   checked  = FALSE,
+                   selected = FALSE,
+                   disabled = TRUE,
+                   data = list(code       = "ICD9",
+                               code_type  = "ICD9",
+                               desc       = NULL,
+                               concept_id = concept_id,
+                               ukbb_count = NULL,
+                               nhs_count  = NULL))
+
+  current_chapter_name <- NULL
+  current_chapter_element <- NULL
+
+  for (i in seq_len(nrow(icd9_dt))) {
+    code <- icd9_dt$CODE[i]
+    description <- icd9_dt$DESCRIPTION[i]
+
+    element <- TreeNode(text = paste0(c(code, description), collapse = " | "),
+                        type = "code",
+                        data = list(code       = code,
+                                    code_type  = "ICD9",
+                                    desc       = description,
+                                    concept_id = concept_id,
+                                    ukbb_count = NULL,
+                                    nhs_count  = NULL),
+                        checked  = FALSE,
+                        selected = FALSE,
+                        opened   = FALSE,
+                        disabled = FALSE,
+                        children = list())
+
+    if (grepl("^Chapter", code)) {
+      # Chapter level code
+      chapter_idx <- length(ICD9$children) + 1
+      current_chapter_element <- element
+      current_chapter_element$type <- "chapter"
+      current_chapter_element$state$disabled <- TRUE
+
+    } else {
+
+      # skip if fails regex
+      if (!grepl(regex, code) & !grepl(regex, description)) {
+        next
+      } else {
+        # add the chapter
+        if (!is.null(current_chapter_element)) {
+          ICD9$children <- c(ICD9$children, list(current_chapter_element))
+          current_chapter_element <- NULL
+        }
+        # add the procedure
+        ICD9$children[[chapter_idx]]$children <- c(ICD9$children[[chapter_idx]]$children, list(element))
+
+      }
+    }
+  }
+
+  return(ICD9)
+}
+
+
+#' @title ICD9 procedure tree
+#' @param icd9_proc_dt a data.table of ICD9 procedure codes with columns CODE and DESCRIPTION
+#' @param regex regular expression to search for
+#' @return a nested list
+#' @export
+#'
+icd9_procedure_tree <- function(icd9_proc_dt, concept_id, regex = ".") {
+
+  ICD9 <- TreeNode(text = "ICD9_procedures",
+                   type = "root",
+                   opened   = FALSE,
+                   checked  = FALSE,
+                   selected = FALSE,
+                   disabled = TRUE,
+                   data = list(code       = "ICD9_procedures",
+                               code_type  = "ICD9_procedures",
+                               desc       = NULL,
+                               concept_id = concept_id,
+                               ukbb_count = NULL,
+                               nhs_count  = NULL))
+
+  current_chapter_name <- NULL
+  current_chapter_element <- NULL
+
+  for (i in seq_len(nrow(icd9_proc_dt))) {
+    code <- icd9_proc_dt$CODE[i]
+    description <- icd9_proc_dt$DESCRIPTION[i]
+
+    element <- TreeNode(text = paste0(c(code, description), collapse = " | "),
+                        type = "code",
+                        data = list(code       = code,
+                                    code_type  = "ICD9_procedures",
+                                    desc       = description,
+                                    concept_id = concept_id,
+                                    ukbb_count = NULL,
+                                    nhs_count  = NULL),
+                        checked  = FALSE,
+                        selected = FALSE,
+                        opened   = FALSE,
+                        disabled = FALSE,
+                        children = list())
+
+    if (grepl("^Chapter", code)) {
+      # Chapter level code
+      chapter_idx <- length(ICD9$children) + 1
+      current_chapter_element <- element
+      current_chapter_element$state$disabled <- TRUE
+      current_chapter_element$type <- "chapter"
+
+    } else {
+
+      # skip if fails regex
+      if (!grepl(regex, code) & !grepl(regex, description)) {
+        next
+      } else {
+        # add the chapter
+        if (!is.null(current_chapter_element)) {
+          ICD9$children <- c(ICD9$children, list(current_chapter_element))
+          current_chapter_element <- NULL
+        }
+        # add the procedure
+        ICD9$children[[chapter_idx]]$children <- c(ICD9$children[[chapter_idx]]$children, list(element))
+
+      }
+    }
+  }
+
+  return(ICD9)
+}
 
 
 #' @title Annotate tree

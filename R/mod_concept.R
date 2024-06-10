@@ -38,7 +38,8 @@ mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, con
            fluidRow(column(2, actionButton(ns("save"), "Save/Refresh")),
                     column(3, checkboxInput(ns("cascade"), "Cascade", value = FALSE)),
                     column(3, checkboxInput(ns("expand"), "Expand all", value = FALSE)),
-                    column(6, textOutput(ns("message_box")))),
+                    column(3, checkboxInput(ns("show_agreement"), "Show agreement", value = FALSE)),
+                    column(3, textOutput(ns("message_box")))),
            # the tree
            shinycssloaders::withSpinner(
              jsTreeR::jstreeOutput(ns("tree")),
@@ -91,7 +92,7 @@ mod_concept_server <- function(id, include, exclude, user, derived){
     code_ids <- reactive({
       print("code_ids <- reactive")
       tree_codes <- paste0("'", unlist(tree_attributes(js_tree(), 'code')), "'", collapse = ", ")
-      sql <- glue::glue("SELECT CODE_ID, CODE FROM CODES WHERE CODE IN ({tree_codes})")
+      sql <- glue::glue("SELECT CODE_ID, CODE_TYPE, CODE FROM CODES WHERE CODE IN ({tree_codes})")
       res <- query_db(sql, type = "get")
       return(res)
     })
@@ -149,6 +150,7 @@ mod_concept_server <- function(id, include, exclude, user, derived){
 
       # to jsTree
       tree <- jsTreeR::jstree(tree, types = NodeTypes, theme = "proton", checkboxes = TRUE, checkWithText = TRUE,
+                              search = TRUE,
                               coreOptions = list(expand_selected_onload = FALSE))
 
       # return
@@ -187,12 +189,13 @@ mod_concept_server <- function(id, include, exclude, user, derived){
 
       } else {
 
-        # user is not a rater, present rater results
+        # user is not a rater, present average rater results
         sql <- glue::glue("SELECT
                               CODES.CODE,
                               CODES.CODE_TYPE,
                               CONCEPTS.CONCEPT,
                               CASE WHEN AVG(SELECTED.SELECTED) > 0.5 THEN 1 ELSE 0 END AS SELECTED,
+                              AVG(SELECTED.SELECTED) AS AVG_SELECTED,
                               1 AS DISABLED
                            FROM
                               SELECTED
@@ -205,6 +208,7 @@ mod_concept_server <- function(id, include, exclude, user, derived){
                               AND CODES.CODE IN ({tree_codes})
                            GROUP BY
                               SELECTED.CONCEPT_ID, CONCEPTS.CONCEPT, CODES.CODE, CODES.CODE_TYPE")
+
       }
 
       # get the codes and select status
@@ -318,7 +322,7 @@ mod_concept_server <- function(id, include, exclude, user, derived){
 
         # clean up
         current <- current[DISABLED == FALSE, ]
-        current[code_ids(), CODE_ID := i.CODE_ID, on = "CODE"]
+        current[code_ids(), CODE_ID := i.CODE_ID, on = c("CODE", "CODE_TYPE")]
 
         # remove the old rows from the database
         code_id_str <- paste0(current$CODE_ID, collapse = ", ")
@@ -397,7 +401,7 @@ mod_concept_server <- function(id, include, exclude, user, derived){
           var tree = $.jstree.reference(el.id);
           tree.settings.checkbox.three_state = false; // prevent cascading
           tree.settings.checkbox.cascade = 'undetermined'; // show parent nodes with children selected with a square
-          //console.log(tree);
+          console.log(tree);
 
           Shiny.addCustomMessageHandler('{ns('cascadeNodes')}', function(cascade) {{
             var tree = $.jstree.reference(el.id);
@@ -461,10 +465,11 @@ mod_concept_server <- function(id, include, exclude, user, derived){
 
       # modify tree with previous selection and label options
       print("tree render")
-      tree <- modify_tree(tree         = js_tree(),
-                          selected     = selected(),
-                          label_option = input$code_display,
-                          disable_tree = is.null(user[["is_rater"]]) || !user[["is_rater"]] || derived())
+      tree <- modify_tree(tree           = js_tree(),
+                          selected       = selected(),
+                          label_option   = input$code_display,
+                          show_agreement = input$show_agreement,
+                          disable_tree   = is.null(user[["is_rater"]]) || !user[["is_rater"]] || derived())
 
       # apply js on render rules
       tree <- htmlwidgets::onRender(tree, onrender())
@@ -502,14 +507,19 @@ mod_concept_server <- function(id, include, exclude, user, derived){
 
 
 # optimised version
-modify_tree <- function(tree, selected, label_option = "default", disable_tree = FALSE) {
+modify_tree <- function(tree, selected, label_option = "default", show_agreement = FALSE, disable_tree = FALSE) {
   option <- match.arg(label_option, choices = c("default", "nhs_count", "ukbb_count"))
 
   # if setting the initial select status
   if (!is.null(selected)) {
     # Pre-compute status and disabled information for fast lookup
-    selected_status   <- setNames(as.logical(selected$SELECTED), paste(selected$CODE, selected$CODE_TYPE))
-    selected_disabled <- setNames(as.logical(selected$DISABLED), paste(selected$CODE, selected$CODE_TYPE))
+    selected_status   <- setNames(as.logical(selected$SELECTED), paste(selected$CODE, selected$CODE_TYPE, selected$CONCEPT))
+    selected_disabled <- setNames(as.logical(selected$DISABLED), paste(selected$CODE, selected$CODE_TYPE, selected$CONCEPT))
+
+    # add average selected data if present (if not a rater)
+    if ("AVG_SELECTED" %in% names(selected) && show_agreement) {
+      agreement <- setNames((1 - abs(selected$SELECTED - selected$AVG_SELECTED)), paste(selected$CODE, selected$CODE_TYPE, selected$CONCEPT))
+    }
   }
 
   # Recursive function to modify the tree in place
@@ -524,15 +534,28 @@ modify_tree <- function(tree, selected, label_option = "default", disable_tree =
         sub_tree[[i]]$text <- new_name
       }
 
-      # if setting the initial select status
-      if (!is.null(selected)) {
-        key       <- paste(sub_tree[[i]]$data$code, sub_tree[[i]]$data$code_type)
-        status    <- unname(selected_status[key])
-        disabled  <- unname(selected_disabled[key])
+      key       <- paste(sub_tree[[i]]$data$code, sub_tree[[i]]$data$code_type, sub_tree[[i]]$data$concept_id)
+      status    <- unname(selected_status[key])
+      disabled  <- unname(selected_disabled[key])
 
-        if ((!is.null(sub_tree[[i]]$state$selected) && !is.null(status) && !is.na(status)) && sub_tree[[i]]$state$selected != status) {
-          sub_tree[[i]]$state$selected <- status
+      # add average selected data if present (if not a rater)
+      if ("AVG_SELECTED" %in% names(selected) && show_agreement) {
+        agree_value <- unname(agreement[key])
+        sub_tree[[i]]$type <- if (is.na(agree_value)) {
+          "code_orange"
+        } else if (agree_value < 1.0) {
+          "code_red"
+        } else {
+          "code"
         }
+      } else {
+        if (grepl("code", sub_tree[[i]]$type) &&  sub_tree[[i]]$type != "code") {
+          sub_tree[[i]]$type <- "code"
+        }
+      }
+
+      if ((!is.null(sub_tree[[i]]$state$selected) && !is.null(status) && !is.na(status)) && sub_tree[[i]]$state$selected != status) {
+        sub_tree[[i]]$state$selected <- status
       }
 
       if (disable_tree) {

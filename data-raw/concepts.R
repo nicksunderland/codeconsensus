@@ -7,7 +7,7 @@ library(xml2)
 devtools::load_all()
 source(system.file("data-raw", "make_trees.R", package = "hfphenotyping"))
 
-OVERWRITE = F
+OVERWRITE = T
 
 # first we need the data sources, which are the SNOMED, ICD-10, and OPCS codes from the NHS
 # TRUD website (https://isd.digital.nhs.uk/trud). You will need an account set up.
@@ -32,7 +32,7 @@ nhs_counts  <- nhs_counts
 ukbb_counts <- ukbb_counts
 
 # produce the trees for each config
-for (config in configs[[7]]){ #[c(5,10,13,15,16,19,22,7)]) {
+for (config in configs) { #[c(5,10,13,15,16,19,22,7)]) {
 
   conf    <- yaml::read_yaml(config)
   outfile <- file.path(dirname(config), paste0(conf$id, ".RDS"))
@@ -72,7 +72,7 @@ for (config in configs[[7]]){ #[c(5,10,13,15,16,19,22,7)]) {
     snomed_regex   <- paste0(c(regex$all, regex$SNOMED), collapse = "|")
     concept        <- SNOMEDconcept(snomed_regex, SNOMED = SNOMED, exact = FALSE)
     hierarch_codes <- showCodelistHierarchy(concept)
-    snomed         <- snomed_tree(hierarch_codes)
+    snomed         <- snomed_tree(hierarch_codes, concept_id = conf$id)
 
     # read the ICD10
     cat("[i] Extracting ICD-10\n")
@@ -81,16 +81,28 @@ for (config in configs[[7]]){ #[c(5,10,13,15,16,19,22,7)]) {
     icd10 <- xml2::as_list(icd10)
     icd10 <- icd10[[1]]
     icd10_regex <- paste0(c(regex$all, regex$ICD10), collapse = "|")
-    icd10 <- make_icd10_tree(icd10, regex = icd10_regex)
+    icd10 <- make_icd10_tree(icd10, concept_id = conf$id, regex = icd10_regex)
 
     # read the OPCS (NHS TRUD)
     cat("[i] Extracting OPCS-4\n")
     opcs <- fread(file.path(dir, "OPCS410 Data files txt", "OPCS410 CodesAndTitles Nov 2022 V1.0.txt"), col.names = c("CODE", "DESCRIPTION"), header = FALSE)
     opcs_regex <- paste0(c(regex$all, regex$OPCS4), collapse = "|")
-    opcs <- opcs_tree(opcs, regex = opcs_regex)
+    opcs <- opcs_tree(opcs, concept_id = conf$id, regex = opcs_regex)
+
+    # read the ICD9
+    cat("[i] Extracting ICD9\n")
+    icd9 <- fread(file.path(dir, "ICD9", "icd9.tsv"))
+    icd9_regex <- paste0(c(regex$all, regex$ICD9), collapse = "|")
+    icd9 <- icd9_tree(icd9, concept_id = conf$id, regex = icd9_regex)
+
+    # read the ICD 9 procedures
+    cat("[i] Extracting ICD9 procedures\n")
+    icd9_procedures <- fread(file.path(dir, "ICD9", "icd9_procedures.tsv"))
+    icd9_procedures_regex <- paste0(c(regex$all, regex$ICD9_procedure), collapse = "|")
+    icd9_procedures <- icd9_procedure_tree(icd9_procedures, concept_id = conf$id, regex = icd9_procedures_regex)
 
     # annotate the tree with data
-    tree <- annotate_tree(tree = list(snomed, icd10, opcs), annot_dt = nhs_counts, annot_name = "nhs_count", value_col = "count", on = c("code" = "code", "code_type" = "code_type"), no_match = 0)
+    tree <- annotate_tree(tree = list(snomed, icd10, opcs, icd9, icd9_procedures), annot_dt = nhs_counts, annot_name = "nhs_count", value_col = "count", on = c("code" = "code", "code_type" = "code_type"), no_match = 0)
     tree <- annotate_tree(tree = tree, annot_dt = ukbb_counts, annot_name = "ukbb_count", value_col = "count", on = c("code" = "code", "code_type" = "code_type"), no_match = 0)
 
     # add to a concept level
@@ -99,6 +111,7 @@ for (config in configs[[7]]){ #[c(5,10,13,15,16,19,22,7)]) {
                              data = list(code       = conf$name,
                                          code_type  = "concept",
                                          desc       = NULL,
+                                         concept_id = conf$id,
                                          ukbb_count = NULL,
                                          nhs_count  = NULL),
                              checked  = FALSE,
@@ -114,10 +127,10 @@ for (config in configs[[7]]){ #[c(5,10,13,15,16,19,22,7)]) {
 
 
   # populate the CODE database
-  these_codes <- data.table::data.table(CODE_DESC = as.character(tree_attributes(concept_tree, "desc")),
-                                        CODE      = as.character(tree_attributes(concept_tree, "code")),
-                                        DISABLED  = unlist(tree_attributes(concept_tree, "disabled")),
-                                        CODE_TYPE = as.character(tree_attributes(concept_tree, "code_type")))
+  these_codes <- data.table::data.table(CODE_DESC = as.character(tree_attributes(list(concept_tree), "desc")),
+                                        CODE      = as.character(tree_attributes(list(concept_tree), "code")),
+                                        DISABLED  = unlist(tree_attributes(list(concept_tree), "disabled")),
+                                        CODE_TYPE = as.character(tree_attributes(list(concept_tree), "code_type")))
   these_codes <- these_codes[DISABLED == FALSE, ]
   these_codes[, DISABLED := NULL]
   saved_codes <- query_db(type = "read", table = "CODES")
