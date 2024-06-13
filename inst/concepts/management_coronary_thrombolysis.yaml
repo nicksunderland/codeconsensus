@@ -1,0 +1,24 @@
+id: management_coronary_thrombolysis
+name: Thrombolysis (coronary)
+definition: |
+  Thrombolysis for the treatment of coronary thrombosis.
+pmid: NA
+domain: Procedure
+terminology:
+  - "SNOMED_procedure"
+  - "OPCS4"
+concept_id: "32912007"
+concept_term: Thrombolysis of coronary artery
+regexes:
+  all:
+    - "(?i)thrombolytic"
+    - "thrombolysis"
+  SNOMED:
+    - "32912007"
+    - "232731009"
+  OPCS4:
+    - "K502"
+    - "coronary thrombolysis"
+include:
+  - "management_coronary_thrombolysis"
+exclude:

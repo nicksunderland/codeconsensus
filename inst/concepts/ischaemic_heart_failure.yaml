@@ -4,7 +4,7 @@ definition: |
   Ischaemic heart Failure definition...
 pmid: NA
 domain: Derived
-terminology: NA
+terminology: "NA"
 concept_id: "NA"
 concept_term: Ischaemic heart Failure
 regexes:

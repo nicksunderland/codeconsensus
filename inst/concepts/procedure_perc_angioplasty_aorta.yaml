@@ -4,7 +4,9 @@ definition: |
     Endovascular repair of the aorta.
 pmid: NA
 domain: Procedure
-terminology: OPCS
+terminology:
+  - "SNOMED_procedure"
+  - "OPCS4"
 concept_id: "444588006"
 concept_term: Angioplasty of aorta
 regexes:

@@ -4,7 +4,9 @@ definition: |
     Percutaneous coronary intervention (PCI) is defined as the placement of an angioplasty guidewire, balloon, or other device (e.g. stent, atherectomy, brachytherapy, or thrombectomy catheter) into a native coronary artery or a graft for the purpose of mechanical coronary revascularisation. The assessment of coronary lesion severity by fluoroscopy, intracoronary imaging (e.g. intravascular ultrasonography) or physiology (e.g. fractional flow reserve) is not considered a PCI procedure.
 pmid: NA
 domain: Procedure
-terminology: SNOMED
+terminology:
+  - "SNOMED_procedures"
+  - "OPCS4"
 concept_id: "415070008"
 concept_term: Percutaneous coronary intervention
 regexes:
@@ -16,6 +18,7 @@ regexes:
     - "415070008"
   ICD10:
   OPCS4:
+    - "K49[0-9]+?|K50[0-9]+|K75[0-9]+"
 include:
   - "procedure_perc_angioplasty_coronary"
 exclude:

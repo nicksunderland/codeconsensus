@@ -155,23 +155,10 @@ app_server <- function(input, output, session) {
     derived_uis   <- list()
 
     for (x in concepts) {
-
       # create the concept module
-      m <- mod_concept_ui(id                  = x[["id"]],
-                          title               = x[["name"]],
-                          definition          = x[["definition"]],
-                          pmid                = x[["pmid"]],
-                          domain              = x[["domain"]],
-                          terminology         = x[["terminology"]],
-                          concept_term        = x[["concept_term"]],
-                          regexes             = x[["regexes"]])
-      setNames(m, clean_id(x$id, check = TRUE))
-
-      mod_concept_server(id                   = x[["id"]],
-                         include              = x[["include"]],
-                         exclude              = x[["exclude"]],
-                         user                 = user,
-                         derived              = x[["domain"]] == "Derived")
+      m <- mod_concept_ui(id = x[["id"]], config = x)
+      setNames(m, x$id)
+      mod_concept_server(id = x[["id"]], config = x, user = user)
 
       # categorize UIs based on type/domain
       if (x$domain == "Procedure") {

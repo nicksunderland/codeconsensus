@@ -4,7 +4,9 @@ definition: |
     Open surgical repair of the aorta.
 pmid: NA
 domain: Procedure
-terminology: SNOMED
+terminology:
+  - "SNOMED_procedure"
+  - "OPCS4"
 concept_id: "315362007"
 concept_term: Angioplasty of aorta
 regexes:

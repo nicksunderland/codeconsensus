@@ -4,7 +4,10 @@ definition: |
   The clinical definition of MI denotes the presence of acute myocardial injury detected by abnormal cardiac biomarkers in the setting of evidence of acute myocardial ischaemia.
 pmid: NA
 domain: Disorder
-terminology: SNOMED
+terminology:
+  - "SNOMED"
+  - "ICD10"
+  - "ICD9"
 concept_id: "22298006"
 concept_term: Myocardial infarction
 valueset_definition: ...

@@ -4,7 +4,10 @@ definition: |
   Stroke is defined as an acute episode of focal or global neurological dysfunction (lasting for ≥24 hours or until death) caused by haemorrhage of the brain, spinal cord, or retina that is resulting in cell damage based on pathological, imaging, or other objective evidence. Stroke does not include nonvascular neurological deficits.
 pmid: NA
 domain: Disorder
-terminology: SNOMED
+terminology:
+  - "SNOMED"
+  - "ICD10"
+  - "ICD9"
 concept_id: "274100004"
 concept_term: Cerebral hemorrhage
 regexes:

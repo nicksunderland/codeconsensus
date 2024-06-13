@@ -4,7 +4,10 @@ definition: |
   Characteristics of discomfort related to myocardial ischaemia.
 pmid: NA
 domain: Disorder
-terminology: SNOMED
+terminology:
+  - "SNOMED"
+  - "ICD10"
+  - "ICD9"
 concept_id: "194828000"
 concept_term: Angina
 regexes:

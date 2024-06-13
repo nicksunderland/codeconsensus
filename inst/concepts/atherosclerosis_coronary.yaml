@@ -1,10 +1,15 @@
 id: "atherosclerosis_coronary"
 name: "Atherosclerosis (coronary)"
 definition: |
-  Atherosclerosis of the epicardial coronary arteries and chronic ischaemic cardiomyopathy.
+  Atherosclerosis of the epicardial coronary arteries and chronic ischaemic cardiomyopathy where the ischaemia
+  is mostly likely secondary to atherosclerosis. Excludes codes for definite myocardial infarction where coronary
+  atheroma is not defined and procedures for coronary artery disease.
 pmid: NA
 domain: Disorder
-terminology: SNOMED
+terminology:
+  - "SNOMED"
+  - "ICD10"
+  - "ICD9"
 concept_id: "443502000"
 concept_term: Coronary atherosclerosis
 regexes:

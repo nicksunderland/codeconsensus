@@ -4,7 +4,9 @@ definition: |
   Percutaneous procedure on artery of extremity
 pmid: NA
 domain: Procedure
-terminology: SNOMED
+terminology:
+  - "SNOMED_procedure"
+  - "OPCS4"
 concept_id: "5431005"
 concept_term: Percutaneous procedure on artery of extremity
 regexes:

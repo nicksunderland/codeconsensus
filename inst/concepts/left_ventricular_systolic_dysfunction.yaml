@@ -4,7 +4,10 @@ definition: |
   Left ventricular systolic dysfunction is defined as ventricular ejection fraction of <40%
 pmid: NA
 domain: Disorder
-terminology: SNOMED
+terminology:
+  - "SNOMED"
+  - "ICD10"
+  - "ICD9"
 concept_id: "134401001"
 concept_term: Left ventricular systolic dysfunction
 regexes:

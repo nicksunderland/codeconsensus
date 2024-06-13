@@ -6,7 +6,10 @@ definition: |
   loading conditions (e.g. hypertension, valve disease, CHD) or CAD. (ESC, 2023)
 pmid: NA
 domain: Disorder
-terminology: SNOMED
+terminology:
+  - "SNOMED"
+  - "ICD10"
+  - "ICD9"
 concept_id: "399020009"
 concept_term: Dilated cardiomyopathy
 regexes:

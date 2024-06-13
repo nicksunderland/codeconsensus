@@ -6,7 +6,10 @@ definition: |
   that is not solely explained by abnormal loading conditions. (ESC, 2023)
 pmid: NA
 domain: Disorder
-terminology: SNOMED
+terminology:
+  - "SNOMED"
+  - "ICD10"
+  - "ICD9"
 concept_id: "233873004"
 concept_term: Hypertrophic cardiomyopathy
 regexes:

@@ -4,7 +4,9 @@ definition: |
   Coronary artery bypass graft surgery is a procedure that involves sternotomy to bypass diseased segment(s) of the coronary tree using blood vessels derived other parts of the body and connected to the aorta
 pmid: NA
 domain: Procedure
-terminology: SNOMED
+terminology:
+  - "SNOMED_procedure"
+  - "OPCS4"
 concept_id: "232717009"
 concept_term: Coronary artery bypass grafting
 regexes:
@@ -15,7 +17,6 @@ regexes:
   SNOMED:
     - "232717009"
   ICD10:
-    - "T822|Z95[0-9]"
   OPCS4:
     - "K4[0-9][0-9]?"
     - "K50[0-9]?|K75[0-9]?"

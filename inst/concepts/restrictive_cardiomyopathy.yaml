@@ -7,7 +7,10 @@ definition: |
   and normal ventricular wall thickness. (ESC, 2023)
 pmid: NA
 domain: Disorder
-terminology: SNOMED
+terminology:
+  - "SNOMED"
+  - "ICD10"
+  - "ICD9"
 concept_id: "415295002"
 concept_term: Hypertrophic cardiomyopathy
 regexes:

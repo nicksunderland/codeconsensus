@@ -33,9 +33,7 @@ snomed_tree <- function(hierarch_codes, concept_id) {
                             data = list(code       = code,
                                         code_type  = "SNOMED",
                                         desc       = desc,
-                                        concept_id = concept_id,
-                                        ukbb_count = NULL,
-                                        nhs_count  = NULL),
+                                        concept_id = concept_id),
                             checked  = FALSE,
                             selected = FALSE,
                             opened   = FALSE,
@@ -48,9 +46,7 @@ snomed_tree <- function(hierarch_codes, concept_id) {
                             data = list(code       = code,
                                         code_type  = "SNOMED",
                                         desc       = desc,
-                                        concept_id = concept_id,
-                                        ukbb_count = NULL,
-                                        nhs_count  = NULL),
+                                        concept_id = concept_id),
                             checked  = FALSE,
                             selected = FALSE,
                             opened   = FALSE,
@@ -70,9 +66,7 @@ snomed_tree <- function(hierarch_codes, concept_id) {
                    data = list(code       = "SNOMED",
                                code_type  = "SNOMED",
                                desc       = NULL,
-                               concept_id = concept_id,
-                               ukbb_count = NULL,
-                               nhs_count  = NULL),
+                               concept_id = concept_id),
                    checked  = FALSE,
                    selected = FALSE,
                    opened   = FALSE,
@@ -115,14 +109,12 @@ snomed_tree <- function(hierarch_codes, concept_id) {
 # base tree node
 make_icd10_tree <- function(icd10, concept_id, regex = ".") {
 
-  result <- TreeNode(text = "ICD10",
+  result <- TreeNode(text = "ICD10-CM",
                      type = "root",
-                     data = list(code       = "ICD10",
+                     data = list(code       = "ICD10-CM",
                                  code_type  = "ICD10",
                                  desc       = NULL,
-                                 concept_id = concept_id,
-                                 ukbb_count = NULL,
-                                 nhs_count  = NULL),
+                                 concept_id = concept_id),
                      checked  = FALSE,
                      selected = FALSE,
                      opened   = FALSE,
@@ -191,9 +183,7 @@ opcs_tree <- function(opcs_dt, concept_id, regex = ".") {
                    data = list(code       = "OPCS4",
                                code_type  = "OPCS4",
                                desc       = NULL,
-                               concept_id = concept_id,
-                               ukbb_count = NULL,
-                               nhs_count  = NULL))
+                               concept_id = concept_id))
 
   current_chapter_name <- NULL
   current_chapter_element <- NULL
@@ -208,9 +198,7 @@ opcs_tree <- function(opcs_dt, concept_id, regex = ".") {
                         data = list(code       = clean_code,
                                     code_type  = "OPCS4",
                                     desc       = description,
-                                    concept_id = concept_id,
-                                    ukbb_count = NULL,
-                                    nhs_count  = NULL),
+                                    concept_id = concept_id),
                         checked  = FALSE,
                         selected = FALSE,
                         opened   = FALSE,
@@ -270,9 +258,7 @@ icd9_tree <- function(icd9_dt, concept_id, regex = ".") {
                    data = list(code       = "ICD9",
                                code_type  = "ICD9",
                                desc       = NULL,
-                               concept_id = concept_id,
-                               ukbb_count = NULL,
-                               nhs_count  = NULL))
+                               concept_id = concept_id))
 
   current_chapter_name <- NULL
   current_chapter_element <- NULL
@@ -286,9 +272,7 @@ icd9_tree <- function(icd9_dt, concept_id, regex = ".") {
                         data = list(code       = code,
                                     code_type  = "ICD9",
                                     desc       = description,
-                                    concept_id = concept_id,
-                                    ukbb_count = NULL,
-                                    nhs_count  = NULL),
+                                    concept_id = concept_id),
                         checked  = FALSE,
                         selected = FALSE,
                         opened   = FALSE,
@@ -341,9 +325,7 @@ icd9_procedure_tree <- function(icd9_proc_dt, concept_id, regex = ".") {
                    data = list(code       = "ICD9_procedures",
                                code_type  = "ICD9_procedures",
                                desc       = NULL,
-                               concept_id = concept_id,
-                               ukbb_count = NULL,
-                               nhs_count  = NULL))
+                               concept_id = concept_id))
 
   current_chapter_name <- NULL
   current_chapter_element <- NULL
@@ -357,9 +339,7 @@ icd9_procedure_tree <- function(icd9_proc_dt, concept_id, regex = ".") {
                         data = list(code       = code,
                                     code_type  = "ICD9_procedures",
                                     desc       = description,
-                                    concept_id = concept_id,
-                                    ukbb_count = NULL,
-                                    nhs_count  = NULL),
+                                    concept_id = concept_id),
                         checked  = FALSE,
                         selected = FALSE,
                         opened   = FALSE,

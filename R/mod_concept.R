@@ -9,27 +9,27 @@
 #' @importFrom shiny NS tagList
 #' @importFrom shinyTree shinyTree
 #' @import data.table
-mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, concept_term, valueset_definition, regexes){
+mod_concept_ui <- function(id, config){
   ns <- NS(id)
 
   # the concept panel
-  tabPanel(title = title,
+  tabPanel(title = config$name,
            # the information box
            div(
              style = "background-color: #f7f7f7; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px;",
-             h3(paste(title, "definition:")),
-             p(definition),
-             h5("Domain:",              span(domain,                          style = "font-weight: normal;")),
-             h5("Terminology:",         span(terminology,                     style = "font-weight: normal;")),
-             h5("Concept term:",        span(concept_term,                    style = "font-weight: normal;")),
-             h5("Search expressions:\n",span(paste0("(", unlist(regexes), ")", collapse = " | "), style = "font-weight: normal;"))
+             h3(paste(config$name, "definition:")),
+             p(config$definition),
+             h5("Domain:",              span(config$domain,                                              style = "font-weight: normal;")),
+             h5("Terminology:",         span(paste0(unlist(config$terminology), collapse = ", "),        style = "font-weight: normal;")),
+             h5("Concept term:",        span(config$concept_term,                                        style = "font-weight: normal;")),
+             h5("Search expressions:\n",span(paste0("(", unlist(config$regexes), ")", collapse = " | "), style = "font-weight: normal;"))
            ),
            # user comments section
            textAreaInput(ns("user_comments"), label = "Comments", width = "100%"),
            # selection boxes
            fluidRow(column(3, selectInput(ns("plot_type"), label = "Plot selection", choices = c("off", "counts"))),
-                    column(3, selectInput(ns("code_display"), label = "Code display", choices = c("default", "nhs_count", "ukbb_count"))),
-                    column(4, sliderInput(ns("count_slider"), "Count filter", min = 0, max = 10000, value = 0, step = 100)),
+                    column(3, selectInput(ns("code_display"), label = "Code display", choices = c("default", "nhs_count_per100k_episodes", "gp_count_per100k_patients", "ukbb_count_per100k_episodes"))),
+                    column(4, sliderInput(ns("count_slider"), "Count filter", min = 0, max = 1000, value = 0, round = TRUE)),
                     column(2, downloadButton(ns("download"), label = "Download codes"), style = "margin-top: 25px;")),
            # conditional plot panel
            conditionalPanel(condition = paste0("input.plot_type != 'off'"), plotOutput(ns("plot")), ns = ns),
@@ -38,8 +38,7 @@ mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, con
            fluidRow(column(2, actionButton(ns("save"), "Save/Refresh")),
                     column(3, checkboxInput(ns("cascade"), "Cascade", value = FALSE)),
                     column(3, checkboxInput(ns("expand"), "Expand all", value = FALSE)),
-                    column(3, checkboxInput(ns("show_agreement"), "Show agreement", value = FALSE)),
-                    column(3, textOutput(ns("message_box")))),
+                    column(6, textOutput(ns("message_box")))),
            # the tree
            shinycssloaders::withSpinner(
              jsTreeR::jstreeOutput(ns("tree")),
@@ -56,18 +55,14 @@ mod_concept_ui <- function(id, title, definition, pmid, domain, terminology, con
 #' @param exclude string, vector of ids for the exclusion concepts
 #' @importFrom glue glue
 #' @noRd
-mod_concept_server <- function(id, include, exclude, user, derived){
+mod_concept_server <- function(id, config, user){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
     # -----------------------------
     # reactive values / expressions
     # -----------------------------
-    concept      <- reactiveVal(id)
-    subconcepts  <- reactiveVal(c(include, exclude))
-    include_ids  <- reactiveVal(include)
-    exclude_ids  <- reactiveVal(exclude)
-    derived      <- reactiveVal(derived)
+    config      <- reactiveValues(!!!config)
     message      <- reactiveVal(NULL)
     comments     <- reactiveVal(NULL)
     js_tree      <- reactiveVal(NULL)
@@ -82,8 +77,8 @@ mod_concept_server <- function(id, include, exclude, user, derived){
 
     # the subconcept ids for this module (just the concept_id if a concept, or a character vector of concept ids if a derived)
     subconcept_ids <- reactive({
-      subconcepts <- paste0("'", subconcepts(), "'", collapse = ", ")
-      sql <- glue::glue("SELECT CONCEPT_ID FROM CONCEPTS WHERE CONCEPT IN ({subconcepts})")
+      subconcepts <- paste0("'", c(config$include, config$excude), "'", collapse = ", ")
+      sql <- glue::glue("SELECT CONCEPT_ID FROM CONCEPTS WHERE CONCEPT IN ({ subconcepts })")
       res <- query_db(sql, type = "get")
       return(res$CONCEPT_ID)
     })
@@ -114,14 +109,14 @@ mod_concept_server <- function(id, include, exclude, user, derived){
                           children = list())
 
       # populate inclusion tree
-      for (id in include_ids()) {
+      for (id in config$include) {
         tree_path <- system.file("concepts", paste0(id, ".RDS"), package = "hfphenotyping")
-        include$children <- c(include$children, readRDS(tree_path))
+        include$children <- c(include$children, list(readRDS(tree_path)))
       }
 
       # populate exclusion tree
       exclude <- NULL
-      if (length(exclude_ids()) > 0) {
+      if (length(config$exclude) > 0) {
 
         # the exclusion concepts tree
         exclude <- TreeNode(text     = "Exclude",
@@ -135,9 +130,9 @@ mod_concept_server <- function(id, include, exclude, user, derived){
                             disabled = TRUE,
                             children = list())
 
-        for (id in exclude_ids()) {
+        for (id in config$exclude) {
           tree_path <- system.file("concepts", paste0(id, ".RDS"), package = "hfphenotyping")
-          exclude$children <- c(exclude$children, readRDS(tree_path))
+          exclude$children <- c(exclude$children, list(readRDS(tree_path)))
         }
       }
 
@@ -162,13 +157,15 @@ mod_concept_server <- function(id, include, exclude, user, derived){
       print("selected <- reactive")
 
       # check if logged in, or just viewing (username==NULL) - display average of raters if just viewing
-      tree_codes     <- paste0("'", unlist(tree_attributes(js_tree(), 'code')), "'", collapse = ", ")
-      subconcept_ids <- paste0("'", subconcept_ids(), "'", collapse = ", ")
-      user_is_rater  <- !is.null(user[["username"]]) && user[["is_rater"]]
+      tree_codes        <- paste0("'", unlist(tree_attributes(js_tree(), 'code')), "'", collapse = ", ")
+      subconcept_ids    <- paste0("'", subconcept_ids(), "'", collapse = ", ")
+      user_is_rater     <- !is.null(user[["username"]]) && user[["is_rater"]]
+      user_is_concensus <- !is.null(user[["username"]]) && user[["username"]] == "consensus"
+      disable_flag      <- if(user_is_concensus) "0" else "1"
 
-      if (user_is_rater) {
+      # user logged in and is a rater
+      if (user_is_rater & !user_is_concensus) {
 
-        # user logged in and is a rater
         sql <- glue::glue("SELECT
                               CODES.CODE,
                               CODES.CODE_TYPE,
@@ -187,16 +184,20 @@ mod_concept_server <- function(id, include, exclude, user, derived){
                               AND SELECTED.CONCEPT_ID IN ({subconcept_ids})
                               AND CODES.CODE IN ({tree_codes})")
 
+      # user not a rater, or in the consensus login (tree enabled), or not logged in (tree disable) - show the consensus results
       } else {
 
-        # user is not a rater, present average rater results
         sql <- glue::glue("SELECT
                               CODES.CODE,
                               CODES.CODE_TYPE,
                               CONCEPTS.CONCEPT,
-                              CASE WHEN AVG(SELECTED.SELECTED) > 0.5 THEN 1 ELSE 0 END AS SELECTED,
                               AVG(SELECTED.SELECTED) AS AVG_SELECTED,
-                              1 AS DISABLED
+                              {disable_flag} AS DISABLED,
+                              CASE
+                                  WHEN (SELECT SELECTED FROM SELECTED WHERE SELECTED.CONCEPT_ID IN ({subconcept_ids}) AND SELECTED.USERNAME = 'consensus') IS NULL THEN
+                                        CASE WHEN AVG(SELECTED.SELECTED) > 0.5 THEN 1 ELSE 0 END
+                                  ELSE (SELECT SELECTED FROM SELECTED WHERE SELECTED.CONCEPT_ID IN ({subconcept_ids}) AND SELECTED.USERNAME = 'consensus')
+                              END AS SELECTED
                            FROM
                               SELECTED
                            INNER JOIN
@@ -208,7 +209,6 @@ mod_concept_server <- function(id, include, exclude, user, derived){
                               AND CODES.CODE IN ({tree_codes})
                            GROUP BY
                               SELECTED.CONCEPT_ID, CONCEPTS.CONCEPT, CODES.CODE, CODES.CODE_TYPE")
-
       }
 
       # get the codes and select status
@@ -244,19 +244,24 @@ mod_concept_server <- function(id, include, exclude, user, derived){
 
       # validation
       req(js_tree(), input$code_display)
-      validate(need(input$code_display %in% c("nhs_count", "ukbb_count"), "Please choose a data source from `Code display`"))
+      validate(need(input$code_display %in% c("nhs_count_per100k_episodes", "gp_count_per100k_patients", "ukbb_count_per100k_episodes"), "Please choose a data source from `Code display`"))
+
 
       # get the internal package data (see /data folder)
       tree_codes <- data.table::data.table(code      = unlist(tree_attributes(js_tree(), "code")),
                                            code_type = unlist(tree_attributes(js_tree(), "code_type")))
 
-      if (input$code_display == "nhs_count") {
+      if (input$code_display == "nhs_count_per100k_episodes") {
 
-        code_counts <- tree_codes[nhs_counts, count := i.count, on = "code"]
+        code_counts <- tree_codes[nhs_counts, count := i.per_100k_episodes, on = "code"]
 
-      } else if (input$code_display == "ukbb_count") {
+      } else if (input$code_display == "gp_count_per100k_patients") {
 
-        code_counts <- tree_codes[ukbb_counts, count := i.count, on = "code"]
+        code_counts <- tree_codes[nhs_counts, count := i.per_100k_patients, on = "code"]
+
+      } else if (input$code_display == "ukbb_count_per100k_episodes") {
+
+        code_counts <- tree_codes[ukbb_counts, count := i.per_100k_episodes, on = "code"]
 
       }
       code_counts <- code_counts[!is.na(count), ]
@@ -310,7 +315,7 @@ mod_concept_server <- function(id, include, exclude, user, derived){
       # save selected
       # ------------------------
       # can only save selected if user is a rater and not a derived concept (as should just update the base concept(s))
-      if (user[["is_rater"]] && !derived()) {
+      if (user[["is_rater"]] && !config$domain == "Derived") {
 
         # get the current code select status
         current <- data.table::data.table(USERNAME   = user[["username"]],
@@ -356,98 +361,66 @@ mod_concept_server <- function(id, include, exclude, user, derived){
         paste0("codes_", id, "_", Sys.Date(), ".tsv")
       },
       content = function(file) {
+
         out <- data.table::data.table(PHENO     = id,
-                                      CONCEPT   = sapply(input$tree_selected_paths, function(x) sub("^(?:Ex|In)clude/(.*?)/.*", "\\1", x$path)),
-                                      CODE      = unlist(tree_attributes(input$tree_selected, "code")),
-                                      CODE_TYPE = unlist(tree_attributes(input$tree_selected, "code_type")),
-                                      DESC      = unlist(tree_attributes(input$tree_selected, "desc")),
-                                      INCLUDE   = sapply(input$tree_selected_paths, function(x) grepl("^Include", x$path)),
-                                      EXCLUDE   = sapply(input$tree_selected_paths, function(x) grepl("^Exclude", x$path)))
+                                      CONCEPT   = lapply(input$tree_selected_paths, function(x) sub("^(?:Ex|In)clude/(.*?)/.*", "\\1", x$path)),
+                                      CODE      = lapply(input$tree_selected,       function(x) x$data[["code"]]),
+                                      CODE_TYPE = lapply(input$tree_selected,       function(x) x$data[["code_type"]]),
+                                      DESC      = lapply(input$tree_selected,       function(x) x$data[["desc"]]),
+                                      INCLUDE   = lapply(input$tree_selected_paths, function(x) grepl("^Include", x$path)),
+                                      EXCLUDE   = lapply(input$tree_selected_paths, function(x) grepl("^Exclude", x$path)))
 
         data.table::fwrite(out, file, sep="\t", row.names=FALSE)
       }
     )
 
     # count filter slider
+    # session$userData$observer_store[[paste0("tree_", id)]] <- observeEvent(input$tree_click, {
+    #
+    #   req(input$tree)
+    #   print("tree click")
+    #   session$sendCustomMessage("updateSaveButton", list(id = ns("save"), color = "red"))
+    #
+    # })
+
+    # count filter slider
     session$userData$observer_store[[paste0("count_slider_", id)]] <- observeEvent(input$count_slider, {
-      session$sendCustomMessage(ns("hideNodes"), input$count_slider[1])
+      print(input$count_slider)
+      session$sendCustomMessage("hideNodes", list(id = ns("tree"), count_slider = input$count_slider[1], code_display = input$code_display))
     })
 
     # expand selection option
     session$userData$observer_store[[paste0("expand_", id)]] <- observeEvent(input$expand, {
-      session$sendCustomMessage(ns("expandNodes"), input$expand)
+      session$sendCustomMessage("expandNodes", list(id = ns("tree"), expand = input$expand))
     })
 
     # cascade selection option
     session$userData$observer_store[[paste0("cascade_", id)]] <- observeEvent(input$cascade, {
-      session$sendCustomMessage(ns("cascadeNodes"), input$cascade)
+      session$sendCustomMessage("cascadeNodes", list(id = ns("tree"), cascade = input$cascade))
     })
 
     # code display select box
     session$userData$observer_store[[paste0("code_display_", id)]] <- observeEvent(input$code_display, {
       req(counts())
       print(max(counts()[, .(count)], na.rm = TRUE))
-      updateSliderInput(session, "count_slider", max = max(counts()[, .(count)], na.rm = TRUE))
+      #updateSliderInput(session, "count_slider", max = max(counts()[, .(count)], na.rm = TRUE))
+      session$sendCustomMessage("updateSlider", list(id = ns("count_slider"), max = max(counts()[, .(count)], na.rm = TRUE)))
     })
 
 
     # custom JS functions: CustomMessageHandler connected to sendCustomMessage event above
-    onrender <- reactive({
-      print("onrender <- reactive")
-      glue::glue("
-        function(el, x) {{
+    # onrender <- reactive({
+    #   print("onrender <- reactive")
+    #   glue::glue("
+    #     function(el, x) {{
+    #
+    #       // turn off cascading as will auto select parent codes which may not always be relevant
+    #       var tree = $.jstree.reference(el.id);
+    #       tree.settings.checkbox.three_state = false; // prevent cascading
+    #       tree.settings.checkbox.cascade = 'undetermined'; // show parent nodes with children selected with a square
+    #       console.log(tree);
+    #
 
-          // turn off cascading as will auto select parent codes which may not always be relevant
-          var tree = $.jstree.reference(el.id);
-          tree.settings.checkbox.three_state = false; // prevent cascading
-          tree.settings.checkbox.cascade = 'undetermined'; // show parent nodes with children selected with a square
-          console.log(tree);
-
-          Shiny.addCustomMessageHandler('{ns('cascadeNodes')}', function(cascade) {{
-            var tree = $.jstree.reference(el.id);
-            if (tree) {{
-              if (cascade) {{
-                tree.settings.checkbox.three_state = true;
-                tree.settings.checkbox.cascade = 'undetermined+up+down';
-              }} else {{
-                tree.settings.checkbox.three_state = false;
-                tree.settings.checkbox.cascade = 'undetermined';
-              }}
-            }}
-          }});
-
-          Shiny.addCustomMessageHandler('{ns('expandNodes')}', function(expand) {{
-            var tree = $.jstree.reference(el.id);
-            if (tree) {{
-              if (expand) {{
-                tree.open_all();
-              }} else {{
-                tree.close_all();
-              }}
-            }}
-          }});
-
-          // the slot to receive a `session$sendCustomMessage(ns('hideNodes') ...`
-          Shiny.addCustomMessageHandler('{ns('hideNodes')}', function(count_slider) {{
-            var tree = $.jstree.reference(el.id);
-            var json = tree.get_json(null, {{flat: true}});
-            for(var i = 0; i < json.length; i++) {{
-              var id = json[i].id;
-              var count = parseFloat(json[i].data.{input$code_display});
-              var count_slider = parseFloat(count_slider);
-              //console.log(count);
-              //console.log(count_slider);
-              //console.log(count !== null && !isNaN(count) && count < count_slider);
-              if(count !== null && !isNaN(count) && count < count_slider) {{
-                tree.hide_node(id);
-              }} else {{
-                tree.show_node(id);
-              }}
-           }}
-         }});
-
-       }}")
-      })
 
     # -----------------------------
     # OUTPUTS
@@ -468,11 +441,11 @@ mod_concept_server <- function(id, include, exclude, user, derived){
       tree <- modify_tree(tree           = js_tree(),
                           selected       = selected(),
                           label_option   = input$code_display,
-                          show_agreement = input$show_agreement,
-                          disable_tree   = is.null(user[["is_rater"]]) || !user[["is_rater"]] || derived())
+                          show_agreement = !is.null(user[["username"]]) && user[["username"]] == "consensus",
+                          disable_tree   = is.null(user[["is_rater"]]) || !user[["is_rater"]] || config$domain == "Derived")
 
       # apply js on render rules
-      tree <- htmlwidgets::onRender(tree, onrender())
+      # tree <- htmlwidgets::onRender(tree, onrender())
 
       # return
       return(tree)
@@ -508,7 +481,6 @@ mod_concept_server <- function(id, include, exclude, user, derived){
 
 # optimised version
 modify_tree <- function(tree, selected, label_option = "default", show_agreement = FALSE, disable_tree = FALSE) {
-  option <- match.arg(label_option, choices = c("default", "nhs_count", "ukbb_count"))
 
   # if setting the initial select status
   if (!is.null(selected)) {
@@ -541,9 +513,7 @@ modify_tree <- function(tree, selected, label_option = "default", show_agreement
       # add average selected data if present (if not a rater)
       if ("AVG_SELECTED" %in% names(selected) && show_agreement) {
         agree_value <- unname(agreement[key])
-        sub_tree[[i]]$type <- if (is.na(agree_value)) {
-          "code_orange"
-        } else if (agree_value < 1.0) {
+        sub_tree[[i]]$type <- if (!is.na(agree_value) && agree_value < 1.0) {
           "code_red"
         } else {
           "code"

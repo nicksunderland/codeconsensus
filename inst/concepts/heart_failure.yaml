@@ -6,7 +6,10 @@ definition: |
   Objective evidence of cardiogenic pulmonary or systemic congestion by diagnostic modalities such as imaging (e.g. by chest X-ray or elevated filling pressures by echocardiography) or haemodynamic measurement (e.g. right heart catheterization, pulmonary artery catheter) at rest or with provocation (e.g. exercise).
 pmid: NA
 domain: Disorder
-terminology: SNOMED
+terminology:
+  - "SNOMED"
+  - "ICD10"
+  - "ICD9"
 concept_id: "84114007"
 concept_term: Heart failure
 regexes:
@@ -14,17 +17,12 @@ regexes:
     - "(?i)(heart|cardiac|ventricular) failure"
     - "(?i)cardiac insufficiency"
     - " HF "
-    - "(?i)biventricular cardiac pacemaker"
-    - "(?i)heart.* transplant"
-    - "(?i)transplant(ation)? .*heart"
-    - "(?i)heart .*assist operation"
   SNOMED:
     - "84114007"
   ICD10:
     - "T86[23]"
     - "Z94[13]"
   OPCS4:
-    - "K[0567][0-4][0-9]"
 include:
   - "heart_failure"
 exclude:

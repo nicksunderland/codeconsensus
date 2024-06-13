@@ -4,7 +4,10 @@ definition: |
   Amyloidosis is a disease characterized by a buildup of abnormal amyloid deposits in the body.
 pmid: NA
 domain: Disorder
-terminology: SNOMED
+terminology:
+  - "SNOMED"
+  - "ICD10"
+  - "ICD9"
 concept_id: "17602002"
 concept_term: "Valvular heart disease"
 regexes:

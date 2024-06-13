@@ -4,7 +4,8 @@ definition: |
   Chronolical age at the time of assessment.
 pmid: NA
 domain: Observable entity
-terminology: LOINC
+terminology:
+  - "SNOMED"
 concept_id: "30525-0"
 concept_term: Age
 regexes:

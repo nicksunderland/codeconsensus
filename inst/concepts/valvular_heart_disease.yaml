@@ -5,7 +5,10 @@ definition: |
   regurgitation.
 pmid: NA
 domain: Disorder
-terminology: SNOMED
+terminology:
+  - "SNOMED"
+  - "ICD10"
+  - "ICD9"
 concept_id: "368009"
 concept_term: "Valvular heart disease"
 regexes:

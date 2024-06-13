@@ -4,7 +4,9 @@ definition: |
   Operative procedure on artery of extremity
 pmid: NA
 domain: Procedure
-terminology: SNOMED
+terminology:
+  - "SNOMED_procedure"
+  - "OPCS4"
 concept_id: "22701007"
 concept_term: Operative procedure on artery of extremity
 regexes:

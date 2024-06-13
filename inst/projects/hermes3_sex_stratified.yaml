@@ -6,6 +6,8 @@ concepts:
   - "myocardial_infarction"
   - "procedure_open_cabg"
   - "procedure_perc_angioplasty_coronary"
+  - "procedure_congenital_heart_disease"
+  - "management_coronary_thrombolysis"
   - "congenital_heart_disease"
   - "non_ischaemic_heart_failure"
   - "ischaemic_heart_failure"

@@ -4,10 +4,10 @@
 library(Rdiagnosislist)
 library(data.table)
 library(xml2)
+library(furrr)
+library(future)
 devtools::load_all()
-source(system.file("data-raw", "make_trees.R", package = "hfphenotyping"))
 
-OVERWRITE = T
 
 # first we need the data sources, which are the SNOMED, ICD-10, and OPCS codes from the NHS
 # TRUD website (https://isd.digital.nhs.uk/trud). You will need an account set up.
@@ -27,17 +27,24 @@ if (!file.exists(SNOMED_RDS)) {
 configs <- list.files("/Users/xx20081/git/hfphenotyping/inst/concepts", pattern = ".*\\.(yaml|yml)$", full.names = TRUE)
 configs <- configs[!file.info(configs)$isdir]
 
-# NHS digital & UKBB ICD10, OPCS4 and SNOMED counts
-nhs_counts  <- nhs_counts
-ukbb_counts <- ukbb_counts
-
 # produce the trees for each config
-for (config in configs) { #[c(5,10,13,15,16,19,22,7)]) {
+plan(multisession, workers = parallel::detectCores() - 1)
+options(future.globals.maxSize = 90 * 1024^3)  # 2 GiB
+future_walk(configs, function(config) {
+
+  library(hfphenotyping)
+  library(Rdiagnosislist)
+  library(data.table)
+  library(xml2)
+
+  # source(system.file("data-raw", "make_trees.R", package = "hfphenotyping"))
+  source("/Users/xx20081/git/hfphenotyping/data-raw/make_trees.R")
 
   conf    <- yaml::read_yaml(config)
   outfile <- file.path(dirname(config), paste0(conf$id, ".RDS"))
   regex   <- conf$regexes[!sapply(conf$regexes, is.null)]
   regex   <- lapply(regex, function(x) paste0("(", x, ")", collapse = "|"))
+  terminologies <- conf$terminology
 
 
   # populate the CONCEPTS database
@@ -56,25 +63,52 @@ for (config in configs) { #[c(5,10,13,15,16,19,22,7)]) {
   }
 
   # if a derived concept, exit here
-  if (conf$domain == "Derived") next
+  if (conf$domain == "Derived") return(NULL)
 
-  # produce the tree
-  if (!OVERWRITE & file.exists(outfile)) {
 
-    concept_tree <- readRDS(outfile)
+  cat("Extracting `", conf$id, "`\n")
+
+  # -------------------------
+  #          SNOMED
+  # -------------------------
+  snomed_regex <- paste0(c(regex$all, regex$SNOMED), collapse = "|")
+  concept      <- SNOMEDconcept(snomed_regex, SNOMED = SNOMED, exact = FALSE, active_only = FALSE)
+
+  if ("SNOMED" %in% terminologies) {
+    cat("[i] Extracting SNOMED\n")
+
+    print(unique(semanticType(concept)))
+
+    filt <- c("disorder", "finding", "observable entity", "situation", "event")
+    hierarch_codes <- showCodelistHierarchy(description(concept)[grepl(paste0(filt, collapse = "|"), term), conceptId])
+    snomed         <- snomed_tree(hierarch_codes, concept_id = conf$id)
 
   } else {
 
-    cat("Extracting `", conf$id, "`\n")
+    snomed <- NULL
 
-    # extract the concept
-    cat("[i] Extracting SNOMED\n")
-    snomed_regex   <- paste0(c(regex$all, regex$SNOMED), collapse = "|")
-    concept        <- SNOMEDconcept(snomed_regex, SNOMED = SNOMED, exact = FALSE)
-    hierarch_codes <- showCodelistHierarchy(concept)
-    snomed         <- snomed_tree(hierarch_codes, concept_id = conf$id)
+  }
 
-    # read the ICD10
+
+  if ("SNOMED_procedure" %in% terminologies) {
+    cat("[i] Extracting SNOMED procdures\n")
+
+    filt <- c("procedure")
+    hierarch_codes <- showCodelistHierarchy(description(concept)[grepl(paste0(filt, collapse = "|"), term), conceptId])
+    snomed_procedure <- snomed_tree(hierarch_codes, concept_id = conf$id)
+
+  } else {
+
+    snomed_procedure <- NULL
+
+  }
+
+
+  # -------------------------
+  #          ICD10
+  # -------------------------
+  if ("ICD10" %in% terminologies) {
+
     cat("[i] Extracting ICD-10\n")
     icd10_xml_file <- file.path(dir, "FY24-CMS-1785-F-ICD-10-Table-Index", "icd10cm_tabular_2024.xml")
     icd10 <- xml2::read_xml(icd10_xml_file)
@@ -83,17 +117,51 @@ for (config in configs) { #[c(5,10,13,15,16,19,22,7)]) {
     icd10_regex <- paste0(c(regex$all, regex$ICD10), collapse = "|")
     icd10 <- make_icd10_tree(icd10, concept_id = conf$id, regex = icd10_regex)
 
-    # read the OPCS (NHS TRUD)
+  } else {
+
+    icd10 <- NULL
+
+  }
+
+
+  # -------------------------
+  #          OPCS4
+  # -------------------------
+  if ("OPCS4" %in% terminologies) {
+
     cat("[i] Extracting OPCS-4\n")
     opcs <- fread(file.path(dir, "OPCS410 Data files txt", "OPCS410 CodesAndTitles Nov 2022 V1.0.txt"), col.names = c("CODE", "DESCRIPTION"), header = FALSE)
     opcs_regex <- paste0(c(regex$all, regex$OPCS4), collapse = "|")
-    opcs <- opcs_tree(opcs, concept_id = conf$id, regex = opcs_regex)
+    opcs4 <- opcs_tree(opcs, concept_id = conf$id, regex = opcs_regex)
 
-    # read the ICD9
+  } else {
+
+    opcs4 <- NULL
+
+  }
+
+
+  # -------------------------
+  #          ICD9
+  # -------------------------
+  if ("ICD9" %in% terminologies) {
+
     cat("[i] Extracting ICD9\n")
     icd9 <- fread(file.path(dir, "ICD9", "icd9.tsv"))
     icd9_regex <- paste0(c(regex$all, regex$ICD9), collapse = "|")
     icd9 <- icd9_tree(icd9, concept_id = conf$id, regex = icd9_regex)
+
+  } else {
+
+    icd9 <- NULL
+
+  }
+
+
+  # -------------------------
+  #          ICD9
+  # -------------------------
+  if ("ICD9_procedure" %in% terminologies) {
 
     # read the ICD 9 procedures
     cat("[i] Extracting ICD9 procedures\n")
@@ -101,29 +169,41 @@ for (config in configs) { #[c(5,10,13,15,16,19,22,7)]) {
     icd9_procedures_regex <- paste0(c(regex$all, regex$ICD9_procedure), collapse = "|")
     icd9_procedures <- icd9_procedure_tree(icd9_procedures, concept_id = conf$id, regex = icd9_procedures_regex)
 
-    # annotate the tree with data
-    tree <- annotate_tree(tree = list(snomed, icd10, opcs, icd9, icd9_procedures), annot_dt = nhs_counts, annot_name = "nhs_count", value_col = "count", on = c("code" = "code", "code_type" = "code_type"), no_match = 0)
-    tree <- annotate_tree(tree = tree, annot_dt = ukbb_counts, annot_name = "ukbb_count", value_col = "count", on = c("code" = "code", "code_type" = "code_type"), no_match = 0)
+  } else {
 
-    # add to a concept level
-    concept_tree <- TreeNode(text = conf$name,
-                             type = "root",
-                             data = list(code       = conf$name,
-                                         code_type  = "concept",
-                                         desc       = NULL,
-                                         concept_id = conf$id,
-                                         ukbb_count = NULL,
-                                         nhs_count  = NULL),
-                             checked  = FALSE,
-                             selected = FALSE,
-                             opened   = TRUE,
-                             disabled = TRUE,
-                             children = tree)
+    icd9_procedures <- NULL
 
-    # save
-    cat("[i] saving .RDS file\n")
-    saveRDS(list(concept_tree), outfile)
   }
+
+
+  # -------------------------
+  # combine & annotate counts
+  # -------------------------
+  # NHS digital & UKBB ICD10, OPCS4 and SNOMED counts saved in package internal data objects `nhs_counts` and `ukbb_counts`
+  tree <- list(snomed, snomed_procedure, icd10, opcs4, icd9, icd9_procedures)
+  tree <- tree[!sapply(tree, is.null)]
+  tree <- annotate_tree(tree = tree, annot_dt = nhs_counts, annot_name = "nhs_count_per100k_episodes", value_col = "per_100k_episodes", on = c("code" = "code", "code_type" = "code_type"), no_match = 0)
+  tree <- annotate_tree(tree = tree, annot_dt = ukbb_counts, annot_name = "ukbb_count_per100k_episodes", value_col = "per_100k_episodes", on = c("code" = "code", "code_type" = "code_type"), no_match = 0)
+  tree <- annotate_tree(tree = tree, annot_dt = nhs_counts, annot_name = "gp_count_per100k_patients", value_col = "per_100k_patients", on = c("code" = "code", "code_type" = "code_type"), no_match = 0)
+
+
+  # -------------------------
+  #   Final concept tree
+  # -------------------------
+  concept_tree <- TreeNode(text = conf$name,
+                           type = "root",
+                           data = list(code       = conf$name,
+                                       code_type  = "concept",
+                                       desc       = NULL,
+                                       concept_id = conf$id),
+                           checked  = FALSE,
+                           selected = FALSE,
+                           opened   = TRUE,
+                           disabled = TRUE,
+                           children = tree)
+
+  # save RDS
+  saveRDS(concept_tree, outfile)
 
 
   # populate the CODE database
@@ -143,7 +223,7 @@ for (config in configs) { #[c(5,10,13,15,16,19,22,7)]) {
     query_db(query_str = sql, type = "update", value = as.list(missing))
   }
 
-}
+}, .env_globals = environment()) # end future loop
 
 
 
