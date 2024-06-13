@@ -1,5 +1,5 @@
-id: "hermes3_sex_stratified"
-name: "HERMES 3.0 sex stratified"
+id: "hermes3"
+name: "HERMES 3.0"
 concepts:
   - "heart_failure"
   - "atherosclerosis_coronary"
