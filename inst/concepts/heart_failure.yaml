@@ -26,4 +26,3 @@ regexes:
   - (?i)cardiac insufficiency
   - ' HF '
 include: heart_failure
-exclude: .na.character

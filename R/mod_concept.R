@@ -78,7 +78,7 @@ mod_concept_server <- function(id, config, user){
 
     # the subconcept ids for this module (just the concept_id if a concept, or a character vector of concept ids if a derived)
     subconcept_ids <- reactive({
-      subconcepts <- paste0("'", c(config$include, config$excude), "'", collapse = ", ")
+      subconcepts <- paste0("'", c(config$include, config$exclude), "'", collapse = ", ")
       sql <- glue::glue("SELECT CONCEPT_ID FROM CONCEPTS WHERE CONCEPT IN ({ subconcepts })")
       res <- query_db(sql, type = "get")
       return(res$CONCEPT_ID)
@@ -109,9 +109,17 @@ mod_concept_server <- function(id, config, user){
     output$consesus_status <- renderUI({
 
       subconcept_ids <- paste0("'", subconcept_ids(), "'", collapse = ", ")
-      sql <- glue::glue("SELECT EXISTS (SELECT 1 FROM SELECTED WHERE USERNAME = 'consensus' AND CONCEPT_ID IN ({subconcept_ids})) AS CONSENSUS_REACHED")
+      sql <- glue("SELECT s.CONCEPT_ID,
+                       CASE WHEN COUNT(ss.USERNAME) > 0 THEN 1 ELSE 0 END AS CONSENSUS_EXISTS
+                   FROM (
+                          SELECT DISTINCT CONCEPT_ID
+                          FROM SELECTED
+                          WHERE CONCEPT_ID IN ({subconcept_ids})
+                        ) s
+                  LEFT JOIN SELECTED ss ON s.CONCEPT_ID = ss.CONCEPT_ID AND ss.USERNAME = 'consensus'
+                  GROUP BY s.CONCEPT_ID")
       res <- query_db(sql, type = "get")
-      consensus <- as.logical(res$CONSENSUS_REACHED)
+      consensus <- all(as.logical(res$CONSENSUS_EXISTS))
 
       if (consensus) {
         el <- div(id = "reached",

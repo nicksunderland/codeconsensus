@@ -1,31 +1,32 @@
-id: "procedure_congenital_heart_disease"
-name: "Congenital heart disease procedure"
+id: procedure_congenital_heart_disease
+name: Congenital heart disease procedure
 definition: |
-  Procedures for congenital heart disease.
-pmid: "https://www.england.nhs.uk/wp-content/uploads/2013/12/chd13-proc-list-1.pdf"
+  Congenital heart disease encompasses a wide range of cardiac defects that affect the normal
+  heart function. They are fault or problems that are present from birth. This concept defines
+  procedures for congenital heart disease.
+reference: https://www.england.nhs.uk/wp-content/uploads/2013/12/chd13-proc-list-1.pdf
 domain: Procedure
 terminology:
-  - "SNOMED_procedure"
-  - "OPCS4"
-concept_id: "13213009"
-concept_term: "Congenital heart disease"
+- SNOMED_procedure
+- OPCS4
+concept_id: '13213009'
+concept_term: Congenital heart disease
 regexes:
-  all:
-    - "(?i)congenital heart disease"
-    - "(?i)congenital .*(heart|cardiac)"
-    - "(?i)congenital .*(pulmonary|tricuspid|aortic|mitral) .*valves?"
-    - "(?i)(congenital|transposition) .*great (arter[y|ies]|veins?)"
-    - "(?i)fontan|norwood|fallot|blalock|mustard|senning|nikaidoh|jatene|rastelli"
-    - "(?i)(double outlet|single) .*ventricle"
-    - "(?i)(atrial|ventric[ulare]+|aortopulmonary) septal defect"
-    - "(?i)cor triatriatum|truncus arteriosus"
-  SNOMED:
-    - "13213009"
+  SNOMED: '13213009'
+  ICD10: []
+  ICD9: []
   OPCS4:
-    - "K[0-2][0-9][0-9]?"
-    - "K(29[67]|305|336|34[56]|35[467]|36[12]|37[1-6]|38[56]|482|577|76[189])"
-    - "L[0-2][0-9][0-9]?"
-    - "L(69[1-9]?|75[13])"
-include:
-  - "congenital_heart_disease"
-exclude:
+  - K[0-2][0-9][0-9]?
+  - K(29[67]|305|336|34[56]|35[467]|36[12]|37[1-6]|38[56]|482|577|76[189])
+  - L[0-2][0-9][0-9]?
+  - L(69[1-9]?|75[13])
+  all:
+  - (?i)congenital heart disease
+  - (?i)congenital .*(heart|cardiac)
+  - (?i)congenital .*(pulmonary|tricuspid|aortic|mitral) .*valves?
+  - (?i)(congenital|transposition) .*great (arter[y|ies]|veins?)
+  - (?i)fontan|norwood|fallot|blalock|mustard|senning|nikaidoh|jatene|rastelli
+  - (?i)(double outlet|single) .*ventricle
+  - (?i)(atrial|ventric[ulare]+|aortopulmonary) septal defect
+  - (?i)cor triatriatum|truncus arteriosus
+include: congenital_heart_disease

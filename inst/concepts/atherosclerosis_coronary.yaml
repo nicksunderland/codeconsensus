@@ -28,4 +28,3 @@ regexes:
   - (?i)chronic ischa?emic (cardiomyopathy|heart disease)
   - myocardial ischa?emia
 include: atherosclerosis_coronary
-exclude: .na.character

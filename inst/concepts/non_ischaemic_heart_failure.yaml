@@ -1,22 +1,33 @@
 id: non_ischaemic_heart_failure
 name: Non-ischaemic heart Failure
 definition: |
-  Non-ischaemic heart Failure definition...
-pmid: NA
+  Non-ischaemic heart Failure is a subset of the heart failure syndrome where the underlying
+  coronary blood flow is not impaired, and where myocardial dysfunction related to alternative
+  disease processes. Common contributing factors include hypertensive heart disease,
+  myocarditis, alcohol-related cardiomyopathy and arrhythmias. This definition
+  excludes heart failure as a result of congenital heart disease.
+reference: https://pubmed.ncbi.nlm.nih.gov/12634896/
 domain: Derived
-terminology: NA
-concept_id: "NA"
+terminology:
+- OPCS4
+- ICD10
+- ICD9
+- ICD9_procedure
+- SNOMED
+- SNOMED_procedure
+concept_id: NA
 concept_term: Non-ischaemic heart Failure
 regexes:
-  all:
-  SNOMED:
-  ICD10:
-  OPCS4:
-include:
-  - "heart_failure"
+  SNOMED: []
+  ICD10: []
+  ICD9: []
+  OPCS4: []
+include: heart_failure
 exclude:
-  - "myocardial_infarction"
-  - "atherosclerosis_coronary"
-  - "procedure_open_cabg"
-  - "procedure_perc_angioplasty_coronary"
-  - "congenital_heart_disease"
+- congenital_heart_disease
+- procedure_congenital_heart_disease
+- myocardial_infarction
+- atherosclerosis_coronary
+- management_coronary_thrombolysis
+- procedure_open_cabg
+- procedure_perc_angioplasty_coronary

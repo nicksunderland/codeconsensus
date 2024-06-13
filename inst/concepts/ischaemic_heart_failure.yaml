@@ -2,8 +2,9 @@ id: ischaemic_heart_failure
 name: Ischaemic heart Failure
 definition: |
   Ischaemic heart Failure is a subset of the heart failure syndrome where the underlying
-  aetiology relates to the presence of one or more obstructive atherosclerotic plaques,
-  which determine a reduced coronary blood flow and cause myocardial ischemia.
+  aetiology relates to the presence of one or more obstructive atherosclerotic plaques
+  result in reduced coronary blood flow and cause myocardial ischemia. This definition
+  excludes heart failure as a result of congenital heart disease.
 reference: https://doi.org/10.3390%2Fijms21093167
 domain: Derived
 terminology:
@@ -20,12 +21,13 @@ regexes:
   ICD10: []
   ICD9: []
   OPCS4: []
-include: heart_failure
-exclude:
-- congenital_heart_disease
-- procedure_congenital_heart_disease
+include:
+- heart_failure
 - myocardial_infarction
 - atherosclerosis_coronary
 - management_coronary_thrombolysis
 - procedure_open_cabg
 - procedure_perc_angioplasty_coronary
+exclude:
+- congenital_heart_disease
+- procedure_congenital_heart_disease
