@@ -26,4 +26,3 @@ regexes:
     .*coronar(y|ies)
   - (?i)(percutaneous|transluminal) .*coronar(y|ies) .*(angioplasty|thrombolysis|therapeutic|atherectomy|operations)
 include: procedure_perc_angioplasty_coronary
-exclude: ~

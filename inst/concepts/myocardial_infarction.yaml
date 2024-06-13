@@ -23,4 +23,3 @@ regexes:
   - (?i)acute .*coronary .*(disease|dysfunction)
   - (?i)dressler
 include: myocardial_infarction
-exclude: ~

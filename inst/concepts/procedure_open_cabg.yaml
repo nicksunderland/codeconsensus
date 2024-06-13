@@ -24,4 +24,3 @@ regexes:
   - (?i)(graft|replacement|connection|anastomosis|implantation|bypass|repair|operations?|open
     angioplasty) .*coronary arter(y|ies)
 include: procedure_open_cabg
-exclude: ~

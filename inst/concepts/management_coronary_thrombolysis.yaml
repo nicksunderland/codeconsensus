@@ -23,4 +23,3 @@ regexes:
   - (?i)thrombolytic
   - thrombolysis
 include: management_coronary_thrombolysis
-exclude: ~

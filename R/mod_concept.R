@@ -390,6 +390,7 @@ mod_concept_server <- function(id, config, user){
                                           CODE_TYPE  = unlist(tree_attributes(input$tree_full, 'code_type')),
                                           DISABLED   = unlist(tree_attributes(input$tree_full, 'disabled')),
                                           SELECTED   = as.integer(unlist(tree_attributes(input$tree_full, 'selected'))),
+                                          CONCEPT    = id,
                                           CONCEPT_ID = concept_id())
 
         # clean up
@@ -486,6 +487,9 @@ mod_concept_server <- function(id, config, user){
                           label_option   = input$code_display,
                           show_agreement = !is.null(user[["username"]]) && user[["username"]] == "consensus",
                           disable_tree   = is.null(user[["is_rater"]]) || !user[["is_rater"]] || config$domain == "Derived")
+
+      updateCheckboxInput(session = session, "cascade", value = FALSE)
+      updateCheckboxInput(session = session, "expand", value = FALSE)
 
       # return
       return(tree)

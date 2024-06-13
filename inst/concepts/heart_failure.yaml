@@ -16,9 +16,7 @@ concept_id: '84114007'
 concept_term: Heart failure
 regexes:
   SNOMED: '84114007'
-  ICD10:
-  - T86[23]
-  - Z94[13]
+  ICD10: []
   ICD9: []
   OPCS4: []
   all:
@@ -26,3 +24,4 @@ regexes:
   - (?i)cardiac insufficiency
   - ' HF '
 include: heart_failure
+exclude: ~
