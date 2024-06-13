@@ -1,30 +1,29 @@
-id: "congenital_heart_disease"
-name: "Congenital heart disease"
+id: congenital_heart_disease
+name: Congenital heart disease
 definition: |
-  Congenital heart disease is a fault or problem with the heart that's there from birth.
-pmid: "https://www.england.nhs.uk/wp-content/uploads/2013/12/chd13-proc-list-1.pdf"
+  Congenital heart disease encompasses a wide range of cardiac defects that affect the normal
+  heart function. They are fault or problems that are present from birth.
+reference: https://www.nhs.uk/conditions/congenital-heart-disease/
 domain: Disorder
 terminology:
-  - "SNOMED"
-  - "ICD10"
-  - "ICD9"
-concept_id: "13213009"
-concept_term: "Congenital heart disease"
+- SNOMED
+- ICD10
+- ICD9
+concept_id: '13213009'
+concept_term: Congenital heart disease
 regexes:
+  SNOMED: '13213009'
+  ICD10: Q2[0-6][0-9]?
+  ICD9: []
+  OPCS4: []
   all:
-    - "(?i)congenital heart disease"
-    - "(?i)congenital .*(heart|cardiac)"
-    - "(?i)congenital .*(pulmonary|tricuspid|aortic|mitral) .*valves?"
-    - "(?i)(congenital|transposition) .*great (arter[y|ies]|veins?)"
-    - "(?i)fontan|fallot"
-    - "(?i)(double outlet|single) .*ventricle"
-    - "(?i)(atrial|ventric[ulare]+|aortopulmonary) septal defect"
-    - "(?i)cor triatriatum|truncus arteriosus"
-  SNOMED:
-    - "13213009"
-  ICD10:
-    - "Q2[0-6][0-9]?"
-  OPCS4:
-include:
-  - "congenital_heart_disease"
-exclude:
+  - (?i)congenital heart disease
+  - (?i)congenital .*(heart|cardiac)
+  - (?i)congenital .*(pulmonary|tricuspid|aortic|mitral) .*valves?
+  - (?i)(congenital|transposition) .*great (arter[y|ies]|veins?)
+  - (?i)fontan|fallot
+  - (?i)(double outlet|single) .*ventricle
+  - (?i)(atrial|ventric[ulare]+|aortopulmonary) septal defect
+  - (?i)cor triatriatum|truncus arteriosus
+include: congenital_heart_disease
+exclude: .na.character

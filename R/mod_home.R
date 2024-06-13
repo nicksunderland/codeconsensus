@@ -16,17 +16,17 @@ mod_home_ui <- function(id){
                    div(
                      style = "background-color: #f7f7f7; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px;",
                      h3("Introduction:"),
-                     p("The exercise aims to gather expert consesus on which codes define key base phenotypes."),
+                     p("This exercise aims to gather expert consesus on which codes define key phenotypes."),
                      h5("Voting:"),
                      p("Read the description of the concept and make any comments in the comments box.
                         Then select the codes that define this concept.
-                        Leave codes that do not define the concept blank.
-                        Regularly save progress by clicking the save button.
-                        Returning to the home page, you can view the agreement in terms of Cohen's kappa
+                        Leave codes that do not define the concept blank."),
+                     h5("Warning:"),
+                     p("Regularly save progress by clicking the save button."),
+                     h5(""),
+                     p("Below you can view the agreement in terms of Cohen's kappa
                         with other raters. The number of other rates contributing to the statistic are
-                        presented at the end of the bars on the plot below. A missing bar indicates that you
-                        have not yet saved any codes against this phenotype/concept.
-                       ")
+                        presented at the end of the bars on the plot below.")
                    ),
                    hr(),
                    actionButton(ns("refresh"), "Refresh"),
@@ -65,11 +65,12 @@ mod_home_server <- function(id, concepts){
                          INNER JOIN
                             CONCEPTS ON SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
                          WHERE
-                            CONCEPTS.CONCEPT IN ({names})")
+                            CONCEPTS.CONCEPT IN ({names}) AND USERNAME != 'consensus'")
 
       res <- query_db(sql, type = "get")
       res <- unique(res, by = c("USERNAME", "CODE", "CODE_TYPE", "CONCEPT"))
-      res <- data.table::dcast(res, CODE + CODE_TYPE + CONCEPT ~ USERNAME, value.var = "SELECTED", fill = NA)
+      res[, N := .N, by = c("CODE", "CODE_TYPE", "CONCEPT")]
+      res <- data.table::dcast(res, CODE + CODE_TYPE + CONCEPT + N ~ USERNAME, value.var = "SELECTED", fill = NA, fun.aggregate = max)
 
       calc_fleiss_kappa <- function(ratings_matrix) {
         N <- nrow(ratings_matrix)
@@ -86,7 +87,9 @@ mod_home_server <- function(id, concepts){
         return(kappa)
       }
 
-      kappas <- res[, .(kappa = calc_fleiss_kappa(as.matrix(.SD[, -c("CODE", "CODE_TYPE"), with = FALSE]))), by = "CONCEPT"]
+      kappas <- res[, .(kappa = calc_fleiss_kappa(as.matrix(.SD[, -c("CODE", "CODE_TYPE", "N"), with = FALSE]))), by = "CONCEPT"]
+      n <- res[, .(max_n = max(N, na.rm = TRUE)), by = "CONCEPT"]
+      kappas[n, max_n := i.max_n, on = "CONCEPT"]
 
       return(kappas)
     })
@@ -97,17 +100,20 @@ mod_home_server <- function(id, concepts){
 
       breaks <- c(0, 0.2, 0.4, 0.6, 0.8, 1)
       labels <- c("0 - Poor", "0.2 - Fair", "0.4 - Moderate", "0.6 - Substantial", "0.8 - Almost perfect", "1.0 - Perfect")
-      ggplot2::ggplot(kappa(), ggplot2::aes(y = as.factor(CONCEPT),
-                                            x = kappa,
+      ggplot2::ggplot(kappa(), ggplot2::aes(y    = as.factor(CONCEPT),
+                                            x    = kappa,
                                             fill = kappa)) +
         ggplot2::geom_col() +
+        ggplot2::geom_text(ggplot2::aes(label = paste0("N = ", max_n), x = kappa + 0.02),
+                           vjust = 0.5, hjust = 0) +
         ggplot2::scale_fill_gradient2(low = scales::muted("red"),
-                                      mid = "white",
+                                      mid = "lightyellow",
                                       high = scales::muted("blue"), limits = c(0,1), midpoint = 0.5) +
-        ggplot2::labs(title = "Inter-rater agreement",
+        ggplot2::labs(title = "Initial inter-rater agreement (prior to consensus)",
+                      subtitle = "N = number of raters",
                       x     = "Agreement (Fleiss' kappa)",
                       y     = "Concept") +
-        ggplot2::scale_x_continuous(breaks = breaks, labels = labels, limits = c(0,1)) +
+        ggplot2::scale_x_continuous(breaks = breaks, labels = labels, limits = c(0, 1.05)) +
         ggplot2::theme_minimal() +
         ggplot2::theme(legend.position = "none")
 

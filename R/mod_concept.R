@@ -19,26 +19,27 @@ mod_concept_ui <- function(id, config){
              style = "background-color: #f7f7f7; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px;",
              h3(paste(config$name, "definition:")),
              p(config$definition),
-             h5("Domain:",              span(config$domain,                                              style = "font-weight: normal;")),
-             h5("Terminology:",         span(paste0(unlist(config$terminology), collapse = ", "),        style = "font-weight: normal;")),
-             h5("Concept term:",        span(config$concept_term,                                        style = "font-weight: normal;")),
+             h5("Reference:",           span(a(href = config$reference, sub("(^https?://[^/]+).*", "\\1", config$reference)), style = "font-weight: normal;")),
+             h5("Preferred SNOMED ID:", span(config$concept_id,                                          style = "font-weight: normal;")),
+             h5("Terminologies:",       span(paste0(unlist(config$terminology), collapse = ", "),        style = "font-weight: normal;")),
              h5("Search expressions:\n",span(paste0("(", unlist(config$regexes), ")", collapse = " | "), style = "font-weight: normal;"))
            ),
            # user comments section
            textAreaInput(ns("user_comments"), label = "Comments", width = "100%"),
            # selection boxes
            fluidRow(column(3, selectInput(ns("plot_type"), label = "Plot selection", choices = c("off", "counts"))),
-                    column(3, selectInput(ns("code_display"), label = "Code display", choices = c("default", "nhs_count_per100k_episodes", "gp_count_per100k_patients", "ukbb_count_per100k_episodes"))),
+                    column(3, selectInput(ns("code_display"), label = "Count display", choices = c("default", "nhs_count_per100k_episodes", "gp_count_per100k_patients", "ukbb_count_per100k_episodes"))),
                     column(4, sliderInput(ns("count_slider"), "Count filter", min = 0, max = 1000, value = 0, round = TRUE)),
                     column(2, downloadButton(ns("download"), label = "Download codes"), style = "margin-top: 25px;")),
            # conditional plot panel
            conditionalPanel(condition = paste0("input.plot_type != 'off'"), plotOutput(ns("plot")), ns = ns),
-           # save and output messages
+           # save
            fluidRow(column(12, tags$label("Save selection"))),
            fluidRow(column(2, actionButton(ns("save"), "Save/Refresh")),
                     column(3, checkboxInput(ns("cascade"), "Cascade", value = FALSE)),
                     column(3, checkboxInput(ns("expand"), "Expand all", value = FALSE)),
-                    column(6, textOutput(ns("message_box")))),
+                    # column(3, textOutput(ns("message_box"))),
+                    column(4, uiOutput(ns("consesus_status")))),
            # the tree
            shinycssloaders::withSpinner(
              jsTreeR::jstreeOutput(ns("tree")),
@@ -91,6 +92,42 @@ mod_concept_server <- function(id, config, user){
       res <- query_db(sql, type = "get")
       return(res)
     })
+
+
+    # Render example text dynamically
+    output$example_output <- renderUI({
+      div(
+        id = "hello",
+        style = "font-size: 18px; color: blue;",
+        icon("info-circle", class = "fa-2x"),
+        "textOutput"
+      )
+    })
+
+
+    # display whether there is consensus data for this tree
+    output$consesus_status <- renderUI({
+
+      subconcept_ids <- paste0("'", subconcept_ids(), "'", collapse = ", ")
+      sql <- glue::glue("SELECT EXISTS (SELECT 1 FROM SELECTED WHERE USERNAME = 'consensus' AND CONCEPT_ID IN ({subconcept_ids})) AS CONSENSUS_REACHED")
+      res <- query_db(sql, type = "get")
+      consensus <- as.logical(res$CONSENSUS_REACHED)
+
+      if (consensus) {
+        el <- div(id = "reached",
+                  style = "margin-top: 10px;",
+                  icon("check-circle", class = "fa-1x", style = "color: green;"),
+                  span("Consensus reached", style = "color: green;"))
+      } else {
+        el <- div(id = "pending",
+                  style = "margin-top: 10px;",
+                  icon("times-circle", class = "fa-1x", style = "color: red;"),
+                  span("Consensus review pending", style = "color: red;"))
+      }
+
+      return(el)
+    })
+
 
     # the tree data
     load_js_tree <- reactive({
@@ -187,28 +224,49 @@ mod_concept_server <- function(id, config, user){
       # user not a rater, or in the consensus login (tree enabled), or not logged in (tree disable) - show the consensus results
       } else {
 
-        sql <- glue::glue("SELECT
+        sql <- glue::glue("
+                          WITH AVG_SELECTED AS (
+                              SELECT
+                                  CONCEPT_ID,
+                                  CODE_ID,
+                                  AVG(SELECTED) AS AVG_SELECTED
+                              FROM
+                                  SELECTED
+                              WHERE
+                                  USERNAME != 'consensus' AND
+                                  CONCEPT_ID IN ({subconcept_ids}) AND
+                                  CODE_ID IN (SELECT CODE_ID FROM CODES WHERE CODE IN ({tree_codes}))
+                              GROUP BY
+                                  SELECTED.CONCEPT_ID, SELECTED.CODE_ID
+                          ),
+                          CONSENSUS_SELECTED AS (
+                              SELECT
+                                  CONCEPT_ID,
+                                  CODE_ID,
+                                  SELECTED AS CONSENSUS_SELECTED
+                              FROM
+                                  SELECTED
+                              WHERE
+                                  USERNAME = 'consensus' AND
+                                  CONCEPT_ID IN ({subconcept_ids}) AND
+                                  CODE_ID IN (SELECT CODE_ID FROM CODES WHERE CODE IN ({tree_codes}))
+                          )
+                          SELECT
                               CODES.CODE,
                               CODES.CODE_TYPE,
                               CONCEPTS.CONCEPT,
-                              AVG(SELECTED.SELECTED) AS AVG_SELECTED,
-                              {disable_flag} AS DISABLED,
-                              CASE
-                                  WHEN (SELECT SELECTED FROM SELECTED WHERE SELECTED.CONCEPT_ID IN ({subconcept_ids}) AND SELECTED.USERNAME = 'consensus') IS NULL THEN
-                                        CASE WHEN AVG(SELECTED.SELECTED) > 0.5 THEN 1 ELSE 0 END
-                                  ELSE (SELECT SELECTED FROM SELECTED WHERE SELECTED.CONCEPT_ID IN ({subconcept_ids}) AND SELECTED.USERNAME = 'consensus')
-                              END AS SELECTED
-                           FROM
-                              SELECTED
-                           INNER JOIN
-                              CODES ON SELECTED.CODE_ID = CODES.CODE_ID
-                           INNER JOIN
-                              CONCEPTS ON SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
-                           WHERE
-                              SELECTED.CONCEPT_ID IN ({subconcept_ids})
-                              AND CODES.CODE IN ({tree_codes})
-                           GROUP BY
-                              SELECTED.CONCEPT_ID, CONCEPTS.CONCEPT, CODES.CODE, CODES.CODE_TYPE")
+                              AVG_SELECTED.AVG_SELECTED,
+                              0 AS DISABLED,
+                              COALESCE(CONSENSUS_SELECTED.CONSENSUS_SELECTED, CASE WHEN AVG_SELECTED.AVG_SELECTED >= 0.5 THEN 1 ELSE 0 END) AS SELECTED
+                          FROM
+                              AVG_SELECTED
+                          LEFT JOIN
+                              CONSENSUS_SELECTED ON AVG_SELECTED.CONCEPT_ID = CONSENSUS_SELECTED.CONCEPT_ID AND AVG_SELECTED.CODE_ID = CONSENSUS_SELECTED.CODE_ID
+                          INNER JOIN
+                              CODES ON AVG_SELECTED.CODE_ID = CODES.CODE_ID
+                          INNER JOIN
+                              CONCEPTS ON AVG_SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
+                          ")
       }
 
       # get the codes and select status
@@ -246,22 +304,23 @@ mod_concept_server <- function(id, config, user){
       req(js_tree(), input$code_display)
       validate(need(input$code_display %in% c("nhs_count_per100k_episodes", "gp_count_per100k_patients", "ukbb_count_per100k_episodes"), "Please choose a data source from `Code display`"))
 
-
       # get the internal package data (see /data folder)
       tree_codes <- data.table::data.table(code      = unlist(tree_attributes(js_tree(), "code")),
-                                           code_type = unlist(tree_attributes(js_tree(), "code_type")))
+                                           code_type = unlist(tree_attributes(js_tree(), "code_type")),
+                                           disabled  = unlist(tree_attributes(js_tree(), "disabled")))
+      tree_codes <- tree_codes[disabled == FALSE, ]
 
       if (input$code_display == "nhs_count_per100k_episodes") {
 
-        code_counts <- tree_codes[nhs_counts, count := i.per_100k_episodes, on = "code"]
+        code_counts <- tree_codes[nhs_counts, count := i.per_100k_episodes, on = c("code", "code_type")]
 
       } else if (input$code_display == "gp_count_per100k_patients") {
 
-        code_counts <- tree_codes[nhs_counts, count := i.per_100k_patients, on = "code"]
+        code_counts <- tree_codes[nhs_counts, count := i.per_100k_patients, on = c("code", "code_type")]
 
       } else if (input$code_display == "ukbb_count_per100k_episodes") {
 
-        code_counts <- tree_codes[ukbb_counts, count := i.per_100k_episodes, on = "code"]
+        code_counts <- tree_codes[ukbb_counts, count := i.per_100k_episodes, on = c("code", "code_type")]
 
       }
       code_counts <- code_counts[!is.na(count), ]
@@ -375,17 +434,7 @@ mod_concept_server <- function(id, config, user){
     )
 
     # count filter slider
-    # session$userData$observer_store[[paste0("tree_", id)]] <- observeEvent(input$tree_click, {
-    #
-    #   req(input$tree)
-    #   print("tree click")
-    #   session$sendCustomMessage("updateSaveButton", list(id = ns("save"), color = "red"))
-    #
-    # })
-
-    # count filter slider
     session$userData$observer_store[[paste0("count_slider_", id)]] <- observeEvent(input$count_slider, {
-      print(input$count_slider)
       session$sendCustomMessage("hideNodes", list(id = ns("tree"), count_slider = input$count_slider[1], code_display = input$code_display))
     })
 
@@ -406,20 +455,6 @@ mod_concept_server <- function(id, config, user){
       #updateSliderInput(session, "count_slider", max = max(counts()[, .(count)], na.rm = TRUE))
       session$sendCustomMessage("updateSlider", list(id = ns("count_slider"), max = max(counts()[, .(count)], na.rm = TRUE)))
     })
-
-
-    # custom JS functions: CustomMessageHandler connected to sendCustomMessage event above
-    # onrender <- reactive({
-    #   print("onrender <- reactive")
-    #   glue::glue("
-    #     function(el, x) {{
-    #
-    #       // turn off cascading as will auto select parent codes which may not always be relevant
-    #       var tree = $.jstree.reference(el.id);
-    #       tree.settings.checkbox.three_state = false; // prevent cascading
-    #       tree.settings.checkbox.cascade = 'undetermined'; // show parent nodes with children selected with a square
-    #       console.log(tree);
-    #
 
 
     # -----------------------------
@@ -444,17 +479,8 @@ mod_concept_server <- function(id, config, user){
                           show_agreement = !is.null(user[["username"]]) && user[["username"]] == "consensus",
                           disable_tree   = is.null(user[["is_rater"]]) || !user[["is_rater"]] || config$domain == "Derived")
 
-      # apply js on render rules
-      # tree <- htmlwidgets::onRender(tree, onrender())
-
       # return
       return(tree)
-    })
-
-    # message box
-    output$message_box <- renderText({
-      print(paste0("message box render `", message(), "`"))
-      message()
     })
 
     # plot
@@ -468,7 +494,7 @@ mod_concept_server <- function(id, config, user){
           ggplot2::theme_minimal() +
           ggplot2::theme(legend.position = "none") +
           ggplot2::labs(title = paste0("Code counts: ", sub("_", " ", input$code_display)),
-                        x = "Count",
+                        x = "Count (per 100,000 episodes (ICD10/OPCS) or GP patients (SNOMED)",
                         y = "Code") +
           ggplot2::facet_wrap(~code_type, nrow = 1, scales = "free")
       }
@@ -498,7 +524,7 @@ modify_tree <- function(tree, selected, label_option = "default", show_agreement
   modify_tree_recursive <- function(sub_tree) {
     for (i in seq_along(sub_tree)) {
 
-      lab_opt   <- if (label_option != "default" && !is.null(sub_tree[[i]]$data[[label_option]])) paste0("n=", sub_tree[[i]]$data[[label_option]]) else NULL
+      lab_opt   <- if (label_option != "default" && !is.null(sub_tree[[i]]$data[[label_option]])) paste0("value=", sub_tree[[i]]$data[[label_option]]) else NULL
       new_name  <- paste0(c(sub_tree[[i]]$data$code, lab_opt, sub_tree[[i]]$data$desc), collapse = " | ")
 
       # Only set attributes if they change

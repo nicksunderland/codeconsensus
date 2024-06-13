@@ -1,33 +1,3 @@
-#' @title Clean ID string
-#' @description id cleaning (only allowed letters, numbers, underscores)
-#' @param str a string to clean
-#' @param check a logical, whether to use as a checking function
-#' @param to_lower logical, whether to convert to lowercase
-#' @return a clean string
-#' @export
-#'
-clean_id <- function(str, check = FALSE, to_lower = TRUE) {
-  if (check) stopifnot("str must only be characters, numbers and underscores" = !grepl("[^A-Za-z0-9_]+", str))
-  str <- gsub("[^A-Za-z0-9_]+", "_", str)
-  if (to_lower) {
-    return(tolower(str))
-  } else {
-    return(str)
-  }
-}
-
-
-#' @ Extract code from tree label
-#' @param label string label
-#' @return a string, the code
-#' @export
-#'
-code_from_label <- function(label) {
-  code <- sub("^(.*) \\| .*", "\\1", label)
-  clean_id(code, check = FALSE, to_lower = FALSE)
-}
-
-
 #' @title Get tree attributes
 #' @param tree a js tree object
 #' @param attribute_name str, the attribute name (label, code, code_type, description, stselected, stopened)
@@ -74,4 +44,62 @@ tree_attributes <- function(tree, attribute_name, result = list()) {
 }
 
 
+
+parse_config_files <- function() {
+
+  # get the configs
+  config_dir   <- system.file("concepts", package = "hfphenotyping")
+  config_paths <- list.files(config_dir, pattern = ".ya?ml$", full.names = TRUE)
+  concept_ids  <- sapply(config_paths, function(x) yaml::read_yaml(x)$id)
+
+  # set the structure of the config
+  conf_struc <- structure(
+    .Data = list(
+      id           = NA_character_,
+      name         = NA_character_,
+      definition   = NA_character_,
+      reference    = NA_character_,
+      domain       = NA_character_,
+      terminology  = NA_character_,
+      concept_id   = NA_character_,
+      concept_term = NA_character_,
+      regexes      = list(SNOMED = list(),
+                          ICD10  = list(),
+                          ICD9   = list(),
+                          OPCS4  = list()),
+      include      = NA_character_,
+      exclude      = NA_character_
+    ),
+    class = "ConfigStructure"
+  )
+
+  # populate the structure and check, for each config
+  for (path in config_paths) {
+
+    yml    <- yaml::read_yaml(path)
+    config <- modifyList(conf_struc, yml)
+
+    # print
+    cat(basename(path), "\n")
+
+    # check each element
+    stopifnot("id must be a character" = !is.na(config$id) && is.character(config$id))
+    stopifnot("name must be a character" = !is.na(config$name) && is.character(config$name))
+    stopifnot("definition must be a character" = !is.na(config$definition) && is.character(config$definition))
+    stopifnot("reference must be a valid URL" = !is.na(config$reference) && grepl("^https?://\\S+$", config$reference))
+    stopifnot("domain must be in c('Measure', 'Disorder', 'Procedure', 'Derived')" = !is.na(config$domain) && config$domain %in% c('Observable entity', 'Disorder', 'Procedure', 'Derived'))
+    stopifnot("terminology must one or more of c('SNOMED', 'SNOMED_procedure', 'ICD10', 'OPCS4', 'ICD9', 'ICD9_procedure')" = !any(is.na(config$terminology)) && all(config$terminology %in% c('SNOMED', 'SNOMED_procedure', 'ICD10', 'OPCS4', 'ICD9', 'ICD9_procedure')))
+    stopifnot("concept_id must be a character" = !is.na(config$concept_id) && is.character(config$concept_id))
+    stopifnot("concept_term must be a character" = !is.na(config$concept_term) && is.character(config$concept_term))
+    stopifnot("regexes must be a list with names in c(all, SNOMED, OPCS4, ICD9)" = is.list(config$regexes) && length(config$regexes) > 0 && all(names(config$regexes) %in% c('all', 'SNOMED', 'OPCS4', 'ICD10', 'ICD9')))
+    stopifnot("include must be a list of length > 0" = !any(is.na(config$include)) && length(config$include) > 0 && all(config$include %in% concept_ids))
+    stopifnot("exclude must be a list but may be empty" = if(length(config$exclude) > 0) all(config$exclude %in% concept_ids) else TRUE)
+
+    # resave in standard format
+    yaml::write_yaml(config, path)
+
+  }
+
+
+}
 

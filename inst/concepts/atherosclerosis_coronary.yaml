@@ -1,29 +1,31 @@
-id: "atherosclerosis_coronary"
-name: "Atherosclerosis (coronary)"
+id: atherosclerosis_coronary
+name: Atherosclerosis (coronary)
 definition: |
-  Atherosclerosis of the epicardial coronary arteries and chronic ischaemic cardiomyopathy where the ischaemia
-  is mostly likely secondary to atherosclerosis. Excludes codes for definite myocardial infarction where coronary
-  atheroma is not defined and procedures for coronary artery disease.
-pmid: NA
+  A disease in which there is a narrowing or blockage of the coronary arteries due to atherosclerosis (a buildup
+  of fatty material and plaque inside the coronary arteries). This definition includes the concept of ischaemic
+  heart disease or myocardial ischaemia but is not intended to include other proxies for the presence of coronary
+  atherosclerosis, for example codes for definite myocardial infarction (without mention of coronary atheroma)
+  or procedure codes for coronary intervention, which are defined in separate concepts.
+reference: https://www.bhf.org.uk/informationsupport/conditions/coronary-heart-disease
 domain: Disorder
 terminology:
-  - "SNOMED"
-  - "ICD10"
-  - "ICD9"
-concept_id: "443502000"
+- SNOMED
+- ICD10
+- ICD9
+concept_id: '443502000'
 concept_term: Coronary atherosclerosis
 regexes:
-  all:
-    - "(?i)athero(ma|sclerosis) .*coronar(y|ies)"
-    - "(?i)coronar(y|ies) .*athero(ma|sclerosis)"
-    - "(?i)coronary artery disease"
-    - "(?i)chronic ischa?emic (cardiomyopathy|heart disease)"
-    - "myocardial ischa?emia"
   SNOMED:
-    - "443502000"
-    - "413838009"
-  ICD10:
-  OPCS4:
-include:
-  - "atherosclerosis_coronary"
-exclude:
+  - '443502000'
+  - '413838009'
+  ICD10: []
+  ICD9: []
+  OPCS4: []
+  all:
+  - (?i)athero(ma|sclerosis) .*coronar(y|ies)
+  - (?i)coronar(y|ies) .*athero(ma|sclerosis)
+  - (?i)coronary artery disease
+  - (?i)chronic ischa?emic (cardiomyopathy|heart disease)
+  - myocardial ischa?emia
+include: atherosclerosis_coronary
+exclude: .na.character
