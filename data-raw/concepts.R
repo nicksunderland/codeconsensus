@@ -24,8 +24,9 @@ if (!file.exists(SNOMED_RDS)) {
 }
 
 # read the config files
-configs <- list.files("/Users/xx20081/git/hfphenotyping/inst/concepts", pattern = ".*\\.(yaml|yml)$", full.names = TRUE)
-configs <- configs[!file.info(configs)$isdir]
+project_files <- list.files("/Users/xx20081/git/hfphenotyping/inst/concepts", pattern = ".*\\.(yaml|yml)$", full.names = TRUE)
+configs <- list.files("/Users/xx20081/git/hfphenotyping/inst/concepts", pattern = ".*\\.(yaml|yml)$", recursive = TRUE, full.names = TRUE)
+configs <- configs[!file.info(configs)$isdir & !configs %in% project_files]
 
 # produce the trees for each config
 plan(multisession, workers = parallel::detectCores() - 1)
@@ -48,14 +49,15 @@ future_walk(configs, function(config) {
 
 
   # populate the CONCEPTS database
-  sql <- glue::glue("SELECT * FROM CONCEPTS WHERE CONCEPT = '{conf$id}' AND CONCEPT_CODE = '{conf$concept_id}'")
+  # conf$perferred_term$SNOMED$code
+  sql <- glue::glue("SELECT * FROM CONCEPTS WHERE CONCEPT = '{conf$id}'")
   this_concept <- query_db(sql, type = "get")
   if (nrow(this_concept) == 0) {
     sql     <- "SELECT MAX(CONCEPT_ID) AS max_concept_id FROM CONCEPTS"
     max_id  <- query_db(sql, type = "get")$MAX_CONCEPT_ID
     entry   <- list(CONCEPT      = conf$id,
                     CONCEPT_ID   = if (is.na(max_id)) 1 else max_id + 1,
-                    CONCEPT_CODE = conf$concept_id)
+                    CONCEPT_CODE = NA_character_)
     cols <- paste0(names(entry), collapse = ", ")
     placeholders <- paste0(rep('?', length(entry)), collapse = ", ")
     sql <- glue::glue("INSERT INTO CONCEPTS ({cols}) VALUES ({placeholders})")
