@@ -1,0 +1,40 @@
+id: hermes_heart_failure
+name: Heart Failure
+definition: |
+  Heart failure is not a single pathological diagnosis, but a clinical syndrome consisting of
+  cardinal symptoms (e.g. breathlessness, ankle . swelling, and fatigue) that may be accompanied
+  by signs (e.g. elevated . jugular venous pressure, pulmonary crackles, and peripheral oedema).
+  It is due to a structural and/or functional abnormality of the heart that results in elevated
+  intracardiac pressures and/or inadequate cardiac output at rest and/or during exercise.
+reference: https://www.escardio.org/Guidelines/Clinical-Practice-Guidelines/Acute-and-Chronic-Heart-Failure
+domain: Disorder
+terminology:
+- SNOMED
+- ICD10
+- ICD9
+perferred_term:
+  SNOMED:
+    code: '84114007'
+    desc: Heart failure
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
+  OPCS4:
+    code: ~
+    desc: ~
+regexes:
+  SNOMED: '84114007'
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  OPCS4:
+  - ~
+  all:
+  - (?i)(heart|cardiac|ventricular) failure
+  - (?i)cardiac insufficiency
+  - ' HF '
+include: hermes_heart_failure

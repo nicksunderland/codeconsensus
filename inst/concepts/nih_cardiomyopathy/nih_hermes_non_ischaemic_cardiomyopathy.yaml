@@ -1,0 +1,39 @@
+id: hermes_non_ischaemic_cardiomyopathy
+name: Non-ischaemic cardiomyopathy
+definition: |
+  We defined nonischemic cardiomyopathy (NICM) on the basis of left ventricular
+  dysfunction and absence of coronary artery disease (CAD). A priori,
+  individuals were considered to have left ventricular dysfunction if they
+  carried ICD-10 diagnoses of dilated cardiomyopathy or left ventricular failure,
+  or an ICD-9 diagnosis of left heart failure. Indicators for CAD included
+  myocardial infarction or coronary revascularization, as described previously.
+  Myocardial infarction was defined as a self-report of heart attack or an
+  ICD-10 code of acute myocardial infarction. Coronary revascularization
+  was defined as the presence of an operative or procedure code for
+  coronary artery bypass surgery or coronary angioplasty
+reference: https://doi.org/10.1161%2FCIRCULATIONAHA.118.035774
+domain: Derived
+terminology:
+- OPCS4
+- ICD10
+- ICD9
+- ICD9_procedure
+- SNOMED
+- SNOMED_procedure
+concept_id: NA
+concept_term: Non-ischaemic cardiomyopathy
+regexes:
+  SNOMED: []
+  ICD10: []
+  ICD9: []
+  OPCS4: []
+include:
+- hermes_left_ventricular_systolic_dysfunction
+exclude:
+- hermes_congenital_heart_disease
+- hermes_procedure_congenital_heart_disease
+- hermes_myocardial_infarction
+- hermes_atherosclerosis_coronary
+- hermes_management_coronary_thrombolysis
+- hermes_procedure_open_cabg
+- hermes_procedure_perc_angioplasty_coronary

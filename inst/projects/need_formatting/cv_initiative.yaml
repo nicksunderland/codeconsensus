@@ -1,7 +1,0 @@
-id: "cv_initiative"
-name: "Cardiovascular initiative"
-concepts:
-  - "heart_failure"
-  - "dilated_cardiomyopathy"
-  - "hypertrophic_cardiomyopathy"
-  - "restrictive_cardiomyopathy"

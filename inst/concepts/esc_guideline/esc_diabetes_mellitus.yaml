@@ -1,0 +1,39 @@
+id: esc_diabetes_mellitus
+name: Diabetes mellitus
+definition: |
+  Diabetes mellitus is defined as HbA1c ≥48 mmol/mol (6.5%) or fasting blood
+  glucose ≥7.0 mmol/L or based on random blood glucose/two-hour plasma glucose
+  test ≥11.1 mmol/L (on more than one measurement) and includes all types of
+  diabetes mellitus regardless of treatment strategy.
+reference: https://doi.org/10.2337/dc22-S002
+domain: Disorder
+terminology:
+- SNOMED
+- ICD10
+- ICD9
+perferred_term:
+  SNOMED:
+    code: '73211009'
+    desc: Diabetes mellitus
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
+  OPCS4:
+    code: ~
+    desc: ~
+regexes:
+  SNOMED: '73211009'
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  OPCS4:
+  - ~
+  all:
+  - diabetes mellitus
+  - diabetic (retinopathy|cataract|arthropathy|.*neuropathy|.*angiopathy)
+include: esc_diabetes_mellitus
+exclude: ~

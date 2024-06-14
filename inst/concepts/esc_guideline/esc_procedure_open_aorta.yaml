@@ -1,0 +1,33 @@
+id: esc_open_aortic_intervention
+name: Open aortic intervention
+definition: |
+  Open surgical repair of the aorta.
+reference: https://doi.org/10.1186%2Fs12913-019-4755-0
+domain: Procedure
+terminology:
+- SNOMED_procedure
+- OPCS4
+perferred_term:
+  SNOMED:
+    code: '315362007'
+    desc: Angioplasty of aorta
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
+  OPCS4:
+    code: ~
+    desc: ~
+regexes:
+  SNOMED: '315362007'
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  OPCS4: L1[89][0-9]
+  all:
+  - (?i)open repair of aorta
+  - (?i)repair of thoracoabdominal aortic aneurysm
+include: esc_open_aortic_intervention

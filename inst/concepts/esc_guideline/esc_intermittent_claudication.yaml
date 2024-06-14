@@ -1,0 +1,34 @@
+id: esc_intermittent_claudication
+name: Intermittent claudication
+definition: |
+  Peripheral vascular disease with intermittent claudication.
+reference: https://doi.org/10.1093/eurheartj/ehx095
+domain: Disorder
+terminology:
+- SNOMED
+- ICD10
+- ICD9
+perferred_term:
+  SNOMED:
+    code: '63491006'
+    desc: Intermittent claudication
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
+  OPCS4:
+    code: ~
+    desc: ~
+regexes:
+  SNOMED: '63491006'
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  OPCS4:
+  - ~
+  all: intermittent claudication
+include: esc_intermittent_claudication
+exclude: ~

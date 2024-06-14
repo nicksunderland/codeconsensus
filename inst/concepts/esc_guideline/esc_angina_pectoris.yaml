@@ -1,0 +1,33 @@
+id: esc_angina_pectoris
+name: Angina pectoris
+definition: |
+  Characteristic discomfort related to myocardial ischaemia.
+reference: https://doi.org/10.1093/eurheartj/ehz425
+domain: Disorder
+terminology:
+- SNOMED
+- ICD10
+- ICD9
+perferred_term:
+  SNOMED:
+    code: '194828000'
+    desc: Angina
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
+  OPCS4:
+    code: ~
+    desc: ~
+regexes:
+  SNOMED: '194828000'
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  OPCS4:
+  - ~
+  all: (?i)angina
+include: esc_angina_pectoris

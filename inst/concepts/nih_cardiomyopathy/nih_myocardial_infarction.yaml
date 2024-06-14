@@ -1,0 +1,25 @@
+id: hermes_myocardial_infarction
+name: Myocardial infarction
+definition: |
+  The clinical definition of myocardial denotes the presence of acute myocardial injury detected by
+  abnormal cardiac biomarkers in the setting of evidence of myocardial injury (new ischaemic ECG changes
+  loss of viable myocardium on imaging, coronary thrombosis on angiography or aithopsy).
+reference: https://doi.org/10.1161/CIR.0000000000000617
+domain: Disorder
+terminology:
+- SNOMED
+- ICD10
+- ICD9
+concept_id: '22298006'
+concept_term: Myocardial infarction
+regexes:
+  SNOMED: '22298006'
+  ICD10: []
+  ICD9: []
+  OPCS4: []
+  all:
+  - (?i)myocardial infarction
+  - (?i)acute ischa?emic heart disease
+  - (?i)acute .*coronary .*(disease|dysfunction)
+  - (?i)dressler
+include: hermes_myocardial_infarction

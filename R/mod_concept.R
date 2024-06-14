@@ -20,31 +20,37 @@ mod_concept_ui <- function(id, config){
              h3(paste(config$name, "definition:")),
              p(config$definition),
              h5("Reference:",           span(a(href = config$reference, sub("(^https?://[^/]+).*", "\\1", config$reference)), style = "font-weight: normal;")),
-             h5("Preferred SNOMED ID:", span(config$concept_id,                                          style = "font-weight: normal;")),
              h5("Terminologies:",       span(paste0(unlist(config$terminology), collapse = ", "),        style = "font-weight: normal;")),
              h5("Search expressions:\n",span(paste0("(", unlist(config$regexes), ")", collapse = " | "), style = "font-weight: normal;"))
            ),
-           # user comments section
-           textAreaInput(ns("user_comments"), label = "Comments", width = "100%"),
-           # selection boxes
-           fluidRow(column(3, selectInput(ns("plot_type"), label = "Plot selection", choices = c("off", "counts"))),
-                    column(3, selectInput(ns("code_display"), label = "Count display", choices = c("default", "nhs_count_per100k_episodes", "gp_count_per100k_patients", "ukbb_count_per100k_episodes"))),
-                    column(4, sliderInput(ns("count_slider"), "Count filter", min = 0, max = 1000, value = 0, round = TRUE)),
-                    column(2, downloadButton(ns("download"), label = "Download codes"), style = "margin-top: 25px;")),
+           # user comments section & preferred terms input and agree boxes
+           fluidRow(
+             column(8, textAreaInput(ns("user_comments"), label = "Comments", height = "100%", width = "100%")),
+             uiOutput(ns("preferred_terms_ui"))
+           ),
            # conditional plot panel
            conditionalPanel(condition = paste0("input.plot_type != 'off'"), plotOutput(ns("plot")), ns = ns),
-           # save
-           fluidRow(column(12, tags$label("Save selection"))),
-           fluidRow(column(2, actionButton(ns("save"), "Save/Refresh")),
-                    column(3, checkboxInput(ns("cascade"), "Cascade", value = FALSE)),
-                    column(3, checkboxInput(ns("expand"), "Expand all", value = FALSE)),
-                    # column(3, textOutput(ns("message_box"))),
-                    column(4, uiOutput(ns("consesus_status")))),
-           # the tree
-           shinycssloaders::withSpinner(
-             jsTreeR::jstreeOutput(ns("tree")),
-             type = 8
+           # the tree and controls
+           fluidRow(column(12, uiOutput(ns("consesus_status")))),
+           hr(),
+           fluidRow(
+             column(9, shinycssloaders::withSpinner(jsTreeR::jstreeOutput(ns("tree")), type = 8)),
+             column(3,
+                    div(
+                      style = "background-color: #f7f7f7; border: 1px solid #ddd; padding: 8px; margin-bottom: 8px;",
+                      selectInput(ns("code_display"), label = "Count display", choices = c("default", "nhs_count_per100k_episodes", "gp_count_per100k_patients", "ukbb_count_per100k_episodes")),
+                      selectInput(ns("plot_type"), label = "Plot selection", choices = c("off", "counts")),
+                      sliderInput(ns("count_slider"), "Count filter", min = 0, max = 1000, value = 0, round = TRUE),
+                      checkboxInput(ns("cascade"), "Cascade", value = FALSE),
+                      checkboxInput(ns("expand"), "Expand", value = FALSE),
+                      fluidRow(
+                        column(6, actionButton(ns("save"), "Save")),
+                        column(6, downloadButton(ns("download"), "Download"))
+                      )
+                    )
+             )
            )
+
   )
 
 }
@@ -56,9 +62,57 @@ mod_concept_ui <- function(id, config){
 #' @param exclude string, vector of ids for the exclusion concepts
 #' @importFrom glue glue
 #' @noRd
-mod_concept_server <- function(id, config, user){
+mod_concept_server <- function(id, config, user, project_id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+
+    # -----------------------------
+    # Dynamic UI elements
+    # -----------------------------
+    output$preferred_terms_ui <- renderUI({
+
+      els <- list()
+      for (term in config$terminology) {
+
+        value <- config$perferred_term[[term]]$code
+        els <- c(els, list(fluidRow(column(8, textInput(ns(term), paste("Preferred:", term), value = value)),
+                                    column(4, checkboxInput(ns(paste0("agree-", term)), "Agree?"), style = "margin-top: 25px;"))))
+      }
+
+      column(4, !!!els)
+    })
+
+    # display whether there is consensus data for this tree
+    output$consesus_status <- renderUI({
+
+      subconcept_ids <- paste0("'", subconcept_ids(), "'", collapse = ", ")
+      sql <- glue("SELECT s.CONCEPT_ID,
+                       CASE WHEN COUNT(ss.USERNAME) > 0 THEN 1 ELSE 0 END AS CONSENSUS_EXISTS
+                   FROM (
+                          SELECT DISTINCT CONCEPT_ID
+                          FROM SELECTED
+                          WHERE CONCEPT_ID IN ({subconcept_ids})
+                        ) s
+                  LEFT JOIN SELECTED ss ON s.CONCEPT_ID = ss.CONCEPT_ID AND ss.USERNAME = 'consensus'
+                  GROUP BY s.CONCEPT_ID")
+      res <- query_db(sql, type = "get")
+      consensus <- all(as.logical(res$CONSENSUS_EXISTS))
+
+      if (consensus) {
+        el <- div(id = "reached",
+                  style = "margin-top: 10px;",
+                  icon("check-circle", class = "fa-1x", style = "color: green;"),
+                  span("Consensus reached", style = "color: green;"))
+      } else {
+        el <- div(id = "pending",
+                  style = "margin-top: 10px;",
+                  icon("times-circle", class = "fa-1x", style = "color: red;"),
+                  span("Consensus review pending", style = "color: red;"))
+      }
+
+      return(el)
+    })
+
 
     # -----------------------------
     # reactive values / expressions
@@ -94,50 +148,9 @@ mod_concept_server <- function(id, config, user){
     })
 
 
-    # Render example text dynamically
-    output$example_output <- renderUI({
-      div(
-        id = "hello",
-        style = "font-size: 18px; color: blue;",
-        icon("info-circle", class = "fa-2x"),
-        "textOutput"
-      )
-    })
-
-
-    # display whether there is consensus data for this tree
-    output$consesus_status <- renderUI({
-
-      subconcept_ids <- paste0("'", subconcept_ids(), "'", collapse = ", ")
-      sql <- glue("SELECT s.CONCEPT_ID,
-                       CASE WHEN COUNT(ss.USERNAME) > 0 THEN 1 ELSE 0 END AS CONSENSUS_EXISTS
-                   FROM (
-                          SELECT DISTINCT CONCEPT_ID
-                          FROM SELECTED
-                          WHERE CONCEPT_ID IN ({subconcept_ids})
-                        ) s
-                  LEFT JOIN SELECTED ss ON s.CONCEPT_ID = ss.CONCEPT_ID AND ss.USERNAME = 'consensus'
-                  GROUP BY s.CONCEPT_ID")
-      res <- query_db(sql, type = "get")
-      consensus <- all(as.logical(res$CONSENSUS_EXISTS))
-
-      if (consensus) {
-        el <- div(id = "reached",
-                  style = "margin-top: 10px;",
-                  icon("check-circle", class = "fa-1x", style = "color: green;"),
-                  span("Consensus reached", style = "color: green;"))
-      } else {
-        el <- div(id = "pending",
-                  style = "margin-top: 10px;",
-                  icon("times-circle", class = "fa-1x", style = "color: red;"),
-                  span("Consensus review pending", style = "color: red;"))
-      }
-
-      return(el)
-    })
-
-
-    # the tree data
+    # ------------------------
+    # Load tree
+    # ------------------------
     load_js_tree <- reactive({
       print("loading base tree")
 
@@ -155,7 +168,8 @@ mod_concept_server <- function(id, config, user){
 
       # populate inclusion tree
       for (id in config$include) {
-        tree_path <- system.file("concepts", paste0(id, ".RDS"), package = "hfphenotyping")
+        print(id)
+        tree_path <- system.file("concepts", project_id, paste0(id, ".RDS"), package = "hfphenotyping")
         include$children <- c(include$children, list(readRDS(tree_path)))
       }
 
@@ -176,7 +190,7 @@ mod_concept_server <- function(id, config, user){
                             children = list())
 
         for (id in config$exclude) {
-          tree_path <- system.file("concepts", paste0(id, ".RDS"), package = "hfphenotyping")
+          tree_path <- system.file("concepts", project_id, paste0(id, ".RDS"), package = "hfphenotyping")
           exclude$children <- c(exclude$children, list(readRDS(tree_path)))
         }
       }
@@ -487,6 +501,7 @@ mod_concept_server <- function(id, config, user){
                           label_option   = input$code_display,
                           show_agreement = !is.null(user[["username"]]) && user[["username"]] == "consensus",
                           disable_tree   = is.null(user[["is_rater"]]) || !user[["is_rater"]] || config$domain == "Derived")
+      # tree = js_tree()
 
       updateCheckboxInput(session = session, "cascade", value = FALSE)
       updateCheckboxInput(session = session, "expand", value = FALSE)

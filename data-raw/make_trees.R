@@ -129,7 +129,7 @@ make_icd10_tree <- function(icd10, concept_id, regex = ".") {
       diag_code <- sub("\\.", "", icd10[[i]][["name"]][[1]])
 
       if (length(diag_code) == 0) {
-        diag_code <- clean_id(sub(".*\\((.*)\\).*", "\\1", desc), to_lower = FALSE)
+        diag_code <- sub(".*\\((.*)\\).*", "\\1", desc)
       }
 
       nested_result           <- make_icd10_tree(icd10[[i]], concept_id = concept_id, regex = regex)

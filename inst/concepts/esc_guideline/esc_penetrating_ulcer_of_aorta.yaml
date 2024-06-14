@@ -1,0 +1,38 @@
+id: esc_penetrating_ulcer_of_aorta
+name: Penetrating aortic ulcer
+definition: |
+  Penetrating aortic ulcer (PAU) is defined as ulceration of an aortic
+  atherosclerotic plaque penetrating through the internal elastic lamina
+  into the media.
+reference: https://doi.org/10.1093/eurheartj/ehu281
+domain: Disorder
+terminology:
+- SNOMED
+- ICD10
+- ICD9
+perferred_term:
+  SNOMED:
+    code: '690791000119107'
+    desc: Penetrating aortic ulcer
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
+  OPCS4:
+    code: ~
+    desc: ~
+regexes:
+  SNOMED: '690791000119107'
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  OPCS4:
+  - ~
+  all:
+  - (?i)penetrating aortic ulcer
+  - (?i)penetrating ulcer of aorta
+include: esc_penetrating_ulcer_of_aorta
+exclude: ~

@@ -45,11 +45,20 @@ tree_attributes <- function(tree, attribute_name, result = list()) {
 
 
 
-parse_config_files <- function() {
+parse_config_files <- function(file) {
+
+  if (file.exists(file)) {
+    config_paths <- file
+  } else if (dir.exists(file)) {
+    config_paths <- list.files(file, pattern = ".ya?ml$", full.names = TRUE, recursive = TRUE)
+  } else if (file %in% list.files(system.file("concepts", package = "hfphenotyping"))) {
+    config_dir   <- system.file("concepts", file, package = "hfphenotyping")
+    config_paths <- list.files(config_dir, pattern = ".ya?ml$", full.names = TRUE)
+  } else {
+    stop("incorrect input")
+  }
 
   # get the configs
-  config_dir   <- system.file("concepts", package = "hfphenotyping")
-  config_paths <- list.files(config_dir, pattern = ".ya?ml$", full.names = TRUE)
   concept_ids  <- sapply(config_paths, function(x) yaml::read_yaml(x)$id)
 
   # set the structure of the config
@@ -61,12 +70,14 @@ parse_config_files <- function() {
       reference    = NULL,
       domain       = NULL,
       terminology  = NULL,
-      concept_id   = NULL,
-      concept_term = NULL,
-      regexes      = list(SNOMED = list(),
-                          ICD10  = list(),
-                          ICD9   = list(),
-                          OPCS4  = list()),
+      perferred_term = list(SNOMED = list(code = NULL, desc = NULL),
+                            ICD10  = list(code = NULL, desc = NULL),
+                            ICD9   = list(code = NULL, desc = NULL),
+                            OPCS4  = list(code = NULL, desc = NULL)),
+      regexes      = list(SNOMED = list(NULL),
+                          ICD10  = list(NULL),
+                          ICD9   = list(NULL),
+                          OPCS4  = list(NULL)),
       include      = NULL,
       exclude      = NULL
     ),
@@ -89,14 +100,22 @@ parse_config_files <- function() {
     stopifnot("reference must be a valid URL" = !is.null(config$reference) && grepl("^https?://\\S+$", config$reference))
     stopifnot("domain must be in c('Measure', 'Disorder', 'Procedure', 'Derived')" = !is.null(config$domain) && config$domain %in% c('Observable entity', 'Disorder', 'Procedure', 'Derived'))
     stopifnot("terminology must one or more of c('SNOMED', 'SNOMED_procedure', 'ICD10', 'OPCS4', 'ICD9', 'ICD9_procedure')" = !any(is.na(config$terminology)) && all(config$terminology %in% c('SNOMED', 'SNOMED_procedure', 'ICD10', 'OPCS4', 'ICD9', 'ICD9_procedure')))
-    stopifnot("concept_id must be a character" = !is.null(config$concept_id) && is.character(config$concept_id))
-    stopifnot("concept_term must be a character" = !is.null(config$concept_term) && is.character(config$concept_term))
+
+
+    config$perferred_term$SNOMED$code <- config$concept_id
+    config$perferred_term$SNOMED$desc <- config$concept_term
+    config$concept_id   <- NULL
+    config$concept_term <- NULL
+
+
+    stopifnot("perferred_term must be a list with names in c('SNOMED', 'ICD10', 'OPCS4', 'ICD9')" = is.list(config$perferred_term) && length(config$regexes) > 0 && all(names(config$regexes) %in% c('all', 'SNOMED', 'OPCS4', 'ICD10', 'ICD9')))
     stopifnot("regexes must be a list with names in c(all, SNOMED, OPCS4, ICD9)" = is.list(config$regexes) && length(config$regexes) > 0 && all(names(config$regexes) %in% c('all', 'SNOMED', 'OPCS4', 'ICD10', 'ICD9')))
     stopifnot("include must be length > 0 and be recognised concept_ids" = !any(is.null(config$include)) && length(config$include) > 0 && all(config$include %in% concept_ids))
     stopifnot("exclude must be recognised concept_ids" = if(!all(is.null(config$exclude))) all(config$exclude %in% concept_ids) else TRUE)
 
     # resave in standard format
     yaml::write_yaml(config, path)
+    # yaml::write_yaml(config, "/Users/xx20081/Desktop/Untitled.yaml")
 
   }
 

@@ -28,7 +28,7 @@ app_server <- function(input, output, session) {
   # Create porject radiobuttons
   # --------------------------
   output$project_radiobuttons <- renderUI({
-    project_configs <- list.files(system.file("projects", package = "hfphenotyping"), pattern = ".ya?ml$", full.names = TRUE)
+    project_configs <- list.files(system.file("concepts", package = "hfphenotyping"), pattern = ".ya?ml$", full.names = TRUE)
     project_names   <- sapply(project_configs, function(x) yaml::read_yaml(paste0(sub(".yaml$", "", x), ".yaml"))$name)
     project_ids     <- lapply(project_configs, function(x) yaml::read_yaml(paste0(sub(".yaml$", "", x), ".yaml"))$id)
     names(project_ids) <- project_names
@@ -139,9 +139,9 @@ app_server <- function(input, output, session) {
     } # end cleaning up old UIs
 
     # get the concepts for this project
-    project_config <- system.file("projects", paste0(project, ".yaml"),  package = "hfphenotyping")
+    project_config <- system.file("concepts", paste0(project, ".yaml"),  package = "hfphenotyping")
     config         <- yaml::read_yaml(project_config)
-    concept_dir    <- system.file("concepts", package = "hfphenotyping")
+    concept_dir    <- system.file("concepts", project, package = "hfphenotyping")
     concepts_files <- lapply(config$concepts, function(x) file.path(concept_dir, paste0(x, ".yaml")))
     concepts       <- lapply(concepts_files, function(x) yaml::read_yaml(x))
 
@@ -158,7 +158,7 @@ app_server <- function(input, output, session) {
       # create the concept module
       m <- mod_concept_ui(id = x[["id"]], config = x)
       setNames(m, x$id)
-      mod_concept_server(id = x[["id"]], config = x, user = user)
+      mod_concept_server(id = x[["id"]], config = x, user = user, project_id = project)
 
       # categorize UIs based on type/domain
       if (x$domain == "Procedure") {

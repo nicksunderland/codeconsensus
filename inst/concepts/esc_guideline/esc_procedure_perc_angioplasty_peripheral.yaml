@@ -1,0 +1,34 @@
+id: esc_procedure_perc_angioplasty_peripheral
+name: Percutaneous peripheral vascular procedure
+definition: |
+  Percutaneous procedure on artery of extremity
+reference: https://...TBC
+domain: Procedure
+terminology:
+- SNOMED_procedure
+- OPCS4
+perferred_term:
+  SNOMED:
+    code: '5431005'
+    desc: Percutaneous procedure on artery of extremity
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
+  OPCS4:
+    code: ~
+    desc: ~
+regexes:
+  SNOMED: '5431005'
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  OPCS4: L[567][1346][0-9]
+  all:
+  - (?i)percutaneous transluminal angioplasty
+  - (?i)percutaneous procedure on artery of extremity
+include: esc_procedure_perc_angioplasty_peripheral
+exclude: ~

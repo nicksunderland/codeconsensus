@@ -1,0 +1,39 @@
+id: hermes_management_coronary_thrombolysis
+name: Thrombolysis (coronary)
+definition: |
+  The delivery of thrombolytic therapy, either intravenously or intracoronary, for the
+  treatment of coronary thrombosis.
+reference: https://www.ahajournals.org/doi/full/10.1161/01.CIR.97.16.1632
+domain: Procedure
+terminology:
+- SNOMED_procedure
+- OPCS4
+perferred_term:
+  SNOMED:
+    code: '32912007'
+    desc: Thrombolysis of coronary artery
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
+  OPCS4:
+    code: ~
+    desc: ~
+regexes:
+  SNOMED:
+  - '32912007'
+  - '232731009'
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  OPCS4:
+  - K502
+  - coronary thrombolysis
+  all:
+  - (?i)thrombolytic
+  - thrombolysis
+include: hermes_management_coronary_thrombolysis
+exclude: ~

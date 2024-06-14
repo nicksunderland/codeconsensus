@@ -1,0 +1,46 @@
+id: esc_stroke
+name: Stroke
+definition: |
+  Stroke is defined as an acute episode of focal or global neurological dysfunction
+  (lasting for ≥24 hours or until death) caused by ischaemia/infarction/haemorrhage
+  of the brain, spinal cord, or retina that is resulting in cell damage based on
+  pathological, imaging, or other objective evidence. Stroke does not include
+  nonvascular neurological deficits.
+reference: https://...TBC
+domain: Disorder
+terminology:
+- SNOMED
+- ICD10
+- ICD9
+perferred_term:
+  SNOMED:
+    code: '25133001'
+    desc: Stroke
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
+  OPCS4:
+    code: ~
+    desc: ~
+regexes:
+  SNOMED: '422504002'
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  OPCS4:
+  - ~
+  all:
+  - (?i)ischa?emic stroke
+  - (?i)cerebrae?l infarct(ion)?
+  - (?i)stroke
+  - (?i)intra-?cranial hae?morrhae?ge
+  - (?i)(intra-?)?cerebrae?l hae?morrhae?ge
+  - (?i)hae?morrhae?g(e|ic) stroke
+  - (?i)sub-?arachnoid hae?morrhae?ge
+  - (?i)sub-?dural hae?morrhae?ge
+  - (?i)extra-?dural hae?morrhae?ge
+include: esc_stroke

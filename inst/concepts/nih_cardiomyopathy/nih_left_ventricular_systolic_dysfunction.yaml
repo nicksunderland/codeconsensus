@@ -1,0 +1,22 @@
+id: esc_left_ventricular_systolic_dysfunction
+name: Left ventricular systolic dysfunction
+definition: |
+  Left ventricular systolic dysfunction is defined on imaging as a left ventricular
+  ejection fraction of <50% (at any time), or a diagnostic code for DCM, or other
+  diagnostic code associated with reduced left ventricular ejection fraction.
+reference: https://esc.com
+domain: Disorder
+terminology:
+- SNOMED
+- ICD10
+- ICD9
+concept_id: '134401001'
+concept_term: Left ventricular systolic dysfunction
+regexes:
+  SNOMED: '134401001'
+  ICD10: []
+  ICD9: []
+  OPCS4: []
+  all: left ventricular systolic dysfunction
+include: esc_left_ventricular_systolic_dysfunction
+exclude: ~

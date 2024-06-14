@@ -1,0 +1,13 @@
+id: "hermes3"
+name: "HERMES 3.0"
+concepts:
+  - "hermes_heart_failure"
+  - "hermes_atherosclerosis_coronary"
+  - "hermes_myocardial_infarction"
+  - "hermes_procedure_open_cabg"
+  - "hermes_procedure_perc_angioplasty_coronary"
+  - "hermes_procedure_congenital_heart_disease"
+  - "hermes_management_coronary_thrombolysis"
+  - "hermes_congenital_heart_disease"
+  - "hermes_non_ischaemic_heart_failure"
+  - "hermes_ischaemic_heart_failure"

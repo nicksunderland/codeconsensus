@@ -1,0 +1,34 @@
+id: esc_procedure_perc_angioplasty_aorta
+name: Percutaneous aortic intervention
+definition: |
+  Endovascular repair of the aorta.
+reference: https://doi.org/10.1016/S1078-5884%2898%2980009-9
+domain: Procedure
+terminology:
+- SNOMED_procedure
+- OPCS4
+perferred_term:
+  SNOMED:
+    code: '444588006'
+    desc: Angioplasty of aorta
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
+  OPCS4:
+    code: ~
+    desc: ~
+regexes:
+  SNOMED: '444588006'
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  OPCS4: L2[678][0-9]
+  all:
+  - (?i)angioplasty of aorta
+  - EVAR
+  - (?i)endovascular repair of abdominal aortic aneurysm
+include: esc_procedure_perc_angioplasty_aorta

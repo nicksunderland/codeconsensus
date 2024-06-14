@@ -1,0 +1,41 @@
+id: esc_atherosclerosis_pvd
+name: Peripheral artery disease
+definition: |
+  Peripheral arterial disease (other than carotid artery disease) is defined
+  as atherosclerotic peripheral arterial disease in the upper or lower
+  extremities, renal, splenic, mesenteric, and/or abdominal aortic
+  systems. Atherosclerotic peripheral arterial disease can also include
+  claudication, either with exertion or at rest.
+reference: https://doi.org/10.1093/eurheartj/ehx095
+domain: Disorder
+terminology:
+- SNOMED
+- ICD10
+- ICD9
+perferred_term:
+  SNOMED:
+    code: '840580004'
+    desc: Peripheral arterial disease
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
+  OPCS4:
+    code: ~
+    desc: ~
+regexes:
+  SNOMED: '840580004'
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  OPCS4:
+  - ~
+  all:
+  - (?i)peripher(al|ies) arter(ial|y) disease
+  - (?i).*athero(ma|sclerosis) .*arter(ies|y) .*extremities
+  - (?i).*athero(ma|sclerosis) .*(renal|other) .*arter(ies|y)
+  - (?i)generalized and unspecified atherosclerosis
+include: esc_atherosclerosis_pvd

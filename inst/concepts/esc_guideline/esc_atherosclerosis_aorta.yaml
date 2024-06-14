@@ -1,0 +1,36 @@
+id: esc_atherosclerosis_aorta
+name: Atherosclerosis (aorta)
+definition: |
+  Atherosclerosis of the aorta.
+reference: https://esc.org
+domain: Disorder
+terminology:
+- SNOMED
+- ICD10
+- ICD9
+perferred_term:
+  SNOMED:
+    code: '81817003'
+    desc: Atherosclerosis of aorta
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
+  OPCS4:
+    code: ~
+    desc: ~
+regexes:
+  SNOMED: '81817003'
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  OPCS4:
+  - ~
+  all:
+  - (?i)athero(ma|sclerosis) .*aort(ic|a)
+  - (?i)aort(ic|a) .*athero(ma|sclerosis)
+include: esc_atherosclerosis_aorta
+exclude: ~
