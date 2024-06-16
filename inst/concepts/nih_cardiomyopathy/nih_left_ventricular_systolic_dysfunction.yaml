@@ -1,4 +1,4 @@
-id: esc_left_ventricular_systolic_dysfunction
+id: nih_left_ventricular_systolic_dysfunction
 name: Left ventricular systolic dysfunction
 definition: |
   Left ventricular systolic dysfunction is defined on imaging as a left ventricular
@@ -10,13 +10,19 @@ terminology:
 - SNOMED
 - ICD10
 - ICD9
-concept_id: '134401001'
-concept_term: Left ventricular systolic dysfunction
+perferred_term:
+  SNOMED: {}
+  ICD10: {}
+  ICD9: {}
+  OPCS4: {}
 regexes:
   SNOMED: '134401001'
-  ICD10: []
-  ICD9: []
-  OPCS4: []
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  OPCS4:
+  - ~
   all: left ventricular systolic dysfunction
-include: esc_left_ventricular_systolic_dysfunction
+include: nih_left_ventricular_systolic_dysfunction
 exclude: ~

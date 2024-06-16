@@ -1,4 +1,4 @@
-id: hermes_myocardial_infarction
+id: nih_myocardial_infarction
 name: Myocardial infarction
 definition: |
   The clinical definition of myocardial denotes the presence of acute myocardial injury detected by
@@ -10,16 +10,22 @@ terminology:
 - SNOMED
 - ICD10
 - ICD9
-concept_id: '22298006'
-concept_term: Myocardial infarction
+perferred_term:
+  SNOMED: {}
+  ICD10: {}
+  ICD9: {}
+  OPCS4: {}
 regexes:
   SNOMED: '22298006'
-  ICD10: []
-  ICD9: []
-  OPCS4: []
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  OPCS4:
+  - ~
   all:
   - (?i)myocardial infarction
   - (?i)acute ischa?emic heart disease
   - (?i)acute .*coronary .*(disease|dysfunction)
   - (?i)dressler
-include: hermes_myocardial_infarction
+include: nih_myocardial_infarction

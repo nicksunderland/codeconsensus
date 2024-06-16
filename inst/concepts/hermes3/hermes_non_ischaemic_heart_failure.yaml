@@ -28,6 +28,8 @@ perferred_term:
   OPCS4:
     code: ~
     desc: ~
+  ICD9_procedure: []
+  SNOMED_procedure: []
 regexes:
   SNOMED:
   - ~
@@ -37,6 +39,9 @@ regexes:
   - ~
   OPCS4:
   - ~
+  all: []
+  ICD9_procedure: []
+  SNOMED_procedure: []
 include: hermes_heart_failure
 exclude:
 - hermes_congenital_heart_disease

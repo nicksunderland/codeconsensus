@@ -15,27 +15,20 @@ terminology:
 - SNOMED
 - SNOMED_procedure
 perferred_term:
-  SNOMED:
-    code: NA
-    desc: Ischaemic heart Failure
-  ICD10:
-    code: ~
-    desc: ~
-  ICD9:
-    code: ~
-    desc: ~
-  OPCS4:
-    code: ~
-    desc: ~
+  SNOMED: NA
+  ICD10: []
+  OPCS4: []
+  ICD9: []
+  ICD9_procedure: []
+  SNOMED_procedure: []
 regexes:
-  SNOMED:
-  - ~
-  ICD10:
-  - ~
-  ICD9:
-  - ~
-  OPCS4:
-  - ~
+  SNOMED: []
+  ICD10: []
+  ICD9: []
+  OPCS4: []
+  ICD9_procedure: []
+  SNOMED_procedure: []
+  all: []
 include:
 - hermes_heart_failure
 - hermes_myocardial_infarction

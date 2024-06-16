@@ -67,18 +67,29 @@ mod_concept_server <- function(id, config, user, project_id){
     ns <- session$ns
 
     # -----------------------------
+    # reactive values / expressions
+    # -----------------------------
+    config       <- reactiveValues(!!!config)
+    message      <- reactiveVal(NULL)
+    comments     <- reactiveVal(NULL)
+    js_tree      <- reactiveVal(NULL)
+    selected     <- reactiveVal(NULL)
+    preferred_terms <- reactiveValues()
+    for (term in config$terminology) {
+      t <- config$perferred_term[[term]]
+      preferred_terms[[term]] <- list(code = t$code, agree = FALSE)
+    }
+
+
+    # -----------------------------
     # Dynamic UI elements
     # -----------------------------
     output$preferred_terms_ui <- renderUI({
-
       els <- list()
-      for (term in config$terminology) {
-
-        value <- config$perferred_term[[term]]$code
-        els <- c(els, list(fluidRow(column(8, textInput(ns(term), paste("Preferred:", term), value = value)),
-                                    column(4, checkboxInput(ns(paste0("agree-", term)), "Agree?"), style = "margin-top: 25px;"))))
+      for (term in names(preferred_terms)) {
+        els <- c(els, list(fluidRow(column(8, textInput(ns(term), paste("Preferred:", term), value = preferred_terms[[term]]$code)),
+                                    column(4, checkboxInput(ns(paste0(term, "_agree")), "Agree?"), style = "margin-top: 25px;"))))
       }
-
       column(4, !!!els)
     })
 
@@ -96,7 +107,7 @@ mod_concept_server <- function(id, config, user, project_id){
                   LEFT JOIN SELECTED ss ON s.CONCEPT_ID = ss.CONCEPT_ID AND ss.USERNAME = 'consensus'
                   GROUP BY s.CONCEPT_ID")
       res <- query_db(sql, type = "get")
-      consensus <- all(as.logical(res$CONSENSUS_EXISTS))
+      consensus <- nrow(res) > 0 && all(as.logical(res$CONSENSUS_EXISTS))
 
       if (consensus) {
         el <- div(id = "reached",
@@ -115,16 +126,13 @@ mod_concept_server <- function(id, config, user, project_id){
 
 
     # -----------------------------
-    # reactive values / expressions
+    # Reactive expressions
     # -----------------------------
-    config      <- reactiveValues(!!!config)
-    message      <- reactiveVal(NULL)
-    comments     <- reactiveVal(NULL)
-    js_tree      <- reactiveVal(NULL)
-    selected     <- reactiveVal(NULL)
-
     # the concept id for this module (could be a derived module)
     concept_id <- reactive({
+
+      browser()
+
       sql <- glue::glue("SELECT CONCEPT_ID FROM CONCEPTS WHERE CONCEPT = '{id}'")
       res <- query_db(sql, type = "get")
       return(res$CONCEPT_ID)
@@ -302,21 +310,33 @@ mod_concept_server <- function(id, config, user, project_id){
     load_comments <- reactive({
       print("comments <- reactive")
 
-      str <- ""
+      comment_str <- ""
 
       # if logged in, enable comments
       if (!is.null(user[["username"]])) {
 
-        sql <- glue::glue("SELECT COMMENTS FROM COMMENTS WHERE USERNAME = '{user[['username']]}' AND CONCEPT_ID = '{concept_id()}'")
+        sql <- glue::glue("SELECT * FROM COMMENTS WHERE USERNAME = '{user[['username']]}' AND CONCEPT_ID = '{concept_id()}'")
         res <- query_db(sql, type = "get")
 
+        # extract the data
         if(nrow(res) > 0 && !all(is.na(res$COMMENTS))) {
-          str <- res$COMMENTS
+
+          comment_str <- res$COMMENTS
+
+          for (term in names(preferred_terms)) {
+            preferred_terms[[term]]$code <- res[[term]]
+            if (res[[term]] == config$perferred_term[[term]]$code) {
+              preferred_terms[[term]]$agree <- TRUE
+            } else {
+              preferred_terms[[term]]$agree <- FALSE
+            }
+          }
+
         }
 
       }
 
-      comments(str)
+      comments(comment_str)
     })
 
     # code counts (stored data in internal data objects `nhs_counts`, `ukbb_counts`, ... etc)
@@ -369,27 +389,32 @@ mod_concept_server <- function(id, config, user, project_id){
       }
 
       # ------------------------
-      # save comments
+      # save comments & preferred terms
       # ------------------------
-      if (!is.null(input$user_comments) && input$user_comments != "") {
+      # remove the old comments
+      sql <- glue::glue("DELETE FROM COMMENTS WHERE USERNAME = '{user[['username']]}' AND CONCEPT_ID = '{concept_id()}'")
+      query_db(query_str = sql, type = "send")
 
-        # remove the old comments
-        sql <- glue::glue("DELETE FROM COMMENTS WHERE USERNAME = '{user[['username']]}' AND CONCEPT_ID = '{concept_id()}'")
-        query_db(query_str = sql, type = "send")
+      # update with new comments
+      vals <- list(USERNAME   = user[['username']],
+                   CONCEPT_ID = concept_id(),
+                   COMMENTS   = input$user_comments)
 
-        # update with new comments
-        vals <- list(USERNAME = user[['username']], CONCEPT_ID = concept_id(), COMMENTS = input$user_comments)
-        sql  <- glue::glue("INSERT INTO COMMENTS ({paste(names(vals), collapse = ', ')}) VALUES ({paste0(rep('?', length(vals)), collapse = ', ')})")
-        res  <- query_db(query_str = sql, type = "update", value = vals)
+      # add preferred terms
+      for (term in names(preferred_terms)) {
+        vals[[term]] <- input[[term]]
+      }
 
-        # report
-        if (res) {
-          comments(input$user_comments)
-          showNotification("Saved comments", type = "message", duration = 10)
-        } else {
-          showNotification("Error saving comments, problem sending data to database", type = "error", duration = 30)
-        }
+      # insert
+      sql  <- glue::glue("INSERT INTO COMMENTS ({paste(names(vals), collapse = ', ')}) VALUES ({paste0(rep('?', length(vals)), collapse = ', ')})")
+      res  <- query_db(query_str = sql, type = "update", value = vals)
 
+      # report
+      if (res) {
+        comments(input$user_comments)
+        showNotification("Saved comments", type = "message", duration = 10)
+      } else {
+        showNotification("Error saving comments, problem sending data to database", type = "error", duration = 30)
       }
 
       # ------------------------
@@ -493,6 +518,12 @@ mod_concept_server <- function(id, config, user, project_id){
 
       # render comments
       updateTextAreaInput(session = session, "user_comments", value = comments())
+
+      # render the preferred terms
+      for (term in names(preferred_terms)) {
+        updateTextInput(session = session, term, value = preferred_terms[[term]]$code)
+        updateCheckboxInput(session = session, paste0(term, "_agree"), value = preferred_terms[[term]]$agree)
+      }
 
       # modify tree with previous selection and label options
       print("tree render")

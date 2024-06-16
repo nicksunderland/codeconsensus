@@ -2,6 +2,23 @@
 #https://download.oracle.com/otn-pub/otn_software/jdbc/1923/ojdbc8.jar
 #https://www.java.com/en/download/
 
+# -----------------------
+# GLOBAL CONNECTION POOL
+# -----------------------
+config <- config::get(file = system.file("database", "db_config.yaml", package = "hfphenotyping"))
+
+con <- pool::dbPool(
+  drv      = RJDBC::JDBC(driverClass = "oracle.jdbc.OracleDriver", classPath = system.file("database", "ojdbc8.jar", package = "hfphenotyping")),
+  url      = paste0("jdbc:oracle:thin:@", config[["connection_str"]]),
+  user     = config[["username"]],
+  password = config[["password"]]
+)
+
+onStop(function() {
+  pool::poolClose(con)
+})
+
+
 #' @title database connection and query function
 #' @param query_str string, valid SQL (or name of dt if 'write' option)
 #' @param type string, either get or send
@@ -14,14 +31,6 @@
 query_db <- function(query_str = NULL, type = "get", table = NULL, value = NULL) {
 
   type <- match.arg(type, choices = c("get", "read", "update", "write", "send"))
-
-  # driver and local database config file (connection details)
-  java_file <- system.file("database", "ojdbc8.jar", package = "hfphenotyping")
-  db_drv    <- RJDBC::JDBC(driverClass = "oracle.jdbc.OracleDriver", classPath = java_file)
-  config    <- config::get(file = system.file("database", "db_config.yaml", package = "hfphenotyping"))
-
-  # make the connection
-  con <- RJDBC::dbConnect(db_drv, paste0("jdbc:oracle:thin:@", config[["connection_str"]]), config[["username"]], config[["password"]])
 
   # get the results
   if (type == "get") {
@@ -51,9 +60,6 @@ query_db <- function(query_str = NULL, type = "get", table = NULL, value = NULL)
     results <- RJDBC::dbSendQuery(con, query_str)
 
   }
-
-  # close the connection
-  RJDBC::dbDisconnect(con)
 
   # return
   return(results)

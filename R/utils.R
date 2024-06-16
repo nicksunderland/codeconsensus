@@ -70,14 +70,8 @@ parse_config_files <- function(file) {
       reference    = NULL,
       domain       = NULL,
       terminology  = NULL,
-      perferred_term = list(SNOMED = list(code = NULL, desc = NULL),
-                            ICD10  = list(code = NULL, desc = NULL),
-                            ICD9   = list(code = NULL, desc = NULL),
-                            OPCS4  = list(code = NULL, desc = NULL)),
-      regexes      = list(SNOMED = list(NULL),
-                          ICD10  = list(NULL),
-                          ICD9   = list(NULL),
-                          OPCS4  = list(NULL)),
+      perferred_term = list(),
+      regexes      = list(),
       include      = NULL,
       exclude      = NULL
     ),
@@ -100,16 +94,20 @@ parse_config_files <- function(file) {
     stopifnot("reference must be a valid URL" = !is.null(config$reference) && grepl("^https?://\\S+$", config$reference))
     stopifnot("domain must be in c('Measure', 'Disorder', 'Procedure', 'Derived')" = !is.null(config$domain) && config$domain %in% c('Observable entity', 'Disorder', 'Procedure', 'Derived'))
     stopifnot("terminology must one or more of c('SNOMED', 'SNOMED_procedure', 'ICD10', 'OPCS4', 'ICD9', 'ICD9_procedure')" = !any(is.na(config$terminology)) && all(config$terminology %in% c('SNOMED', 'SNOMED_procedure', 'ICD10', 'OPCS4', 'ICD9', 'ICD9_procedure')))
-
-
-    config$perferred_term$SNOMED$code <- config$concept_id
-    config$perferred_term$SNOMED$desc <- config$concept_term
-    config$concept_id   <- NULL
-    config$concept_term <- NULL
-
-
-    stopifnot("perferred_term must be a list with names in c('SNOMED', 'ICD10', 'OPCS4', 'ICD9')" = is.list(config$perferred_term) && length(config$regexes) > 0 && all(names(config$regexes) %in% c('all', 'SNOMED', 'OPCS4', 'ICD10', 'ICD9')))
-    stopifnot("regexes must be a list with names in c(all, SNOMED, OPCS4, ICD9)" = is.list(config$regexes) && length(config$regexes) > 0 && all(names(config$regexes) %in% c('all', 'SNOMED', 'OPCS4', 'ICD10', 'ICD9')))
+    for (term in c("all", config$terminology)) {
+      if (!term %in% names(config$regexes)) config$regexes[[term]] <- list()
+    }
+    for (term in names(config$regexes)) {
+      if (!term %in% c("all", config$terminology)) config$regexes[[term]] <- NULL
+    }
+    for (term in config$terminology) {
+      if (!term %in% names(config$perferred_term)) config$perferred_term[[term]] <- list()
+    }
+    for (term in names(config$perferred_term)) {
+      if (!term %in% config$terminology) config$perferred_term[[term]] <- NULL
+    }
+    stopifnot("perferred_term must be a list with all terminologies present"  = is.list(config$perferred_term) && length(config$perferred_term) > 0 && all(config$terminology %in% names(config$perferred_term)))
+    stopifnot("regexes must be a list with all terminologies must be present" = is.list(config$regexes)        && length(config$regexes) > 0        && all(config$terminology %in% names(config$regexes)))
     stopifnot("include must be length > 0 and be recognised concept_ids" = !any(is.null(config$include)) && length(config$include) > 0 && all(config$include %in% concept_ids))
     stopifnot("exclude must be recognised concept_ids" = if(!all(is.null(config$exclude))) all(config$exclude %in% concept_ids) else TRUE)
 
@@ -119,6 +117,6 @@ parse_config_files <- function(file) {
 
   }
 
-
+  cat("\n** configs passed checks **\n")
 }
 

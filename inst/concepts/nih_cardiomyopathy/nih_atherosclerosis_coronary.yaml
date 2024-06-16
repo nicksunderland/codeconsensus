@@ -1,4 +1,4 @@
-id: hermes_atherosclerosis_coronary
+id: nih_atherosclerosis_coronary
 name: Atherosclerosis (coronary)
 definition: |
   A disease in which there is a narrowing or blockage of the coronary arteries due to atherosclerosis (a buildup
@@ -12,20 +12,34 @@ terminology:
 - SNOMED
 - ICD10
 - ICD9
-concept_id: '443502000'
-concept_term: Coronary atherosclerosis
+perferred_term:
+  SNOMED:
+    code: '443502000'
+    desc: Coronary atherosclerosis
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
+  OPCS4:
+    code: ~
+    desc: ~
 regexes:
   SNOMED:
   - '443502000'
   - '413838009'
-  ICD10: []
-  ICD9: []
-  OPCS4: []
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  OPCS4:
+  - ~
   all:
   - (?i)athero(ma|sclerosis) .*coronar(y|ies)
   - (?i)coronar(y|ies) .*athero(ma|sclerosis)
   - (?i)coronary artery disease
   - (?i)chronic ischa?emic (cardiomyopathy|heart disease)
   - myocardial ischa?emia
-include: hermes_atherosclerosis_coronary
+include: nih_atherosclerosis_coronary
 exclude: ~

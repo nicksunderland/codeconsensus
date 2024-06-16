@@ -1,25 +1,30 @@
-id: hypertrophic_cardiomyopathy
+id: nih_hypertrophic_cardiomyopathy
 name: Hypertrophic cardiomyopathy
 definition: |
   Hypertrophic cardiomyopathy (HCM) is defined as the presence of increased
   LV wall thickness (with or without RV hypertrophy) or mass
   that is not solely explained by abnormal loading conditions. (ESC, 2023)
-pmid: NA
+reference: https://doi.org/10.1093/eurheartj/ehad194
 domain: Disorder
 terminology:
-  - "SNOMED"
-  - "ICD10"
-  - "ICD9"
-concept_id: "233873004"
-concept_term: Hypertrophic cardiomyopathy
+- SNOMED
+- ICD10
+- ICD9
+perferred_term:
+  SNOMED: {}
+  ICD10: {}
+  ICD9: {}
+  OPCS4: {}
 regexes:
-  all:
-    - "(?i)hypertrophic (obstructive )?cardiomyopathy"
-    - "(?i)obstructive hypertrophic cardiomyopathy"
-  SNOMED:
-    - "233873004"
+  SNOMED: '233873004'
   ICD10:
+  - ~
+  ICD9:
+  - ~
   OPCS4:
-include:
-  - "hypertrophic_cardiomyopathy"
-exclude:
+  - ~
+  all:
+  - (?i)hypertrophic (obstructive )?cardiomyopathy
+  - (?i)obstructive hypertrophic cardiomyopathy
+include: nih_hypertrophic_cardiomyopathy
+exclude: ~
