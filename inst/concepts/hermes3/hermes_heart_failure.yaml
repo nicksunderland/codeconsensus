@@ -28,5 +28,9 @@ regexes:
   - ~
   ICD9:
   - ~
-  all: []
+  all:
+  - (?i)(heart|cardiac|ventricular) failure
+  - (?i)cardiac insufficiency
+  - ' HF '
 include: hermes_heart_failure
+exclude: ~

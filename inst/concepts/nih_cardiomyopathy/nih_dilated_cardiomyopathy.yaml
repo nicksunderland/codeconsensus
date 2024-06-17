@@ -11,23 +11,21 @@ terminology:
 - ICD10
 - ICD9
 perferred_term:
-  SNOMED: {}
   ICD10:
     code: ~
     desc: ~
   ICD9:
     code: ~
     desc: ~
-  OPCS4:
-    code: ~
-    desc: ~
+  SNOMED:
+    code: '399020009'
+    desc: Dilated cardiomyopathy
 regexes:
   SNOMED: '399020009'
   ICD10:
   - ~
   ICD9:
   - ~
-  OPCS4:
-  - ~
   all: (?i)dilated cardiomyopathy
 include: nih_dilated_cardiomyopathy
+exclude: ~

@@ -19,16 +19,11 @@ perferred_term:
   ICD9:
     code: ~
     desc: ~
-  OPCS4:
-    code: ~
-    desc: ~
 regexes:
   SNOMED: '38341003'
   ICD10:
   - ~
   ICD9:
-  - ~
-  OPCS4:
   - ~
   all:
   - (?i)hypertensi(on|ve)

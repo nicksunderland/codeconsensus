@@ -1,0 +1,17 @@
+id: nih_heart_failure_reduced_ejection_fraction
+name: Heart failure reduced ejection fraction
+definition: |
+  Heart failure with left ventricular ejection fraction <40%.
+reference: https://esc.com
+domain: Disorder
+terminology: SNOMED
+perferred_term:
+  SNOMED:
+    code: '703272007'
+    desc: Heart failure with reduced ejection fraction
+regexes:
+  SNOMED: '703272007'
+  all:
+  - (heart|ventricular) failure .*reduced (EF|ejection fraction)
+  - reduced (EF|ejection fraction) .*(heart|ventricular) failure
+include: nih_heart_failure_reduced_ejection_fraction

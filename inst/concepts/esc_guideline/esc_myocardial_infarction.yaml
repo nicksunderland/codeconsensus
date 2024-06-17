@@ -20,16 +20,11 @@ perferred_term:
   ICD9:
     code: ~
     desc: ~
-  OPCS4:
-    code: ~
-    desc: ~
 regexes:
   SNOMED: '22298006'
   ICD10:
   - ~
   ICD9:
-  - ~
-  OPCS4:
   - ~
   all:
   - (?i)myocardial infarction

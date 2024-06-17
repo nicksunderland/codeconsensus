@@ -43,7 +43,7 @@ future_walk(configs, function(config) {
 
   conf    <- yaml::read_yaml(config)
   outfile <- file.path(dirname(config), paste0(conf$id, ".RDS"))
-  regex   <- conf$regexes[!sapply(conf$regexes, function(x) is.null(x) | length(x) == 0)]
+  regex   <- conf$regexes[!sapply(conf$regexes, function(x) is.null(x[[1]]))]
   regex   <- lapply(regex, function(x) paste0("(", x, ")", collapse = "|"))
   terminologies <- conf$terminology
 

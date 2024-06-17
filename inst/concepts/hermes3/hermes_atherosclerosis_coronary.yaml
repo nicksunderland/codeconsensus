@@ -26,9 +26,12 @@ regexes:
   SNOMED:
   - '443502000'
   - '413838009'
+  all:
+  - (?i)athero(ma|sclerosis) .*aort(ic|a)
+  - (?i)aort(ic|a) .*athero(ma|sclerosis)
   ICD10:
   - ~
   ICD9:
   - ~
-  all: []
 include: hermes_atherosclerosis_coronary
+exclude: ~

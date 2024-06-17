@@ -8,27 +8,16 @@ terminology:
 - SNOMED_procedure
 - OPCS4
 perferred_term:
-  SNOMED:
-    code: '5431005'
-    desc: Percutaneous procedure on artery of extremity
-  ICD10:
-    code: ~
-    desc: ~
-  ICD9:
-    code: ~
-    desc: ~
   OPCS4:
     code: ~
     desc: ~
+  SNOMED_procedure:
+    code: '8990000'
+    desc: Percutaneous transluminal angioplasty of peripheral artery
 regexes:
-  SNOMED: '5431005'
-  ICD10:
-  - ~
-  ICD9:
-  - ~
   OPCS4: L[567][1346][0-9]
   all:
   - (?i)percutaneous transluminal angioplasty
   - (?i)percutaneous procedure on artery of extremity
+  SNOMED_procedure: '8990000'
 include: esc_procedure_perc_angioplasty_peripheral
-exclude: ~

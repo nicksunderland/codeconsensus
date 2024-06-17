@@ -18,16 +18,11 @@ perferred_term:
   ICD9:
     code: ~
     desc: ~
-  OPCS4:
-    code: ~
-    desc: ~
 regexes:
   SNOMED: '194828000'
+  all: (?i)angina
   ICD10:
   - ~
   ICD9:
   - ~
-  OPCS4:
-  - ~
-  all: (?i)angina
 include: esc_angina_pectoris

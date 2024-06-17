@@ -21,26 +21,42 @@ terminology:
 - SNOMED
 - SNOMED_procedure
 perferred_term:
-  SNOMED: {}
+  OPCS4:
+    code: ~
+    desc: ~
   ICD10:
     code: ~
     desc: ~
   ICD9:
     code: ~
     desc: ~
-  OPCS4:
+  ICD9_procedure:
+    code: ~
+    desc: ~
+  SNOMED:
+    code: ~
+    desc: ~
+  SNOMED_procedure:
     code: ~
     desc: ~
 regexes:
-  SNOMED:
+  all:
+  - ~
+  OPCS4:
   - ~
   ICD10:
   - ~
   ICD9:
   - ~
-  OPCS4:
+  ICD9_procedure:
   - ~
-include: nih_left_ventricular_systolic_dysfunction
+  SNOMED:
+  - ~
+  SNOMED_procedure:
+  - ~
+include:
+- nih_dilated_cardiomyopathy
+- nih_left_ventricular_systolic_dysfunction
 exclude:
 - nih_congenital_heart_disease
 - nih_procedure_congenital_heart_disease

@@ -10,10 +10,12 @@ terminology:
 - SNOMED_procedure
 - OPCS4
 perferred_term:
+  SNOMED_procedure:
+    code: ~
+    desc: ~
   OPCS4:
     code: ~
     desc: ~
-  SNOMED_procedure: []
 regexes:
   OPCS4:
   - K[0-2][4-9][0-9]?
@@ -28,5 +30,7 @@ regexes:
   - (?i)(double outlet|single) .*ventricle
   - (?i)(atrial|ventric[ulare]+|aortopulmonary) septal defect
   - (?i)cor triatriatum|truncus arteriosus
-  SNOMED_procedure: []
+  SNOMED_procedure:
+  - ~
 include: hermes_procedure_congenital_heart_disease
+exclude: ~

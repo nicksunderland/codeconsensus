@@ -22,16 +22,11 @@ perferred_term:
   ICD9:
     code: ~
     desc: ~
-  OPCS4:
-    code: ~
-    desc: ~
 regexes:
   SNOMED: '840580004'
   ICD10:
   - ~
   ICD9:
-  - ~
-  OPCS4:
   - ~
   all:
   - (?i)peripher(al|ies) arter(ial|y) disease

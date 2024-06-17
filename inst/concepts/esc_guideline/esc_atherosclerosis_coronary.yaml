@@ -22,9 +22,6 @@ perferred_term:
   ICD9:
     code: ~
     desc: ~
-  OPCS4:
-    code: ~
-    desc: ~
 regexes:
   SNOMED:
   - '443502000'
@@ -32,8 +29,6 @@ regexes:
   ICD10:
   - ~
   ICD9:
-  - ~
-  OPCS4:
   - ~
   all:
   - (?i)athero(ma|sclerosis) .*coronar(y|ies)

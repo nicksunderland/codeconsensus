@@ -24,6 +24,13 @@ regexes:
   ICD10: Q2[0-6][0-9]?
   ICD9:
   - ~
-  all: []
+  all:
+  - (?i)congenital heart disease
+  - (?i)congenital .*(heart|cardiac)
+  - (?i)congenital .*(pulmonary|tricuspid|aortic|mitral) .*valves?
+  - (?i)(congenital|transposition) .*great (arter[y|ies]|veins?)
+  - (?i)fontan|fallot
+  - (?i)(double outlet|single) .*ventricle
+  - (?i)(atrial|ventric[ulare]+|aortopulmonary) septal defect
+  - (?i)cor triatriatum|truncus arteriosus
 include: hermes_congenital_heart_disease
-exclude: ~

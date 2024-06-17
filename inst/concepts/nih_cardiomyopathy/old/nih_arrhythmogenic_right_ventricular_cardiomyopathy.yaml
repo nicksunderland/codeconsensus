@@ -1,0 +1,32 @@
+id: nih_arrhythmogenic_right_ventricular_cardiomyopathy
+name: Arrhythmogenic right ventricular cardiomyopathy
+definition: |
+  Arrhythmogenic right ventricular cardiomyopathy (ARVC) is characterized
+  structurally by a progressive myocardial atrophy with fibro-fatty
+  replacement of the RV myocardium. (ESC, 2023)
+reference: https://doi.org/10.1093/eurheartj/ehad194
+domain: Disorder
+terminology:
+- SNOMED
+- ICD10
+- ICD9
+perferred_term:
+  SNOMED:
+    code: '253528005'
+    desc: Arrhythmogenic right ventricular dysplasia
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
+regexes:
+  SNOMED: '253528005'
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  all:
+  - (?i)arrhythmogenic right ventricular cardiomyopathy
+  - ARVC
+include: nih_arrhythmogenic_right_ventricular_cardiomyopathy

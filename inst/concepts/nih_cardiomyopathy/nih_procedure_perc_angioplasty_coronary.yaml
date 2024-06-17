@@ -14,27 +14,19 @@ terminology:
 - SNOMED_procedure
 - OPCS4
 perferred_term:
-  SNOMED: {}
-  ICD10:
-    code: ~
-    desc: ~
-  ICD9:
-    code: ~
-    desc: ~
   OPCS4:
     code: ~
     desc: ~
+  SNOMED_procedure:
+    code: '415070008'
+    desc: Percutaneous coronary intervention
 regexes:
-  SNOMED: '415070008'
-  ICD10:
-  - ~
-  ICD9:
-  - ~
   OPCS4: K49[0-9]+?|K50[0-9]+|K75[0-9]+
   all:
   - (?i)percutaneous coronary intervention
   - (?i)(percutaneous|transluminal) .*(angioplasty|thrombolysis|therapeutic|atherectomy|operations)
     .*coronar(y|ies)
   - (?i)(percutaneous|transluminal) .*coronar(y|ies) .*(angioplasty|thrombolysis|therapeutic|atherectomy|operations)
+  SNOMED_procedure: '415070008'
 include: nih_procedure_perc_angioplasty_coronary
 exclude: ~

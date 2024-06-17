@@ -10,22 +10,13 @@ terminology:
 - SNOMED_procedure
 - OPCS4
 perferred_term:
-  SNOMED: {}
-  ICD10:
-    code: ~
-    desc: ~
-  ICD9:
-    code: ~
-    desc: ~
   OPCS4:
     code: ~
     desc: ~
+  SNOMED_procedure:
+    code: ~
+    desc: ~
 regexes:
-  SNOMED: '13213009'
-  ICD10:
-  - ~
-  ICD9:
-  - ~
   OPCS4:
   - K[0-2][4-9][0-9]?
   - K(29[67]|305|336|34[56]|35[467]|36[12]|37[1-6]|38[56]|482|577|76[189])
@@ -39,4 +30,7 @@ regexes:
   - (?i)(double outlet|single) .*ventricle
   - (?i)(atrial|ventric[ulare]+|aortopulmonary) septal defect
   - (?i)cor triatriatum|truncus arteriosus
+  SNOMED_procedure:
+  - ~
 include: nih_procedure_congenital_heart_disease
+exclude: ~

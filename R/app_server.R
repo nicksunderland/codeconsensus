@@ -147,7 +147,7 @@ app_server <- function(input, output, session) {
 
     # create the home ui
     rv$home_ui <- c(rv$home_ui, list(home = mod_home_ui("home")))
-    mod_home_server("home", concepts = sapply(concepts, function(x) x$id))
+    mod_home_server("home", concepts = sapply(concepts, function(x) x$id), user = user)
 
     # preallocate lists for different UI/concept types
     diagnosis_uis <- list()

@@ -18,19 +18,14 @@ perferred_term:
   ICD9:
     code: ~
     desc: ~
-  OPCS4:
-    code: ~
-    desc: ~
 regexes:
   SNOMED: '81817003'
+  all:
+  - (?i)athero(ma|sclerosis) .*aort(ic|a)
+  - (?i)aort(ic|a) .*athero(ma|sclerosis)
   ICD10:
   - ~
   ICD9:
   - ~
-  OPCS4:
-  - ~
-  all:
-  - (?i)athero(ma|sclerosis) .*aort(ic|a)
-  - (?i)aort(ic|a) .*athero(ma|sclerosis)
 include: esc_atherosclerosis_aorta
 exclude: ~

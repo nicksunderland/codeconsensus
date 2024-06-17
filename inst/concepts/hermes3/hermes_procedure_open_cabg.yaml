@@ -10,19 +10,20 @@ terminology:
 - SNOMED_procedure
 - OPCS4
 perferred_term:
+  SNOMED_procedure:
+    code: '232717009'
+    desc: Coronary artery bypass graft
   OPCS4:
     code: ~
     desc: ~
-  SNOMED_procedure: []
 regexes:
   OPCS4:
   - K4[0-9][0-9]?
   - K50[0-9]?|K75[0-9]?
   all:
-  - (?i)coronary artery bypass grafting
+  - (?i)coronary artery bypass graft(ing)?
   - CABG
   - (?i)(graft|replacement|connection|anastomosis|implantation|bypass|repair|operations?|open
     angioplasty) .*coronary arter(y|ies)
-  SNOMED_procedure: []
+  SNOMED_procedure: '232717009'
 include: hermes_procedure_open_cabg
-exclude: ~

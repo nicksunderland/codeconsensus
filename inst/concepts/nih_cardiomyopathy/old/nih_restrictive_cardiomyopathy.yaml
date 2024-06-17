@@ -12,17 +12,20 @@ terminology:
 - ICD10
 - ICD9
 perferred_term:
-  SNOMED: {}
-  ICD10: {}
-  ICD9: {}
-  OPCS4: {}
+  SNOMED:
+    code: '415295002'
+    desc: Restrictive cardiomyopathy
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
 regexes:
   SNOMED: '415295002'
   ICD10:
   - ~
   ICD9:
-  - ~
-  OPCS4:
   - ~
   all: (?i)(restrictive|constrictive) cardiomyopathy
 include: nih_restrictive_cardiomyopathy

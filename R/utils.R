@@ -95,13 +95,13 @@ parse_config_files <- function(file) {
     stopifnot("domain must be in c('Measure', 'Disorder', 'Procedure', 'Derived')" = !is.null(config$domain) && config$domain %in% c('Observable entity', 'Disorder', 'Procedure', 'Derived'))
     stopifnot("terminology must one or more of c('SNOMED', 'SNOMED_procedure', 'ICD10', 'OPCS4', 'ICD9', 'ICD9_procedure')" = !any(is.na(config$terminology)) && all(config$terminology %in% c('SNOMED', 'SNOMED_procedure', 'ICD10', 'OPCS4', 'ICD9', 'ICD9_procedure')))
     for (term in c("all", config$terminology)) {
-      if (!term %in% names(config$regexes)) config$regexes[[term]] <- list()
+      if (!term %in% names(config$regexes)) config$regexes[[term]] <- list(NULL)
     }
     for (term in names(config$regexes)) {
       if (!term %in% c("all", config$terminology)) config$regexes[[term]] <- NULL
     }
     for (term in config$terminology) {
-      if (!term %in% names(config$perferred_term)) config$perferred_term[[term]] <- list()
+      if (!term %in% names(config$perferred_term)) config$perferred_term[[term]] <- list(code = NULL, desc = NULL)
     }
     for (term in names(config$perferred_term)) {
       if (!term %in% config$terminology) config$perferred_term[[term]] <- NULL

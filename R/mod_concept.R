@@ -25,7 +25,7 @@ mod_concept_ui <- function(id, config){
            ),
            # user comments section & preferred terms input and agree boxes
            fluidRow(
-             column(8, textAreaInput(ns("user_comments"), label = "Comments", height = "100%", width = "100%")),
+             column(8, textAreaInput(ns("user_comments"), label = "Comments", height = "150px", width = "100%")),
              uiOutput(ns("preferred_terms_ui"))
            ),
            # conditional plot panel
@@ -85,6 +85,8 @@ mod_concept_server <- function(id, config, user, project_id){
     # Dynamic UI elements
     # -----------------------------
     output$preferred_terms_ui <- renderUI({
+      req(config$domain != "Derived")
+
       els <- list()
       for (term in names(preferred_terms)) {
         els <- c(els, list(fluidRow(column(8, textInput(ns(term), paste("Preferred:", term), value = preferred_terms[[term]]$code)),
@@ -130,9 +132,6 @@ mod_concept_server <- function(id, config, user, project_id){
     # -----------------------------
     # the concept id for this module (could be a derived module)
     concept_id <- reactive({
-
-      browser()
-
       sql <- glue::glue("SELECT CONCEPT_ID FROM CONCEPTS WHERE CONCEPT = '{id}'")
       res <- query_db(sql, type = "get")
       return(res$CONCEPT_ID)
@@ -148,6 +147,7 @@ mod_concept_server <- function(id, config, user, project_id){
 
     # the code ids for this module's codes
     code_ids <- reactive({
+      req(js_tree())
       print("code_ids <- reactive")
       tree_codes <- paste0("'", unlist(tree_attributes(js_tree(), 'code')), "'", collapse = ", ")
       sql <- glue::glue("SELECT CODE_ID, CODE_TYPE, CODE FROM CODES WHERE CODE IN ({tree_codes})")
@@ -532,7 +532,12 @@ mod_concept_server <- function(id, config, user, project_id){
                           label_option   = input$code_display,
                           show_agreement = !is.null(user[["username"]]) && user[["username"]] == "consensus",
                           disable_tree   = is.null(user[["is_rater"]]) || !user[["is_rater"]] || config$domain == "Derived")
-      # tree = js_tree()
+
+      tree <- htmlwidgets::onRender(tree, c("function(el, x) {
+                                              var tree = $.jstree.reference(el.id);
+                                              tree.settings.checkbox.three_state = false;
+                                              tree.settings.checkbox.cascade = 'undetermined';
+                                            }"))
 
       updateCheckboxInput(session = session, "cascade", value = FALSE)
       updateCheckboxInput(session = session, "expand", value = FALSE)

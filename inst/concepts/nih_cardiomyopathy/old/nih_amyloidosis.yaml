@@ -9,10 +9,15 @@ terminology:
 - ICD10
 - ICD9
 perferred_term:
-  SNOMED: {}
-  ICD10: {}
-  ICD9: {}
-  OPCS4: {}
+  SNOMED:
+    code: '17602002'
+    desc: Amyloidosis
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
 regexes:
   SNOMED:
   - '17602002'
@@ -21,8 +26,5 @@ regexes:
   - ~
   ICD9:
   - ~
-  OPCS4:
-  - ~
   all: (?i)(cardiac )?amyloidosis
 include: nih_amyloidosis
-exclude: ~

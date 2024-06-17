@@ -20,16 +20,11 @@ perferred_term:
   ICD9:
     code: ~
     desc: ~
-  OPCS4:
-    code: ~
-    desc: ~
 regexes:
   SNOMED: '134401001'
   ICD10:
   - ~
   ICD9:
-  - ~
-  OPCS4:
   - ~
   all: left ventricular systolic dysfunction
 include: esc_left_ventricular_systolic_dysfunction

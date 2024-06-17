@@ -22,14 +22,13 @@ perferred_term:
     desc: ~
 regexes:
   SNOMED: '22298006'
-  ICD10:
-  - ~
-  ICD9:
-  - ~
   all:
   - (?i)myocardial infarction
   - (?i)acute ischa?emic heart disease
   - (?i)acute .*coronary .*(disease|dysfunction)
   - (?i)dressler
+  ICD10:
+  - ~
+  ICD9:
+  - ~
 include: hermes_myocardial_infarction
-exclude: ~

@@ -41,9 +41,11 @@ mod_home_ui <- function(id){
 #' home Server Functions
 #' @import ggplot2
 #' @noRd
-mod_home_server <- function(id, concepts){
+mod_home_server <- function(id, concepts, user){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+
+    #
 
     # create a reactive to calculate the Fleiss' kappa
     kappa <- reactive({
@@ -70,6 +72,10 @@ mod_home_server <- function(id, concepts){
       res <- query_db(sql, type = "get")
       res <- unique(res, by = c("USERNAME", "CODE", "CODE_TYPE", "CONCEPT"))
       res[, N := .N, by = c("CODE", "CODE_TYPE", "CONCEPT")]
+      # if rater, only show those that have been rated
+      if (!is.null(user[["username"]]) && user[["username"]] != "consensus") {
+        res <- res[CONCEPT %in% res[USERNAME == user[["username"]], CONCEPT]]
+      }
       res <- data.table::dcast(res, CODE + CODE_TYPE + CONCEPT + N ~ USERNAME, value.var = "SELECTED", fill = NA, fun.aggregate = max)
 
       calc_fleiss_kappa <- function(ratings_matrix) {

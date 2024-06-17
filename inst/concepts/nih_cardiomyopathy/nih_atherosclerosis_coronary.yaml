@@ -22,9 +22,6 @@ perferred_term:
   ICD9:
     code: ~
     desc: ~
-  OPCS4:
-    code: ~
-    desc: ~
 regexes:
   SNOMED:
   - '443502000'
@@ -33,8 +30,6 @@ regexes:
   - ~
   ICD9:
   - ~
-  OPCS4:
-  - ~
   all:
   - (?i)athero(ma|sclerosis) .*coronar(y|ies)
   - (?i)coronar(y|ies) .*athero(ma|sclerosis)
@@ -42,4 +37,3 @@ regexes:
   - (?i)chronic ischa?emic (cardiomyopathy|heart disease)
   - myocardial ischa?emia
 include: nih_atherosclerosis_coronary
-exclude: ~

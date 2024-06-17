@@ -11,20 +11,22 @@ terminology:
 - ICD10
 - ICD9
 perferred_term:
-  SNOMED: {}
-  ICD10: {}
-  ICD9: {}
-  OPCS4: {}
+  SNOMED:
+    code: '233873004'
+    desc: Hypertrophic cardiomyopathy
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
 regexes:
   SNOMED: '233873004'
   ICD10:
   - ~
   ICD9:
   - ~
-  OPCS4:
-  - ~
   all:
   - (?i)hypertrophic (obstructive )?cardiomyopathy
   - (?i)obstructive hypertrophic cardiomyopathy
 include: nih_hypertrophic_cardiomyopathy
-exclude: ~

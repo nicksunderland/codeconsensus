@@ -8,26 +8,16 @@ terminology:
 - SNOMED_procedure
 - OPCS4
 perferred_term:
-  SNOMED:
-    code: '315362007'
-    desc: Angioplasty of aorta
-  ICD10:
-    code: ~
-    desc: ~
-  ICD9:
-    code: ~
-    desc: ~
   OPCS4:
     code: ~
     desc: ~
+  SNOMED_procedure:
+    code: '233370007'
+    desc: Repair of aneurysm of aorta
 regexes:
-  SNOMED: '315362007'
-  ICD10:
-  - ~
-  ICD9:
-  - ~
   OPCS4: L1[89][0-9]
   all:
   - (?i)open repair of aorta
   - (?i)repair of thoracoabdominal aortic aneurysm
+  SNOMED_procedure: '233370007'
 include: esc_open_aortic_intervention

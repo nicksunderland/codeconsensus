@@ -10,16 +10,19 @@ terminology:
 - ICD10
 - ICD9
 perferred_term:
-  SNOMED: {}
-  ICD10: {}
-  ICD9: {}
-  OPCS4: {}
+  SNOMED:
+    code: '13213009'
+    desc: Congenital heart disease
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
 regexes:
   SNOMED: '13213009'
   ICD10: Q2[0-6][0-9]?
   ICD9:
-  - ~
-  OPCS4:
   - ~
   all:
   - (?i)congenital heart disease
@@ -31,3 +34,4 @@ regexes:
   - (?i)(atrial|ventric[ulare]+|aortopulmonary) septal defect
   - (?i)cor triatriatum|truncus arteriosus
 include: nih_congenital_heart_disease
+exclude: ~

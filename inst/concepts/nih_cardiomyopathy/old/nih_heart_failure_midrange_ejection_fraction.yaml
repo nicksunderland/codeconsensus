@@ -1,0 +1,17 @@
+id: nih_heart_failure_midrange_ejection_fraction
+name: Heart failure mid-range ejection fraction
+definition: |
+  Heart failure with left ventricular ejection fraction 40-49%.
+reference: https://esc.com
+domain: Disorder
+terminology: SNOMED
+perferred_term:
+  SNOMED:
+    code: '788950000'
+    desc: Heart failure with mid range ejection fraction
+regexes:
+  SNOMED: '788950000'
+  all:
+  - (heart|ventricular) failure .*mid[- ]? range (EF|ejection fraction)
+  - mid[- ]? range (EF|ejection fraction) .*(heart|ventricular) failure
+include: nih_heart_failure_midrange_ejection_fraction

@@ -11,17 +11,20 @@ terminology:
 - ICD10
 - ICD9
 perferred_term:
-  SNOMED: {}
-  ICD10: {}
-  ICD9: {}
-  OPCS4: {}
+  SNOMED:
+    code: '22298006'
+    desc: Myocardial infarction
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
 regexes:
   SNOMED: '22298006'
   ICD10:
   - ~
   ICD9:
-  - ~
-  OPCS4:
   - ~
   all:
   - (?i)myocardial infarction
@@ -29,3 +32,4 @@ regexes:
   - (?i)acute .*coronary .*(disease|dysfunction)
   - (?i)dressler
 include: nih_myocardial_infarction
+exclude: ~

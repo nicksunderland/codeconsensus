@@ -7,7 +7,7 @@
 # -----------------------
 config <- config::get(file = system.file("database", "db_config.yaml", package = "hfphenotyping"))
 
-con <- pool::dbPool(
+con <- RJDBC::dbConnect(
   drv      = RJDBC::JDBC(driverClass = "oracle.jdbc.OracleDriver", classPath = system.file("database", "ojdbc8.jar", package = "hfphenotyping")),
   url      = paste0("jdbc:oracle:thin:@", config[["connection_str"]]),
   user     = config[["username"]],
@@ -15,7 +15,7 @@ con <- pool::dbPool(
 )
 
 onStop(function() {
-  pool::poolClose(con)
+  RJDBC::dbDisconnect(con)
 })
 
 

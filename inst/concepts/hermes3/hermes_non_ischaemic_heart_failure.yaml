@@ -16,32 +16,39 @@ terminology:
 - SNOMED
 - SNOMED_procedure
 perferred_term:
-  SNOMED:
-    code: NA
-    desc: Non-ischaemic heart Failure
+  OPCS4:
+    code: ~
+    desc: ~
   ICD10:
     code: ~
     desc: ~
   ICD9:
     code: ~
     desc: ~
-  OPCS4:
+  ICD9_procedure:
     code: ~
     desc: ~
-  ICD9_procedure: []
-  SNOMED_procedure: []
+  SNOMED:
+    code: ~
+    desc: ~
+  SNOMED_procedure:
+    code: ~
+    desc: ~
 regexes:
-  SNOMED:
+  all:
+  - ~
+  OPCS4:
   - ~
   ICD10:
   - ~
   ICD9:
   - ~
-  OPCS4:
+  ICD9_procedure:
   - ~
-  all: []
-  ICD9_procedure: []
-  SNOMED_procedure: []
+  SNOMED:
+  - ~
+  SNOMED_procedure:
+  - ~
 include: hermes_heart_failure
 exclude:
 - hermes_congenital_heart_disease

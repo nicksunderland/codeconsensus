@@ -15,20 +15,39 @@ terminology:
 - SNOMED
 - SNOMED_procedure
 perferred_term:
-  SNOMED: NA
-  ICD10: []
-  OPCS4: []
-  ICD9: []
-  ICD9_procedure: []
-  SNOMED_procedure: []
+  OPCS4:
+    code: ~
+    desc: ~
+  ICD10:
+    code: ~
+    desc: ~
+  ICD9:
+    code: ~
+    desc: ~
+  ICD9_procedure:
+    code: ~
+    desc: ~
+  SNOMED:
+    code: ~
+    desc: ~
+  SNOMED_procedure:
+    code: ~
+    desc: ~
 regexes:
-  SNOMED: []
-  ICD10: []
-  ICD9: []
-  OPCS4: []
-  ICD9_procedure: []
-  SNOMED_procedure: []
-  all: []
+  all:
+  - ~
+  OPCS4:
+  - ~
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  ICD9_procedure:
+  - ~
+  SNOMED:
+  - ~
+  SNOMED_procedure:
+  - ~
 include:
 - hermes_heart_failure
 - hermes_myocardial_infarction

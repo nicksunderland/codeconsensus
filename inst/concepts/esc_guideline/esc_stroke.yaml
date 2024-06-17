@@ -15,23 +15,18 @@ terminology:
 perferred_term:
   SNOMED:
     code: '25133001'
-    desc: Stroke
+    desc: Completed stroke
   ICD10:
     code: ~
     desc: ~
   ICD9:
-    code: ~
-    desc: ~
-  OPCS4:
     code: ~
     desc: ~
 regexes:
-  SNOMED: '422504002'
+  SNOMED: '25133001'
   ICD10:
   - ~
   ICD9:
-  - ~
-  OPCS4:
   - ~
   all:
   - (?i)ischa?emic stroke

@@ -9,10 +9,12 @@ terminology:
 - SNOMED_procedure
 - OPCS4
 perferred_term:
+  SNOMED_procedure:
+    code: '32912007'
+    desc: Thrombolysis of coronary artery by intravenous infusion
   OPCS4:
     code: ~
     desc: ~
-  SNOMED_procedure: []
 regexes:
   OPCS4:
   - K502
@@ -20,6 +22,5 @@ regexes:
   all:
   - (?i)thrombolytic
   - thrombolysis
-  SNOMED_procedure: []
+  SNOMED_procedure: '32912007'
 include: hermes_management_coronary_thrombolysis
-exclude: ~
