@@ -38,9 +38,9 @@ mod_concept_ui <- function(id, config){
              column(3,
                     div(
                       style = "background-color: #f7f7f7; border: 1px solid #ddd; padding: 8px; margin-bottom: 8px;",
-                      selectInput(ns("code_display"), label = "Count display", choices = c("default", "nhs_count_per100k_episodes", "gp_count_per100k_patients", "ukbb_count_per100k_episodes")),
+                      selectInput(ns("code_display"), label = "Count display", choices = c("default", "nhs_count", "ukbb_count", "nhs_count_per100k_episodes", "gp_count_per100k_patients", "ukbb_count_per100k_episodes")),
                       selectInput(ns("plot_type"), label = "Plot selection", choices = c("off", "counts")),
-                      sliderInput(ns("count_slider"), "Count filter", min = 0, max = 1000, value = 0, round = TRUE),
+                      sliderInput(ns("count_slider"), "Count filter", min = 0, max = 1000, value = 1, round = TRUE),
                       checkboxInput(ns("cascade"), "Cascade", value = FALSE),
                       checkboxInput(ns("expand"), "Expand", value = FALSE),
                       fluidRow(
@@ -344,7 +344,7 @@ mod_concept_server <- function(id, config, user, project_id){
 
       # validation
       req(js_tree(), input$code_display)
-      validate(need(input$code_display %in% c("nhs_count_per100k_episodes", "gp_count_per100k_patients", "ukbb_count_per100k_episodes"), "Please choose a data source from `Code display`"))
+      validate(need(input$code_display %in% c("nhs_count", "ukbb_count", "nhs_count_per100k_episodes", "gp_count_per100k_patients", "ukbb_count_per100k_episodes"), "Please choose a data source from `Code display`"))
 
       # get the internal package data (see /data folder)
       tree_codes <- data.table::data.table(code      = unlist(tree_attributes(js_tree(), "code")),
@@ -364,7 +364,17 @@ mod_concept_server <- function(id, config, user, project_id){
 
         code_counts <- tree_codes[ukbb_counts, count := i.per_100k_episodes, on = c("code", "code_type")]
 
+      } else if (input$code_display == "ukbb_count") {
+
+        code_counts <- tree_codes[ukbb_counts, count := i.count, on = c("code", "code_type")]
+
+      } else if (input$code_display == "nhs_count") {
+
+        code_counts <- tree_codes[nhs_counts, count := i.count, on = c("code", "code_type")]
+
       }
+
+
       code_counts <- code_counts[!is.na(count), ]
       code_counts <- code_counts[order(-count), head(.SD, 20), by = code_type]
       code_counts[, code := factor(code, levels = unique(code[order(code_type, count)]))]

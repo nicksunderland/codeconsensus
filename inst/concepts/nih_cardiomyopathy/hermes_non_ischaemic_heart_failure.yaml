@@ -51,10 +51,10 @@ regexes:
   - ~
 include: hermes_heart_failure
 exclude:
-- hermes_congenital_heart_disease
-- hermes_procedure_congenital_heart_disease
-- hermes_myocardial_infarction
-- hermes_atherosclerosis_coronary
-- hermes_management_coronary_thrombolysis
-- hermes_procedure_open_cabg
-- hermes_procedure_perc_angioplasty_coronary
+- nih_congenital_heart_disease
+- nih_procedure_congenital_heart_disease
+- nih_myocardial_infarction
+- nih_atherosclerosis_coronary
+- nih_management_coronary_thrombolysis
+- nih_procedure_open_cabg
+- nih_procedure_perc_angioplasty_coronary

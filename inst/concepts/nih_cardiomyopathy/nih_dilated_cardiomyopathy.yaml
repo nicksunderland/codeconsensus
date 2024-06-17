@@ -26,6 +26,8 @@ regexes:
   - ~
   ICD9:
   - ~
-  all: (?i)dilated cardiomyopathy
+  all:
+  - (?i)dilated? cardiomyopathy
+  - (?i)cardiomyopathy
 include: nih_dilated_cardiomyopathy
 exclude: ~

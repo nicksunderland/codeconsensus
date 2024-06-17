@@ -56,6 +56,7 @@ $( document ).ready(function() {
 
     slider.update({
       max: message.max,
+      value: 1,
       grid: true,
       grid_num: 5,
       prettify: function (num) {

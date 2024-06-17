@@ -187,6 +187,8 @@ future_walk(configs, function(config) {
   tree <- annotate_tree(tree = tree, annot_dt = nhs_counts, annot_name = "nhs_count_per100k_episodes", value_col = "per_100k_episodes", on = c("code" = "code", "code_type" = "code_type"), no_match = 0)
   tree <- annotate_tree(tree = tree, annot_dt = ukbb_counts, annot_name = "ukbb_count_per100k_episodes", value_col = "per_100k_episodes", on = c("code" = "code", "code_type" = "code_type"), no_match = 0)
   tree <- annotate_tree(tree = tree, annot_dt = nhs_counts, annot_name = "gp_count_per100k_patients", value_col = "per_100k_patients", on = c("code" = "code", "code_type" = "code_type"), no_match = 0)
+  tree <- annotate_tree(tree = tree, annot_dt = nhs_counts, annot_name = "nhs_count", value_col = "count", on = c("code" = "code", "code_type" = "code_type"), no_match = 0)
+  tree <- annotate_tree(tree = tree, annot_dt = ukbb_counts, annot_name = "ukbb_count", value_col = "count", on = c("code" = "code", "code_type" = "code_type"), no_match = 0)
 
 
   # -------------------------
