@@ -327,7 +327,7 @@ mod_concept_server <- function(id, config, user, project_id){
 
           for (term in names(preferred_terms)) {
             preferred_terms[[term]]$code <- res[[term]]
-            if (res[[term]] == config$perferred_term[[term]]$code) {
+            if (!all(is.na(res[[term]])) && res[[term]] == config$perferred_term[[term]]$code) {
               preferred_terms[[term]]$agree <- TRUE
             } else {
               preferred_terms[[term]]$agree <- FALSE
