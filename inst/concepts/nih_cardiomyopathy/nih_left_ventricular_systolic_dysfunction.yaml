@@ -2,8 +2,12 @@ id: nih_left_ventricular_systolic_dysfunction
 name: Left ventricular systolic dysfunction
 definition: |
   Left ventricular systolic dysfunction is defined here as any code
-  indicating reduced LV ejection fraction.
+  indicating impaired LV ejection fraction.
 reference: https://esc.com
+notes: |
+  Please include codes that indicate a "history of ...". Disease entities that
+  are downstream consequences of the concept of interest (and not downstream of
+  unrelated concepts, i.e. they are relatively specific) should be included.
 domain: Disorder
 terminology:
 - SNOMED
@@ -21,8 +25,7 @@ perferred_term:
     desc: Left ventricular systolic dysfunction
 regexes:
   all:
-  - (left ventricular )?systolic (dysfunction|failure)
-  - systolic .*heart failure
+  - systolic .*(dys-?function|failure|insufficiency)
   SNOMED:
   - '134401001'
   ICD10:

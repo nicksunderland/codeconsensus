@@ -5,6 +5,8 @@ definition: |
   diseased segment(s) of the coronary tree using blood vessels derived other parts of the
   body and connected to the aorta.
 reference: https://www.nhs.uk/conditions/coronary-artery-bypass-graft-cabg/
+notes: |
+  Please include codes that indicate a "history of ...".
 domain: Procedure
 terminology:
 - SNOMED_procedure

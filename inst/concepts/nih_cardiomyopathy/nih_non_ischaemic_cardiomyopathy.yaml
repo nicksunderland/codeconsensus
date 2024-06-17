@@ -6,12 +6,12 @@ definition: |
   individuals were considered to have left ventricular dysfunction if they
   carried ICD-10 diagnoses of dilated cardiomyopathy or left ventricular failure,
   or an ICD-9 diagnosis of left heart failure. Indicators for CAD included
-  myocardial infarction or coronary revascularization, as described previously.
-  Myocardial infarction was defined as a self-report of heart attack or an
-  ICD-10 code of acute myocardial infarction. Coronary revascularization
-  was defined as the presence of an operative or procedure code for
-  coronary artery bypass surgery or coronary angioplasty
+  myocardial infarction or coronary revascularization.
 reference: https://doi.org/10.1161%2FCIRCULATIONAHA.118.035774
+notes: |
+  Please save comments on the composition of the derived phenotype (inclusion and exclusion
+  criteria). Derived concepts cannot be directly adjudicated, please review the underlying
+  base concept code trees.
 domain: Derived
 terminology:
 - OPCS4
@@ -58,8 +58,6 @@ include:
 - nih_dilated_cardiomyopathy
 - nih_left_ventricular_systolic_dysfunction
 exclude:
-- nih_congenital_heart_disease
-- nih_procedure_congenital_heart_disease
 - nih_myocardial_infarction
 - nih_atherosclerosis_coronary
 - nih_management_coronary_thrombolysis

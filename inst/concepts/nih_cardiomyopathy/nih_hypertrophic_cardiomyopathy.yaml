@@ -5,6 +5,10 @@ definition: |
   LV wall thickness (with or without RV hypertrophy) or mass
   that is not solely explained by abnormal loading conditions. (ESC, 2023)
 reference: https://doi.org/10.1093/eurheartj/ehad194
+notes: |
+  Please include codes that indicate a "history of ...". Disease entities that
+  are downstream consequences of the concept of interest (and not downstream of
+  unrelated concepts, i.e. they are relatively specific) should be included.
 domain: Disorder
 terminology:
 - SNOMED
@@ -27,6 +31,5 @@ regexes:
   ICD9:
   - ~
   all:
-  - (?i)hypertrophic (obstructive )?cardiomyopathy
-  - (?i)obstructive hypertrophic cardiomyopathy
+  - (?i)cardiomyopath(y|ies)
 include: nih_hypertrophic_cardiomyopathy

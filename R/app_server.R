@@ -32,7 +32,7 @@ app_server <- function(input, output, session) {
     project_names   <- sapply(project_configs, function(x) yaml::read_yaml(paste0(sub(".yaml$", "", x), ".yaml"))$name)
     project_ids     <- lapply(project_configs, function(x) yaml::read_yaml(paste0(sub(".yaml$", "", x), ".yaml"))$id)
     names(project_ids) <- project_names
-    radioButtons("project", "Project", inline = TRUE, choices = project_ids)
+    radioButtons("project", "Project", inline = TRUE, choices = project_ids, selected = "nih_cardiomyopathy")
   })
 
 

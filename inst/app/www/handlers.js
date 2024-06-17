@@ -39,8 +39,8 @@ $( document ).ready(function() {
     for(var i = 0; i < json.length; i++) {
       var id = json[i].id;
       var count = parseFloat(json[i].data[message.code_display]);
-      var count_slider = parseFloat(message.count_slider);
-      if(count !== null && !isNaN(count) && count < count_slider) {
+      var count_filter = parseFloat(message.count_filter);
+      if(count !== null && !isNaN(count) && count < count_filter) {
         tree.hide_node(id);
       } else {
         tree.show_node(id);
@@ -49,7 +49,7 @@ $( document ).ready(function() {
   });
 
 
-  Shiny.addCustomMessageHandler('updateSlider', function(message) {
+/*  Shiny.addCustomMessageHandler('updateFilter', function(message) {
 
     var slider = $('#' + message.id).data('ionRangeSlider');
     console.log(slider)
@@ -64,7 +64,7 @@ $( document ).ready(function() {
       }
     })
 
-  });
+  });*/
 
 
 /*  Shiny.addCustomMessageHandler('updateSaveButton', function(message) {

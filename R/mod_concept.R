@@ -17,11 +17,13 @@ mod_concept_ui <- function(id, config){
            # the information box
            div(
              style = "background-color: #f7f7f7; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px;",
-             h3(paste(config$name, "definition:")),
-             p(config$definition),
-             h5("Reference:",           span(a(href = config$reference, sub("(^https?://[^/]+).*", "\\1", config$reference)), style = "font-weight: normal;")),
-             h5("Terminologies:",       span(paste0(unlist(config$terminology), collapse = ", "),        style = "font-weight: normal;")),
-             h5("Search expressions:\n",span(paste0("(", unlist(config$regexes), ")", collapse = " | "), style = "font-weight: normal;"))
+             h3(config$name),
+             h5("Definition: ",        span(config$definition, style = "font-weight: normal;")),
+             h5("Reference:",          span(a(href = config$reference, sub("(^https?://[^/]+).*", "\\1", config$reference)), style = "font-weight: normal;")),
+             h5("Terminologies:",      span(paste0(unlist(config$terminology), collapse = ", "),        style = "font-weight: normal;")),
+             h5("Search expressions:", span(paste0("(", unlist(config$regexes), ")", collapse = " | "), style = "font-weight: normal;")),
+             hr(),
+             h5("Adjudicator notes:",  span(config$notes, style = "font-weight: normal;"))
            ),
            # user comments section & preferred terms input and agree boxes
            fluidRow(
@@ -40,7 +42,7 @@ mod_concept_ui <- function(id, config){
                       style = "background-color: #f7f7f7; border: 1px solid #ddd; padding: 8px; margin-bottom: 8px;",
                       selectInput(ns("code_display"), label = "Count display", choices = c("default", "nhs_count", "ukbb_count", "nhs_count_per100k_episodes", "gp_count_per100k_patients", "ukbb_count_per100k_episodes")),
                       selectInput(ns("plot_type"), label = "Plot selection", choices = c("off", "counts")),
-                      sliderInput(ns("count_slider"), "Count filter", min = 0, max = 1000, value = 1, round = TRUE),
+                      numericInput(ns("count_filter"), "Count filter", min = 0, max = 1000, value = 0),
                       checkboxInput(ns("cascade"), "Cascade", value = FALSE),
                       checkboxInput(ns("expand"), "Expand", value = FALSE),
                       fluidRow(
@@ -89,8 +91,8 @@ mod_concept_server <- function(id, config, user, project_id){
 
       els <- list()
       for (term in names(preferred_terms)) {
-        els <- c(els, list(fluidRow(column(8, textInput(ns(term), paste("Preferred:", term), value = preferred_terms[[term]]$code)),
-                                    column(4, checkboxInput(ns(paste0(term, "_agree")), "Agree?"), style = "margin-top: 25px;"))))
+        els <- c(els, list(fluidRow(column(8, textInput(ns(term), paste("Preferred:", term), value = preferred_terms[[term]]$code), style="font-size:80%;"),
+                                    column(4, checkboxInput(ns(paste0(term, "_agree")), "Agree?"), style = "margin-top: 15px;"))))
       }
       column(4, !!!els)
     })
@@ -492,8 +494,8 @@ mod_concept_server <- function(id, config, user, project_id){
     )
 
     # count filter slider
-    session$userData$observer_store[[paste0("count_slider_", id)]] <- observeEvent(input$count_slider, {
-      session$sendCustomMessage("hideNodes", list(id = ns("tree"), count_slider = input$count_slider[1], code_display = input$code_display))
+    session$userData$observer_store[[paste0("count_filter_", id)]] <- observeEvent(input$count_filter, {
+      session$sendCustomMessage("hideNodes", list(id = ns("tree"), count_filter = input$count_filter, code_display = input$code_display))
     })
 
     # expand selection option
@@ -509,9 +511,9 @@ mod_concept_server <- function(id, config, user, project_id){
     # code display select box
     session$userData$observer_store[[paste0("code_display_", id)]] <- observeEvent(input$code_display, {
       req(counts())
-      print(max(counts()[, .(count)], na.rm = TRUE))
-      #updateSliderInput(session, "count_slider", max = max(counts()[, .(count)], na.rm = TRUE))
-      session$sendCustomMessage("updateSlider", list(id = ns("count_slider"), max = max(counts()[, .(count)], na.rm = TRUE)))
+      #print(max(counts()[, .(count)], na.rm = TRUE))
+      updateNumericInput(session, "count_filter", value = 0, max = max(counts()[, .(count)], na.rm = TRUE))
+      #session$sendCustomMessage("updateFilter", list(id = ns("count_filter"),  max = max(counts()[, .(count)], na.rm = TRUE)))
     })
 
 
@@ -543,13 +545,12 @@ mod_concept_server <- function(id, config, user, project_id){
                           show_agreement = !is.null(user[["username"]]) && user[["username"]] == "consensus",
                           disable_tree   = is.null(user[["is_rater"]]) || !user[["is_rater"]] || config$domain == "Derived")
 
-      tree <- htmlwidgets::onRender(tree, c("function(el, x) {
-                                              var tree = $.jstree.reference(el.id);
-                                              tree.settings.checkbox.three_state = false;
-                                              tree.settings.checkbox.cascade = 'undetermined';
-                                            }"))
+      tree <- htmlwidgets::onRender(tree, glue::glue("function(el, x) {{
+                                                        var tree = $.jstree.reference(el.id);
+                                                        tree.settings.checkbox.three_state = {if (input$cascade) 'true' else 'false'};
+                                                        tree.settings.checkbox.cascade = '{if (input$cascade) 'undetermined+up+down' else 'undetermined'}';
+                                                      }}"))
 
-      updateCheckboxInput(session = session, "cascade", value = FALSE)
       updateCheckboxInput(session = session, "expand", value = FALSE)
 
       # return

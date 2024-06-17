@@ -1,4 +1,4 @@
-id: hermes_non_ischaemic_heart_failure
+id: nih_non_ischaemic_heart_failure
 name: Non-ischaemic heart Failure
 definition: |
   Non-ischaemic heart Failure is a subset of the heart failure syndrome where the underlying
@@ -7,6 +7,10 @@ definition: |
   myocarditis, alcohol-related cardiomyopathy and arrhythmias. This definition
   excludes heart failure as a result of congenital heart disease.
 reference: https://pubmed.ncbi.nlm.nih.gov/12634896/
+notes: |
+  Please save comments on the composition of the derived phenotype (inclusion and exclusion
+  criteria). Derived concepts cannot be directly adjudicated, please review the underlying
+  base concept code trees.
 domain: Derived
 terminology:
 - OPCS4
@@ -49,10 +53,8 @@ regexes:
   - ~
   SNOMED_procedure:
   - ~
-include: hermes_heart_failure
+include: nih_heart_failure
 exclude:
-- nih_congenital_heart_disease
-- nih_procedure_congenital_heart_disease
 - nih_myocardial_infarction
 - nih_atherosclerosis_coronary
 - nih_management_coronary_thrombolysis
