@@ -7,6 +7,16 @@ https://savvinov.com/2020/07/13/installing-r-shiny-server-on-oci-compute-instanc
 
 
 
+
+
+
+
+
+
+
+
+
+
 |> Database homepage
 |> Network section
 | |> Turn off Mutual TLS (mTLS) authentication (set to Not required)
@@ -113,3 +123,70 @@ JNI cpp flags    : -I$(JAVA_HOME)/../include -I$(JAVA_HOME)/../include/linux
 JNI linker flags : -L$(JAVA_HOME)/lib/amd64/server -ljvm
 Updating Java configuration in /usr/lib64/R
 Done.
+
+
+
+
+==================
+Setting up https
+
+
+
+Install certbot and nginx
+
+
+Config nginx
+sudo certbot --nginx -d code-consensus.com -d www.code-consensus.com
+
+
+If SELinux is enabled, run the following command to allow nginx to make network connections:
+sudo setsebool -P httpd_can_network_connect 1
+
+sudo systemctl restart nginx
+
+
+
+config file @ sudo nano /etc/nginx/conf.d/code-consensus.conf
+"""
+server {
+    server_name code-consensus.com www.code-consensus.com;
+
+    location / {
+        proxy_pass http://localhost:3838/hfphenotyping/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Port $server_port;
+    }
+
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/code-consensus.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/code-consensus.com/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+
+}
+
+server {
+    if ($host = www.code-consensus.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    if ($host = code-consensus.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    listen 80;
+    server_name code-consensus.com www.code-consensus.com;
+    return 404; # managed by Certbot
+
+}
+""""

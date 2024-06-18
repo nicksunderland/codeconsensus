@@ -1,4 +1,78 @@
 
+icd11_dt <- data.table::fread("/Users/xx20081/Library/CloudStorage/OneDrive-UniversityofBristol/phenotyping/ICD11/SimpleTabulation-ICD-11-MMS-en.txt", sep = "\t")
+
+cat_lvls <- data.table::copy(icd11_dt)[ClassKind == "category"]
+cat_lvls[, L0 := data.table::rleid(DepthInKind)]
+max_depth <- max(cat_lvls$DepthInKind)
+for (i in seq_len(max_depth)) {
+  cat_lvls[DepthInKind == i, paste0("L", i) := Title, by = "L0"]
+}
+
+icd11_dt[cat_lvls, on = .(Title), paste0("L", 1:8) := mget(paste0("L", 1:8))]
+
+for (i in seq_len(max_depth)) {
+
+  icd11_dt[, lst_group := rowSums(!is.na(.SD)) == 0, .SDcols = paste0("L", i:max_depth)]
+  icd11_dt[, paste0("L", i) := zoo::na.locf(get(paste0("L", i)), na.rm = FALSE)]
+  icd11_dt[lst_group == TRUE, paste0("L", i) := NA_character_]
+  icd11_dt[is.na(get(paste0("L", i))), paste0("L", i) := ""]
+
+}
+
+
+
+
+
+split_blocks <- function(icd11_dt, by = "chapter", level = 0) {
+
+
+
+  if (by == "chapter") {
+    cat("[i] chapter\n")
+
+    result <- split(icd11_dt, by = "ChapterNo")
+    result <- lapply(result, function(x) split_blocks(x, by = "block", level = 1))
+
+  } else if (by == "block" && level < 5 && !all(icd11_dt[, .SD == "", .SDcols = paste0("Grouping", level)])) {
+    cat("[i] block\n")
+
+    result <- split(icd11_dt[!ClassKind %in% c("block", "chapter")], by = paste0("Grouping", level))
+    result <- lapply(result, function(x) split_blocks(x, by = "block", level = level + 1))
+
+  } else if (all(icd11_dt[, !is.na(L1)]) && by != "category") {
+    cat("[i] category with", unique(icd11_dt$DepthInKind), "levels\n")
+
+    result <- split(icd11_dt, by = "L1")
+    result <- lapply(result, function(x) split_blocks(x, by = "category", level = 1 + 1))
+
+  } else if (by == "category" && level < 8 && !all(icd11_dt[, .SD == "", .SDcols = paste0("L", level)])) {
+
+    result <- split(icd11_dt, by = paste0("L", level))
+    result <- lapply(result, function(x) split_blocks(x, by = "category", level = level + 1))
+
+  } else {
+
+    result <- icd11_dt
+
+  }
+
+  return(result)
+
+}
+
+foo <- split_blocks(icd11_dt)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
