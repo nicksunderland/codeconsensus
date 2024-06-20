@@ -74,7 +74,7 @@ app_server <- function(input, output, session) {
     # enter main ui if validated
     if (nrow(db_user_data > 0)) {
 
-      showNotification("Logging in, please wait...", type = "message", duration = NULL)
+      showNotification("Logging in, please wait...", type = "message", duration = 5)
 
       # store username
       user[["username"]] <- db_user_data$USERNAME
