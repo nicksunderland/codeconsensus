@@ -15,14 +15,6 @@
 #' @noRd
 app_server <- function(input, output, session) {
 
-  # make connection (used globally by the db query functions)
-  make_connection() # populates global environment con_evn (see database.R)
-
-  # close connection when app stops
-  onStop(function() {
-    RJDBC::dbDisconnect(con_env$con)
-  })
-
   # --------------------------
   # Reactive values
   # --------------------------
@@ -47,6 +39,14 @@ app_server <- function(input, output, session) {
     radioButtons("project", "Project", inline = TRUE, choices = project_ids, selected = "nih_cardiomyopathy")
   })
 
+  # make connection (used globally by the db query functions)
+  # do after project buttons as takes some time.
+  make_connection() # populates global environment con_evn (see database.R)
+
+  # close connection when app stops
+  onStop(function() {
+    RJDBC::dbDisconnect(con_env$con)
+  })
 
   # --------------------------
   # Enter (view only) button
