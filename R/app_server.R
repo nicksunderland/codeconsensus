@@ -40,7 +40,6 @@ app_server <- function(input, output, session) {
   })
 
   # make connection (used globally by the db query functions)
-  # do after project buttons as takes some time.
   make_connection() # populates global environment con_evn (see database.R)
 
   # close connection when app stops
@@ -74,6 +73,8 @@ app_server <- function(input, output, session) {
 
     # enter main ui if validated
     if (nrow(db_user_data > 0)) {
+
+      showNotification("Logging in, please wait...", type = "message", duration = NULL)
 
       # store username
       user[["username"]] <- db_user_data$USERNAME
