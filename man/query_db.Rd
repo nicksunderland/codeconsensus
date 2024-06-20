@@ -4,7 +4,7 @@
 \alias{query_db}
 \title{database connection and query function}
 \usage{
-query_db(query_str = NULL, type = "get", table = NULL, value = NULL)
+query_db(query_str = NULL, type = "get", table = NULL, value = NULL, ...)
 }
 \arguments{
 \item{query_str}{string, valid SQL (or name of dt if 'write' option)}
@@ -14,6 +14,8 @@ query_db(query_str = NULL, type = "get", table = NULL, value = NULL)
 \item{table}{database table name (for read and write options)}
 
 \item{value}{values (for update and write options)}
+
+\item{...}{optionally can pass the con object f not declared globally}
 }
 \value{
 a data.table

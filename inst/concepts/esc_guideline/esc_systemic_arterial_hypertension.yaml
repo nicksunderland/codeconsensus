@@ -7,6 +7,7 @@ reference: https://doi.org/10.1093/eurheartj/ehy339
 domain: Disorder
 terminology:
 - SNOMED
+- ICD11
 - ICD10
 - ICD9
 perferred_term:
@@ -19,6 +20,9 @@ perferred_term:
   ICD9:
     code: ~
     desc: ~
+  ICD11:
+    code: ~
+    desc: ~
 regexes:
   SNOMED: '38341003'
   ICD10:
@@ -28,5 +32,7 @@ regexes:
   all:
   - (?i)hypertensi(on|ve)
   - (?i)systemic arterial hypertension
+  ICD11:
+  - ~
 include: esc_systemic_arterial_hypertension
 exclude: ~

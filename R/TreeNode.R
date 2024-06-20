@@ -34,7 +34,7 @@ NodeTypes <- list(
 #' @title JS TreeNode S3 class
 #'
 #' @param text string, the tree label
-#' @param code_type string, a valid NodeTypes (see above)
+#' @param type string, a valid NodeTypes (see above)
 #' @param data list, any required data attributes
 #' @param checked logical
 #' @param selected logical

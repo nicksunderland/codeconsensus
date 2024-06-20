@@ -10,6 +10,7 @@ reference: https://...TBC
 domain: Disorder
 terminology:
 - SNOMED
+- ICD11
 - ICD10
 - ICD9
 perferred_term:
@@ -20,6 +21,9 @@ perferred_term:
     code: ~
     desc: ~
   ICD9:
+    code: ~
+    desc: ~
+  ICD11:
     code: ~
     desc: ~
 regexes:
@@ -38,4 +42,6 @@ regexes:
   - (?i)sub-?arachnoid hae?morrhae?ge
   - (?i)sub-?dural hae?morrhae?ge
   - (?i)extra-?dural hae?morrhae?ge
+  ICD11:
+  - ~
 include: esc_stroke

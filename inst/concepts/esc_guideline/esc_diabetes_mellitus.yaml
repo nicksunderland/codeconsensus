@@ -9,6 +9,7 @@ reference: https://doi.org/10.2337/dc22-S002
 domain: Disorder
 terminology:
 - SNOMED
+- ICD11
 - ICD10
 - ICD9
 perferred_term:
@@ -21,6 +22,9 @@ perferred_term:
   ICD9:
     code: ~
     desc: ~
+  ICD11:
+    code: ~
+    desc: ~
 regexes:
   SNOMED: '73211009'
   ICD10:
@@ -30,5 +34,7 @@ regexes:
   all:
   - diabetes mellitus
   - diabetic (retinopathy|cataract|arthropathy|.*neuropathy|.*angiopathy)
+  ICD11:
+  - ~
 include: esc_diabetes_mellitus
 exclude: ~

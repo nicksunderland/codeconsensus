@@ -82,7 +82,7 @@ parse_config_files <- function(file) {
   for (path in config_paths) {
 
     yml    <- yaml::read_yaml(path)
-    config <- modifyList(conf_struc, yml)
+    config <- utils::modifyList(conf_struc, yml)
 
     # print
     cat(basename(path), "\n")
@@ -93,7 +93,7 @@ parse_config_files <- function(file) {
     stopifnot("definition must be a character" = !is.null(config$definition) && is.character(config$definition))
     stopifnot("reference must be a valid URL" = !is.null(config$reference) && grepl("^https?://\\S+$", config$reference))
     stopifnot("domain must be in c('Measure', 'Disorder', 'Procedure', 'Derived')" = !is.null(config$domain) && config$domain %in% c('Observable entity', 'Disorder', 'Procedure', 'Derived'))
-    stopifnot("terminology must one or more of c('SNOMED', 'SNOMED_procedure', 'ICD10', 'OPCS4', 'ICD9', 'ICD9_procedure')" = !any(is.na(config$terminology)) && all(config$terminology %in% c('SNOMED', 'SNOMED_procedure', 'ICD10', 'OPCS4', 'ICD9', 'ICD9_procedure')))
+    stopifnot("terminology must one or more of c('SNOMED', 'SNOMED_procedure', 'ICD10', 'ICD11', 'OPCS4', 'CPT4', 'ICD9', 'ICD9_procedure')" = !any(is.na(config$terminology)) && all(config$terminology %in% c('SNOMED', 'SNOMED_procedure', 'ICD10', 'ICD11', 'CPT4', 'OPCS4', 'ICD9', 'ICD9_procedure')))
     for (term in c("all", config$terminology)) {
       if (!term %in% names(config$regexes)) config$regexes[[term]] <- list(NULL)
     }

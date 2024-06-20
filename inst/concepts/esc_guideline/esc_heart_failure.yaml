@@ -10,6 +10,7 @@ reference: https://doi.org/10.1093/eurheartj/ehab368
 domain: Disorder
 terminology:
 - SNOMED
+- ICD11
 - ICD10
 - ICD9
 perferred_term:
@@ -22,6 +23,9 @@ perferred_term:
   ICD9:
     code: ~
     desc: ~
+  ICD11:
+    code: ~
+    desc: ~
 regexes:
   SNOMED: '84114007'
   ICD10:
@@ -32,4 +36,6 @@ regexes:
   - (?i)(heart|cardiac|ventricular) failure
   - (?i)cardiac insufficiency
   - ' HF '
+  ICD11:
+  - ~
 include: esc_heart_failure

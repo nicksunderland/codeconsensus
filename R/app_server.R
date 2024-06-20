@@ -1,3 +1,5 @@
+# utils::globalVariables(c('con'), package = "hfphenotyping")
+
 #' The application server-side
 #'
 #' @param input,output,session Internal parameters for {shiny}.
@@ -7,9 +9,19 @@
 #' @importFrom config get
 #' @importFrom yaml read_yaml
 #' @importFrom RJDBC JDBC
+#' @importFrom shinyjs hide show
+#' @importFrom stats setNames
 
 #' @noRd
 app_server <- function(input, output, session) {
+
+  # make connection (used globally by the db query functions)
+  make_connection() # populates global environment con_evn (see database.R)
+
+  # close connection when app stops
+  onStop(function() {
+    RJDBC::dbDisconnect(con_env$con)
+  })
 
   # --------------------------
   # Reactive values
@@ -157,7 +169,7 @@ app_server <- function(input, output, session) {
     for (x in concepts) {
       # create the concept module
       m <- mod_concept_ui(id = x[["id"]], config = x)
-      setNames(m, x$id)
+      stats::setNames(m, x$id)
       mod_concept_server(id = x[["id"]], config = x, user = user, project_id = project)
 
       # categorize UIs based on type/domain

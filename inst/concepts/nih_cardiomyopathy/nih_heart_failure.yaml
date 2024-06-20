@@ -7,10 +7,6 @@ definition: |
   It is due to a structural and/or functional abnormality of the heart that results in elevated
   intracardiac pressures and/or inadequate cardiac output at rest and/or during exercise.
 reference: https://www.escardio.org/Guidelines/Clinical-Practice-Guidelines/Acute-and-Chronic-Heart-Failure
-notes: |
-  Please include codes that indicate a "history of ...". Disease entities that
-  are downstream consequences of the concept of interest (and not downstream of
-  unrelated concepts, i.e. they are relatively specific) should be included.
 domain: Disorder
 terminology:
 - SNOMED
@@ -37,4 +33,7 @@ regexes:
   - (?i)cardiac insufficiency
   - ' HF '
 include: nih_heart_failure
-exclude: ~
+notes: |-
+  Please include codes that indicate a "history of ...". Disease entities that
+  are downstream consequences of the concept of interest (and not downstream of
+  unrelated concepts, i.e. they are relatively specific) should be included.

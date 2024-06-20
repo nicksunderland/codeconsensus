@@ -5,11 +5,6 @@ definition: |
   abnormal cardiac biomarkers in the setting of evidence of myocardial injury (new ischaemic ECG changes
   loss of viable myocardium on imaging, coronary thrombosis on angiography or aithopsy).
 reference: https://doi.org/10.1161/CIR.0000000000000617
-notes: |
-  Please include all types of myocardial infarction (see reference for universal
-  definitions). Please include codes that indicate a "history of ...".  Disease entities that
-  are downstream consequences of the concept of interest (and not downstream of
-  unrelated concepts, i.e. they are relatively specific) should be included.
 domain: Disorder
 terminology:
 - SNOMED
@@ -37,4 +32,8 @@ regexes:
   - (?i)acute .*coronary .*(disease|dysfunction)
   - (?i)dressler
 include: nih_myocardial_infarction
-exclude: ~
+notes: |-
+  Please include all types of myocardial infarction (see reference for universal
+  definitions). Please include codes that indicate a "history of ...".  Disease entities that
+  are downstream consequences of the concept of interest (and not downstream of
+  unrelated concepts, i.e. they are relatively specific) should be included.

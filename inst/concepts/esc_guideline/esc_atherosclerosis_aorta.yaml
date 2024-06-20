@@ -6,6 +6,7 @@ reference: https://esc.org
 domain: Disorder
 terminology:
 - SNOMED
+- ICD11
 - ICD10
 - ICD9
 perferred_term:
@@ -18,6 +19,9 @@ perferred_term:
   ICD9:
     code: ~
     desc: ~
+  ICD11:
+    code: ~
+    desc: ~
 regexes:
   SNOMED: '81817003'
   all:
@@ -26,6 +30,8 @@ regexes:
   ICD10:
   - ~
   ICD9:
+  - ~
+  ICD11:
   - ~
 include: esc_atherosclerosis_aorta
 exclude: ~

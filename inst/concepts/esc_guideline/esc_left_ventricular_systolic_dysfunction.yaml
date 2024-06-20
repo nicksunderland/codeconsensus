@@ -8,6 +8,7 @@ reference: https://doi.org/10.1093/eurheartj/ehab368
 domain: Disorder
 terminology:
 - SNOMED
+- ICD11
 - ICD10
 - ICD9
 perferred_term:
@@ -20,6 +21,9 @@ perferred_term:
   ICD9:
     code: ~
     desc: ~
+  ICD11:
+    code: ~
+    desc: ~
 regexes:
   SNOMED: '134401001'
   ICD10:
@@ -27,4 +31,6 @@ regexes:
   ICD9:
   - ~
   all: left ventricular systolic dysfunction
+  ICD11:
+  - ~
 include: esc_left_ventricular_systolic_dysfunction

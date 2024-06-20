@@ -1,3 +1,7 @@
+utils::globalVariables(c('disabled', 'nhs_counts', 'count', 'i.per_100k_episodes', 'i.per_100k_patients',
+                         'ukbb_counts', 'i.count', 'biovu_counts', 'DISABLED', 'CODE_ID', 'i.CODE_ID',
+                         'N', 'CONCEPT', 'max_n', 'i.max_n', 'code_type'), package = "hfphenotyping")
+
 #' concept UI Function
 #'
 #' @description A shiny Module.
@@ -7,7 +11,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-#' @importFrom shinyTree shinyTree
+#' @import jsTreeR
 #' @import data.table
 mod_concept_ui <- function(id, config){
   ns <- NS(id)
@@ -40,7 +44,7 @@ mod_concept_ui <- function(id, config){
              column(3,
                     div(
                       style = "background-color: #f7f7f7; border: 1px solid #ddd; padding: 8px; margin-bottom: 8px;",
-                      selectInput(ns("code_display"), label = "Count display", choices = c("default", "nhs_count", "ukbb_count", "nhs_count_per100k_episodes", "gp_count_per100k_patients", "ukbb_count_per100k_episodes")),
+                      selectInput(ns("code_display"), label = "Count display", choices = c("default", "nhs_count", "ukbb_count", "biovu_count", "nhs_count_per100k_episodes", "gp_count_per100k_patients", "ukbb_count_per100k_episodes")),
                       selectInput(ns("plot_type"), label = "Plot selection", choices = c("off", "counts")),
                       numericInput(ns("count_filter"), "Count filter", min = 0, max = 1000, value = 0),
                       checkboxInput(ns("cascade"), "Cascade", value = FALSE),
@@ -240,7 +244,8 @@ mod_concept_server <- function(id, config, user, project_id){
                               CODES.CODE_TYPE,
                               CONCEPTS.CONCEPT,
                               SELECTED.SELECTED,
-                              NULL AS DISABLED
+                              NULL AS DISABLED,
+                              NULL AS OPENED
                            FROM
                               SELECTED
                            INNER JOIN
@@ -289,6 +294,7 @@ mod_concept_server <- function(id, config, user, project_id){
                               CONCEPTS.CONCEPT,
                               AVG_SELECTED.AVG_SELECTED,
                               0 AS DISABLED,
+                              NULL AS OPENED,
                               COALESCE(CONSENSUS_SELECTED.CONSENSUS_SELECTED, CASE WHEN AVG_SELECTED.AVG_SELECTED >= 0.5 THEN 1 ELSE 0 END) AS SELECTED
                           FROM
                               AVG_SELECTED
@@ -346,7 +352,7 @@ mod_concept_server <- function(id, config, user, project_id){
 
       # validation
       req(js_tree(), input$code_display)
-      validate(need(input$code_display %in% c("nhs_count", "ukbb_count", "nhs_count_per100k_episodes", "gp_count_per100k_patients", "ukbb_count_per100k_episodes"), "Please choose a data source from `Code display`"))
+      validate(need(input$code_display %in% c("nhs_count", "ukbb_count", "biovu_count", "nhs_count_per100k_episodes", "gp_count_per100k_patients", "ukbb_count_per100k_episodes"), "Please choose a data source from `Code display`"))
 
       # get the internal package data (see /data folder)
       tree_codes <- data.table::data.table(code      = unlist(tree_attributes(js_tree(), "code")),
@@ -374,11 +380,14 @@ mod_concept_server <- function(id, config, user, project_id){
 
         code_counts <- tree_codes[nhs_counts, count := i.count, on = c("code", "code_type")]
 
+      } else if (input$code_display == "biovu_count") {
+
+        code_counts <- tree_codes[biovu_counts, count := i.count, on = c("code", "code_type")]
+
       }
 
-
       code_counts <- code_counts[!is.na(count), ]
-      code_counts <- code_counts[order(-count), head(.SD, 20), by = code_type]
+      code_counts <- code_counts[order(-count), utils::head(.SD, 20), by = code_type]
       code_counts[, code := factor(code, levels = unique(code[order(code_type, count)]))]
       return(code_counts)
     })
@@ -441,16 +450,17 @@ mod_concept_server <- function(id, config, user, project_id){
                                           CODE_TYPE  = unlist(tree_attributes(input$tree_full, 'code_type')),
                                           DISABLED   = unlist(tree_attributes(input$tree_full, 'disabled')),
                                           SELECTED   = as.integer(unlist(tree_attributes(input$tree_full, 'selected'))),
+                                          OPENED     = as.integer(unlist(tree_attributes(input$tree_full, 'opened'))),
                                           CONCEPT    = id,
                                           CONCEPT_ID = concept_id())
 
         # clean up
-        current <- current[DISABLED == FALSE, ]
-        current[code_ids(), CODE_ID := i.CODE_ID, on = c("CODE", "CODE_TYPE")]
+        save_dat <- current[DISABLED == FALSE, ]
+        save_dat[code_ids(), CODE_ID := i.CODE_ID, on = c("CODE", "CODE_TYPE")]
 
         # remove the old rows from the database
-        code_id_str <- paste0(current$CODE_ID, collapse = ", ")
-        if (any(is.na(current$CODE_ID))) {
+        code_id_str <- paste0(save_dat$CODE_ID, collapse = ", ")
+        if (any(is.na(save_dat$CODE_ID))) {
           # find this bug....
           browser()
         }
@@ -460,7 +470,7 @@ mod_concept_server <- function(id, config, user, project_id){
         # update with the new rows
         cols <- c("USERNAME", "CODE_ID", "SELECTED", "CONCEPT_ID")
         sql <- glue::glue("INSERT INTO SELECTED ({paste(cols, collapse = ', ')}) VALUES ({paste0(rep('?', length(cols)), collapse = ', ')})")
-        res <- query_db(query_str = sql, type = "update", value = as.list(current[, .SD, .SDcols = cols]))
+        res <- query_db(query_str = sql, type = "update", value = as.list(save_dat[, .SD, .SDcols = cols]))
 
         # report and set local reactiveVals
         if (res) {
@@ -511,9 +521,9 @@ mod_concept_server <- function(id, config, user, project_id){
     # code display select box
     session$userData$observer_store[[paste0("code_display_", id)]] <- observeEvent(input$code_display, {
       req(counts())
-      #print(max(counts()[, .(count)], na.rm = TRUE))
-      updateNumericInput(session, "count_filter", value = 0, max = max(counts()[, .(count)], na.rm = TRUE))
-      #session$sendCustomMessage("updateFilter", list(id = ns("count_filter"),  max = max(counts()[, .(count)], na.rm = TRUE)))
+      #print(max(counts()[, list(count)], na.rm = TRUE))
+      updateNumericInput(session, "count_filter", value = 0, max = max(counts()[, list(count)], na.rm = TRUE))
+      #session$sendCustomMessage("updateFilter", list(id = ns("count_filter"),  max = max(counts()[, list(count)], na.rm = TRUE)))
     })
 
 
@@ -568,7 +578,7 @@ mod_concept_server <- function(id, config, user, project_id){
           ggplot2::theme_minimal() +
           ggplot2::theme(legend.position = "none") +
           ggplot2::labs(title = paste0("Code counts: ", sub("_", " ", input$code_display)),
-                        x = "Count (per 100,000 episodes (ICD10/OPCS) or GP patients (SNOMED)",
+                        # x = input$code_display,
                         y = "Code") +
           ggplot2::facet_wrap(~code_type, nrow = 1, scales = "free")
       }
@@ -585,8 +595,9 @@ modify_tree <- function(tree, selected, label_option = "default", show_agreement
   # if setting the initial select status
   if (!is.null(selected)) {
     # Pre-compute status and disabled information for fast lookup
-    selected_status   <- setNames(as.logical(selected$SELECTED), paste(selected$CODE, selected$CODE_TYPE, selected$CONCEPT))
-    selected_disabled <- setNames(as.logical(selected$DISABLED), paste(selected$CODE, selected$CODE_TYPE, selected$CONCEPT))
+    selected_status   <- stats::setNames(as.logical(selected$SELECTED), paste(selected$CODE, selected$CODE_TYPE, selected$CONCEPT))
+    selected_disabled <- stats::setNames(as.logical(selected$DISABLED), paste(selected$CODE, selected$CODE_TYPE, selected$CONCEPT))
+    selected_opened   <- stats::setNames(as.logical(selected$OPENED), paste(selected$CODE, selected$CODE_TYPE, selected$CONCEPT))
 
     # add average selected data if present (if not a rater)
     if ("AVG_SELECTED" %in% names(selected) && show_agreement) {
@@ -609,6 +620,7 @@ modify_tree <- function(tree, selected, label_option = "default", show_agreement
       key       <- paste(sub_tree[[i]]$data$code, sub_tree[[i]]$data$code_type, sub_tree[[i]]$data$concept_id)
       status    <- unname(selected_status[key])
       disabled  <- unname(selected_disabled[key])
+      opened    <- unname(selected_opened[key])
 
       # add average selected data if present (if not a rater)
       if ("AVG_SELECTED" %in% names(selected) && show_agreement) {
@@ -626,6 +638,10 @@ modify_tree <- function(tree, selected, label_option = "default", show_agreement
 
       if ((!is.null(sub_tree[[i]]$state$selected) && !is.null(status) && !is.na(status)) && sub_tree[[i]]$state$selected != status) {
         sub_tree[[i]]$state$selected <- status
+      }
+
+      if ((!is.null(sub_tree[[i]]$state$opened) && !is.null(opened) && !is.na(opened)) && sub_tree[[i]]$state$opened != opened) {
+        sub_tree[[i]]$state$opened <- opened
       }
 
       if (disable_tree) {

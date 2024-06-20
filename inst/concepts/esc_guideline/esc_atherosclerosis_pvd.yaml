@@ -10,6 +10,7 @@ reference: https://doi.org/10.1093/eurheartj/ehx095
 domain: Disorder
 terminology:
 - SNOMED
+- ICD11
 - ICD10
 - ICD9
 perferred_term:
@@ -20,6 +21,9 @@ perferred_term:
     code: ~
     desc: ~
   ICD9:
+    code: ~
+    desc: ~
+  ICD11:
     code: ~
     desc: ~
 regexes:
@@ -33,4 +37,6 @@ regexes:
   - (?i).*athero(ma|sclerosis) .*arter(ies|y) .*extremities
   - (?i).*athero(ma|sclerosis) .*(renal|other) .*arter(ies|y)
   - (?i)generalized and unspecified atherosclerosis
+  ICD11:
+  - ~
 include: esc_atherosclerosis_pvd

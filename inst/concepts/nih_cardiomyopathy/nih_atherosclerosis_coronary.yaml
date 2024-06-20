@@ -7,12 +7,6 @@ definition: |
   atherosclerosis, for example codes for definite myocardial infarction (without mention of coronary atheroma)
   or procedure codes for coronary intervention, which are defined in separate concepts.
 reference: https://www.bhf.org.uk/informationsupport/conditions/coronary-heart-disease
-notes: |
-  Please include codes that indicate a "history of ...". Disease entities that
-  are downstream consequences of the concept of interest (and not downstream of
-  unrelated concepts, i.e. they are relatively specific) should be included. Myocardial
-  infarction and coronary revascularisation (without mention of coronary artery disease)
-  is defined elsewhere and not included specifically in this concept.
 domain: Disorder
 terminology:
 - SNOMED
@@ -43,3 +37,10 @@ regexes:
   - (?i)chronic ischa?emic (cardiomyopathy|heart disease)
   - myocardial ischa?emia
 include: nih_atherosclerosis_coronary
+exclude: ~
+notes: |-
+  Please include codes that indicate a "history of ...". Disease entities that
+  are downstream consequences of the concept of interest (and not downstream of
+  unrelated concepts, i.e. they are relatively specific) should be included. Myocardial
+  infarction and coronary revascularisation (without mention of coronary artery disease)
+  is defined elsewhere and not included specifically in this concept.

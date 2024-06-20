@@ -18,6 +18,8 @@ TreeNode(
 \arguments{
 \item{text}{string, the tree label}
 
+\item{type}{string, a valid NodeTypes (see above)}
+
 \item{data}{list, any required data attributes}
 
 \item{checked}{logical}
@@ -29,8 +31,6 @@ TreeNode(
 \item{disabled}{logical}
 
 \item{children}{empty list (to be filled with other TreeNodes if needed)}
-
-\item{code_type}{string, a valid NodeTypes (see above)}
 }
 \value{
 a TreeNode S3 object

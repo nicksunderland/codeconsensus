@@ -6,6 +6,7 @@ reference: https://doi.org/10.1093/eurheartj/ehz425
 domain: Disorder
 terminology:
 - SNOMED
+- ICD11
 - ICD10
 - ICD9
 perferred_term:
@@ -18,11 +19,16 @@ perferred_term:
   ICD9:
     code: ~
     desc: ~
+  ICD11:
+    code: ~
+    desc: ~
 regexes:
   SNOMED: '194828000'
   all: (?i)angina
   ICD10:
   - ~
   ICD9:
+  - ~
+  ICD11:
   - ~
 include: esc_angina_pectoris

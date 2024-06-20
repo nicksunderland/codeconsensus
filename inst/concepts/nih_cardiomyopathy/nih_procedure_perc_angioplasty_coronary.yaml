@@ -13,6 +13,7 @@ domain: Procedure
 terminology:
 - SNOMED_procedure
 - OPCS4
+- CPT4
 perferred_term:
   OPCS4:
     code: ~
@@ -20,6 +21,9 @@ perferred_term:
   SNOMED_procedure:
     code: '415070008'
     desc: Percutaneous coronary intervention
+  CPT4:
+    code: ~
+    desc: ~
 regexes:
   OPCS4: K49[0-9]+?|K50[0-9]+|K75[0-9]+
   all:
@@ -28,5 +32,7 @@ regexes:
     .*coronar(y|ies)
   - (?i)(percutaneous|transluminal) .*coronar(y|ies) .*(angioplasty|thrombolysis|therapeutic|atherectomy|operations)
   SNOMED_procedure: '415070008'
+  CPT4:
+  - ~
 include: nih_procedure_perc_angioplasty_coronary
 exclude: ~

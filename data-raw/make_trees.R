@@ -375,6 +375,213 @@ icd9_procedure_tree <- function(icd9_proc_dt, concept_id, regex = ".") {
 }
 
 
+#' @title make_icd11_tree
+#'
+#' @param icd11_dt the dt read from SimpleTabulation-ICD-11-MMS-en.txt
+#' @param concept_id the concept id
+#' @param regex the regular expression to search for
+#' @param level internal use for recursion
+#' @param prepocess internal use, dont change
+#'
+#' @return a nested tree
+#' @export
+#'
+#' @references https://icd.who.int/browse/2024-01/mms/en download file from the info tab
+#'
+make_icd11_tree <- function(icd11_dt, concept_id, regex = ".", level = 1, prepocess = TRUE) {
+
+  # preprocess the ICD11 file
+  if (prepocess) {
+
+    # fcoalesce columns so that every row has a code
+    icd11_dt[Code == "", Code := NA_character_]
+    icd11_dt[BlockId == "", BlockId := NA_character_]
+    icd11_dt[, Code := data.table::fcoalesce(Code, BlockId, ChapterNo)]
+
+    # take only what's needed
+    icd11_dt <- icd11_dt[, .(Code, Title, ClassKind, DepthInKind)]
+
+    # get the depth by the "---" notation in the title
+    icd11_dt[, DepthInKind := nchar(gsub("[^-]", "", Title)) + 1]
+
+    # expand out the levels into columns
+    levels <- unique(icd11_dt[, DepthInKind])
+    for (i in seq_along(levels)) {
+      icd11_dt[DepthInKind == levels[i], paste0("group", i) := Title]
+    }
+
+    # propogate the levels down to cover the sublevels
+    for (i in seq_along(levels)) {
+      icd11_dt[, lst_group := rowSums(!is.na(.SD)) == 0, .SDcols = paste0("group", i:length(levels))]
+      icd11_dt[, paste0("group", i) := zoo::na.locf(.SD, na.rm = FALSE), .SDcols = paste0("group", i)]
+      icd11_dt[lst_group == TRUE, paste0("group", i) := NA_character_]
+    }
+
+  }
+
+  ICD11 <- TreeNode(text = "ICD11",
+                    type = "root",
+                    opened   = FALSE,
+                    checked  = FALSE,
+                    selected = FALSE,
+                    disabled = TRUE,
+                    children = list(),
+                    data = list(code       = "ICD11",
+                                code_type  = "ICD11",
+                                desc       = NULL,
+                                concept_id = concept_id))
+
+  grouping_col <- paste0("group", level)
+
+  if (nrow(icd11_dt) == 1) {
+
+    code     <- sub("\\.", "", icd11_dt$Code)
+    desc     <- sub("(- ?)+", "", icd11_dt$Title)
+    type     <- if(icd11_dt$ClassKind == "category") "code" else "chapter"
+    disabled <- if(type == "code") FALSE else TRUE
+    code_lbl <- if(type == "code") code else NULL
+
+    # cat("first; code:", code, "; desc:", desc, "; type:", type, "; disabled: ", disabled, "\n")
+
+    ICD11$text           <- paste0(c(code_lbl, desc), collapse = " | ")
+    ICD11$type           <- type
+    ICD11$data$code      <- code
+    ICD11$data$desc      <- desc
+    ICD11$state$disabled <- disabled
+
+    return(ICD11)
+
+  }
+
+  # split the data by the level
+  dat  <- split(icd11_dt, by = paste0("group", level))
+
+  # the meta-data for the node is the top row
+  meta <- purrr::map_dfr(dat, ~ .x[1])
+
+  # if leaf nodes, the meta data is also the data so don't remove (get captured above in the nrow == 1),
+  # otherwise send the remaining for nesting
+  dat  <- purrr::map(dat, ~ { if (nrow(.x) == 1) .x else .x[-1, ] })
+
+  # recursively process the rows
+  nested_children <- mapply(function(x, code, desc, type) {
+
+    # recursion
+    node <- make_icd11_tree(x, regex = regex, concept_id = concept_id, level = level + 1, prepocess = FALSE)
+
+    # process the meta-data for this node
+    code     <- sub("\\.", "", code)
+    desc     <- sub("^(- ?)+", "", desc)
+    type     <- if(is.na(type) || type == "category") "code" else "chapter"
+    disabled <- if(type == "code") FALSE else TRUE
+    code_lbl <- if(type == "code") code else NULL
+
+    # assign to node
+    node$text           <- paste0(c(code_lbl, desc), collapse = " | ")
+    node$type           <- type
+    node$data$code      <- code
+    node$data$desc      <- desc
+    node$state$disabled <- disabled
+
+    return(node)
+
+  }, dat, meta$Code, meta$Title, meta$ClassKind, SIMPLIFY = FALSE)
+
+  # filter out non-regex matching nodes
+  desc_match      <- sapply(nested_children, function(x) grepl(regex, x$data$desc))
+  code_match      <- sapply(nested_children, function(x) grepl(regex, x$data$code))
+  has_children    <- sapply(nested_children, function(x) length(x$children) > 0)
+  nested_children <- unname(nested_children[has_children | desc_match | code_match])
+
+  # assign into this node and return
+  ICD11$children  <- nested_children
+
+  return(ICD11)
+
+}
+
+
+#' @title CPT4 tree
+#' @param cpt4_dt a data.table of cpt4 codes with columns CODE and DESCRIPTION
+#' @param regex regular expression to search for
+#' @return a nested list
+#' @export
+#' @references https://www.cdc.gov/nhsn/xls/cpt-pcm-nhsn.xlsx
+#'
+cpt4_tree <- function(cpt4_dt, concept_id, regex = ".") {
+
+  CPT4 <- TreeNode(text = "CPT4",
+                   type = "root",
+                   opened   = FALSE,
+                   checked  = FALSE,
+                   selected = FALSE,
+                   disabled = TRUE,
+                   data = list(code       = "CPT4",
+                               code_type  = "CPT4",
+                               desc       = NULL,
+                               concept_id = concept_id))
+
+  cpt4_dt <- split(cpt4_dt, by = "chapter")
+
+  for (i in seq_along(cpt4_dt)) {
+
+    chpt_node <- TreeNode(text = names(cpt4_dt)[i],
+                          type = "chapter",
+                          data = list(code       = names(cpt4_dt)[i],
+                                      code_type  = "CPT4",
+                                      desc       = NULL,
+                                      concept_id = concept_id),
+                          checked  = FALSE,
+                          selected = FALSE,
+                          opened   = FALSE,
+                          disabled = TRUE,
+                          children = list())
+
+    child_nodes <- list()
+
+    for (j in seq_len(nrow(cpt4_dt[[i]]))) {
+
+      code <- cpt4_dt[[i]][j, code]
+      desc <- cpt4_dt[[i]][j, desc]
+      if (grepl(regex, code, perl = TRUE) || grepl(regex, desc, perl = TRUE)) {
+        node <- TreeNode(text = paste0(cpt4_dt[[i]][j, code], " | ", cpt4_dt[[i]][j, desc]),
+                         type = "code",
+                         data = list(code       = cpt4_dt[[i]][j, code],
+                                     code_type  = "CPT4",
+                                     desc       = cpt4_dt[[i]][j, desc],
+                                     concept_id = concept_id),
+                         checked  = FALSE,
+                         selected = FALSE,
+                         opened   = FALSE,
+                         disabled = FALSE,
+                         children = list())
+        chpt_node$children <- c(chpt_node$children, list(node))
+      }
+    }
+
+    if (length(chpt_node$children) > 0) {
+
+      CPT4$children <- c(CPT4$children, list(chpt_node))
+
+    }
+
+  }
+
+  return(CPT4)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 #' @title Annotate tree
 #' @param tree a tree
 #' @param annot_dt a data.table, data to use for annotation
@@ -402,7 +609,7 @@ annotate_tree <- function(tree, annot_dt, value_col = "count", on = c("code" = "
       annot_data <- no_match
     } else if (nrow(annot_data) > 1) {
       annot_data <- annot_data[[1]]
-      warning(paste0("Multiple values found for element ", element_name, ". Taking first `[[1]]`. "))
+      warning(paste0("Multiple values found for element. Taking first `[[1]]`. "))
     } else {
       annot_data <- annot_data[[1]]
     }
@@ -416,6 +623,8 @@ annotate_tree <- function(tree, annot_dt, value_col = "count", on = c("code" = "
   }
   return(tree)
 }
+
+
 
 
 

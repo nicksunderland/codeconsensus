@@ -52,7 +52,28 @@ n_patients <- 62288202
 gp_snomed[, per_100k_patients := round(count / (n_patients/100000))]
 data.table::fwrite(gp_snomed, "/Users/xx20081/Library/CloudStorage/OneDrive-UniversityofBristol/phenotyping/NHS_digital_code_counts/snomed_counts.tsv", sep = "\t")
 
-# combine and save
+# combine
 nhs_counts <- rbind(nhs_icd10, nhs_opcs4, gp_snomed, fill = TRUE)
+
+# convert to ASCI strings
+nhs_counts[, desc := iconv(desc, from = "UTF-8", to = "ASCII//TRANSLIT")]
+
+# save
 usethis::use_data(nhs_counts, overwrite = TRUE)
 
+
+# -------------------------
+# BIOVU CODE COUNTS
+# -------------------------
+# source Eric Farber  (@vumc.org)
+biovu_counts <- data.table::fread("/Users/xx20081/Library/CloudStorage/OneDrive-UniversityofBristol/phenotyping/biovu_counts/biovu_codes_and_counts.csv")
+biovu_counts <- biovu_counts[, .(code = gsub("\\.", "", concept_code), code_type = vocabulary_id, count = `count(1)`)]
+biovu_counts[, code_type := data.table::fcase(code_type == "CPT4",     "CPT4",
+                                       code_type == "ICD10CM",  "ICD10",
+                                       code_type == "SNOMED",   "SNOMED",
+                                       code_type == "ICD9CM",   "ICD9",
+                                       code_type == "ICD9Proc", "ICD9",
+                                       code_type == "ICD10PCS", "ICD10",
+                                       code_type == "HCPCS",    NA_character_)]
+biovu_counts <- biovu_counts[!is.na(code_type), ]
+usethis::use_data(biovu_counts, overwrite = TRUE)

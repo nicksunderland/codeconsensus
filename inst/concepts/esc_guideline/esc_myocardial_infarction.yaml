@@ -8,6 +8,7 @@ reference: https://doi.org/10.1161/CIR.0000000000000617
 domain: Disorder
 terminology:
 - SNOMED
+- ICD11
 - ICD10
 - ICD9
 perferred_term:
@@ -18,6 +19,9 @@ perferred_term:
     code: ~
     desc: ~
   ICD9:
+    code: ~
+    desc: ~
+  ICD11:
     code: ~
     desc: ~
 regexes:
@@ -31,5 +35,7 @@ regexes:
   - (?i)acute ischa?emic heart disease
   - (?i)acute .*coronary .*(disease|dysfunction)
   - (?i)dressler
+  ICD11:
+  - ~
 include: esc_myocardial_infarction
 exclude: ~

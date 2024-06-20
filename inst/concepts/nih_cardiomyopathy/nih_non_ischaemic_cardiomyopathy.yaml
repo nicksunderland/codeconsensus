@@ -8,10 +8,6 @@ definition: |
   or an ICD-9 diagnosis of left heart failure. Indicators for CAD included
   myocardial infarction or coronary revascularization.
 reference: https://doi.org/10.1161%2FCIRCULATIONAHA.118.035774
-notes: |
-  Please save comments on the composition of the derived phenotype (inclusion and exclusion
-  criteria). Derived concepts cannot be directly adjudicated, please review the underlying
-  base concept code trees.
 domain: Derived
 terminology:
 - OPCS4
@@ -63,3 +59,7 @@ exclude:
 - nih_management_coronary_thrombolysis
 - nih_procedure_open_cabg
 - nih_procedure_perc_angioplasty_coronary
+notes: |-
+  Please save comments on the composition of the derived phenotype (inclusion and exclusion
+  criteria). Derived concepts cannot be directly adjudicated, please review the underlying
+  base concept code trees.

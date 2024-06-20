@@ -5,10 +5,6 @@ definition: |
   unexplained solely by abnormal loading conditions (e.g. hypertension,
   valve disease, congenital heart disease, or coronary artery disease. (ESC, 2023)
 reference: https://doi.org/10.1093/eurheartj/ehad194
-notes: |
-  Please include codes that indicate a "history of ...". Disease entities that
-  are downstream consequences of the concept of interest (and not downstream of
-  unrelated concepts, i.e. they are relatively specific) should be included.
 domain: Disorder
 terminology:
 - SNOMED
@@ -30,7 +26,9 @@ regexes:
   - ~
   ICD9:
   - ~
-  all:
-  - (?i)cardiomyopath(y|ies)
+  all: (?i)cardiomyopath(y|ies)
 include: nih_dilated_cardiomyopathy
-exclude: ~
+notes: |-
+  Please include codes that indicate a "history of ...". Disease entities that
+  are downstream consequences of the concept of interest (and not downstream of
+  unrelated concepts, i.e. they are relatively specific) should be included.

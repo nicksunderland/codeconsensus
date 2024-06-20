@@ -8,6 +8,7 @@ reference: https://doi.org/10.1093/eurheartj/ehu281
 domain: Disorder
 terminology:
 - SNOMED
+- ICD11
 - ICD10
 - ICD9
 perferred_term:
@@ -20,6 +21,9 @@ perferred_term:
   ICD9:
     code: ~
     desc: ~
+  ICD11:
+    code: ~
+    desc: ~
 regexes:
   SNOMED: '690791000119107'
   ICD10:
@@ -29,5 +33,7 @@ regexes:
   all:
   - (?i)penetrating aortic ulcer
   - (?i)penetrating ulcer of aorta
+  ICD11:
+  - ~
 include: esc_penetrating_ulcer_of_aorta
 exclude: ~

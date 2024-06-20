@@ -1,3 +1,5 @@
+utils::globalVariables(c('USERNAME'), package = "hfphenotyping")
+
 #' home UI Function
 #'
 #' @description A shiny Module.
@@ -93,8 +95,8 @@ mod_home_server <- function(id, concepts, user){
         return(kappa)
       }
 
-      kappas <- res[, .(kappa = calc_fleiss_kappa(as.matrix(.SD[, -c("CODE", "CODE_TYPE", "N"), with = FALSE]))), by = "CONCEPT"]
-      n <- res[, .(max_n = max(N, na.rm = TRUE)), by = "CONCEPT"]
+      kappas <- res[, list(kappa = calc_fleiss_kappa(as.matrix(.SD[, -c("CODE", "CODE_TYPE", "N"), with = FALSE]))), by = "CONCEPT"]
+      n <- res[, list(max_n = max(N, na.rm = TRUE)), by = "CONCEPT"]
       kappas[n, max_n := i.max_n, on = "CONCEPT"]
 
       return(kappas)
