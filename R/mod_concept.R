@@ -67,10 +67,12 @@ mod_concept_ui <- function(id, config){
 #' @param include string, vector of ids for the inclusion concepts
 #' @param exclude string, vector of ids for the exclusion concepts
 #' @importFrom glue glue
+#' @importFrom shinyjs disable
 #' @noRd
 mod_concept_server <- function(id, config, user, project_id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+
 
     # -----------------------------
     # reactive values / expressions
@@ -81,7 +83,7 @@ mod_concept_server <- function(id, config, user, project_id){
     js_tree      <- reactiveVal(NULL)
     selected     <- reactiveVal(NULL)
     preferred_terms <- reactiveValues()
-    for (term in config$terminology) {
+    for (term in names(config$perferred_term)) {
       t <- config$perferred_term[[term]]
       preferred_terms[[term]] <- list(code = t$code, agree = FALSE)
     }
@@ -95,9 +97,11 @@ mod_concept_server <- function(id, config, user, project_id){
 
       els <- list()
       for (term in names(preferred_terms)) {
-        els <- c(els, list(fluidRow(column(8, textInput(ns(term), paste("Preferred:", term), value = preferred_terms[[term]]$code), style="font-size:80%;"),
-                                    column(4, checkboxInput(ns(paste0(term, "_agree")), "Agree?"), style = "margin-top: 15px;"))))
+        els <- c(els, list(fluidRow(column(8, div(HTML(paste0("<strong>Preferred ", term, ": </strong> ", preferred_terms[[term]]$code))), style = "margin-top: 15px;"),# style="font-size:80%;"),
+                                    column(4, checkboxInput(ns(paste0(term, "_agree")), "Agree?")))))#, style = "margin-top: 15px;"))))
+        shinyjs::disable(ns(term))
       }
+
       column(4, !!!els)
     })
 
