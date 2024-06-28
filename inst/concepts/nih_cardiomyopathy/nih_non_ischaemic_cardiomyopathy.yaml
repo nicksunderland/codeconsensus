@@ -23,12 +23,6 @@ perferred_term:
   ICD10:
     code: ~
     desc: ~
-  ICD9:
-    code: ~
-    desc: ~
-  ICD9_procedure:
-    code: ~
-    desc: ~
   SNOMED:
     code: ~
     desc: ~

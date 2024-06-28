@@ -104,9 +104,9 @@ parse_config_files <- function(file) {
       if (!term %in% names(config$perferred_term)) config$perferred_term[[term]] <- list(code = NULL, desc = NULL)
     }
     for (term in names(config$perferred_term)) {
-      if (!term %in% config$terminology) config$perferred_term[[term]] <- NULL
+      if (!term %in% config$terminology || grepl("ICD9", term)) config$perferred_term[[term]] <- NULL
     }
-    stopifnot("perferred_term must be a list with all terminologies present"  = is.list(config$perferred_term) && length(config$perferred_term) > 0 && all(config$terminology %in% names(config$perferred_term)))
+    stopifnot("perferred_term must be a list with all terminologies present"  = is.list(config$perferred_term) && length(config$perferred_term) > 0 && all(config$terminology[!grepl("ICD9", config$terminology)] %in% names(config$perferred_term)))
     stopifnot("regexes must be a list with all terminologies must be present" = is.list(config$regexes)        && length(config$regexes) > 0        && all(config$terminology %in% names(config$regexes)))
     stopifnot("include must be length > 0 and be recognised concept_ids" = !any(is.null(config$include)) && length(config$include) > 0 && all(config$include %in% concept_ids))
     stopifnot("exclude must be recognised concept_ids" = if(!all(is.null(config$exclude))) all(config$exclude %in% concept_ids) else TRUE)

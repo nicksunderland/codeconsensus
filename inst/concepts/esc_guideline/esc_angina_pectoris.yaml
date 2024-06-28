@@ -16,9 +16,6 @@ perferred_term:
   ICD10:
     code: ~
     desc: ~
-  ICD9:
-    code: ~
-    desc: ~
   ICD11:
     code: ~
     desc: ~
@@ -32,3 +29,4 @@ regexes:
   ICD11:
   - ~
 include: esc_angina_pectoris
+exclude: ~

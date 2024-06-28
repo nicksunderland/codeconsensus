@@ -14,9 +14,6 @@ perferred_term:
   ICD10:
     code: ~
     desc: ~
-  ICD9:
-    code: ~
-    desc: ~
   SNOMED:
     code: '399020009'
     desc: Dilated cardiomyopathy
@@ -28,6 +25,7 @@ regexes:
   - ~
   all: (?i)cardiomyopath(y|ies)
 include: nih_dilated_cardiomyopathy
+exclude: ~
 notes: |-
   Please include codes that indicate a "history of ...". Disease entities that
   are downstream consequences of the concept of interest (and not downstream of

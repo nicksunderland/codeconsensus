@@ -19,9 +19,6 @@ perferred_term:
   ICD10:
     code: ~
     desc: ~
-  ICD9:
-    code: ~
-    desc: ~
 regexes:
   SNOMED:
   - '443502000'
@@ -37,3 +34,4 @@ regexes:
   - (?i)chronic ischa?emic (cardiomyopathy|heart disease)
   - myocardial ischa?emia
 include: esc_atherosclerosis_coronary
+exclude: ~

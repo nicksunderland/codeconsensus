@@ -21,3 +21,4 @@ regexes:
   - (?i)repair of thoracoabdominal aortic aneurysm
   SNOMED_procedure: '233370007'
 include: esc_open_aortic_intervention
+exclude: ~

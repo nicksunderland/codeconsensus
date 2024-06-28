@@ -27,4 +27,3 @@ regexes:
     angioplasty) .*coronary arter(y|ies)
   SNOMED_procedure: '232717009'
 include: esc_procedure_open_cabg
-exclude: ~

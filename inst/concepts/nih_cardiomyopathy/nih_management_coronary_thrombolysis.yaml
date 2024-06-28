@@ -30,4 +30,5 @@ regexes:
   CPT4:
   - ~
 include: nih_management_coronary_thrombolysis
+exclude: ~
 notes: Please include codes that indicate a "history of ...".

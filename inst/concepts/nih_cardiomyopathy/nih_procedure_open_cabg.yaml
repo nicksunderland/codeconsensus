@@ -33,4 +33,5 @@ regexes:
   CPT4:
   - ~
 include: nih_procedure_open_cabg
+exclude: ~
 notes: Please include codes that indicate a "history of ...".

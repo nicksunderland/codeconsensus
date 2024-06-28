@@ -13,9 +13,6 @@ perferred_term:
   ICD10:
     code: ~
     desc: ~
-  ICD9:
-    code: ~
-    desc: ~
   SNOMED:
     code: '134401001'
     desc: Left ventricular systolic dysfunction
@@ -27,6 +24,7 @@ regexes:
   ICD9:
   - ~
 include: nih_left_ventricular_systolic_dysfunction
+exclude: ~
 notes: |-
   Please include codes that indicate a "history of ...". Disease entities that
   are downstream consequences of the concept of interest (and not downstream of

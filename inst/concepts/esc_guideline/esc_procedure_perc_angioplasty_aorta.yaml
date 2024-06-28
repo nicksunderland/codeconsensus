@@ -22,3 +22,4 @@ regexes:
   - (?i)endovascular repair of abdominal aortic aneurysm
   SNOMED_procedure: '444588006'
 include: esc_procedure_perc_angioplasty_aorta
+exclude: ~

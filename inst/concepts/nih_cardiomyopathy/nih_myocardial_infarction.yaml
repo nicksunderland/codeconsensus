@@ -17,9 +17,6 @@ perferred_term:
   ICD10:
     code: ~
     desc: ~
-  ICD9:
-    code: ~
-    desc: ~
 regexes:
   SNOMED: '22298006'
   ICD10:
@@ -32,6 +29,7 @@ regexes:
   - (?i)acute .*coronary .*(disease|dysfunction)
   - (?i)dressler
 include: nih_myocardial_infarction
+exclude: ~
 notes: |-
   Please include all types of myocardial infarction (see reference for universal
   definitions). Please include codes that indicate a "history of ...".  Disease entities that

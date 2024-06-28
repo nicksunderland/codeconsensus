@@ -19,4 +19,3 @@ regexes:
   all: Operative procedure on artery of extremity
   SNOMED_procedure: '22701007'
 include: esc_procedure_open_peripheral_vascular
-exclude: ~

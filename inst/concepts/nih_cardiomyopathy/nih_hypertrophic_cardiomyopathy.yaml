@@ -17,9 +17,6 @@ perferred_term:
   ICD10:
     code: ~
     desc: ~
-  ICD9:
-    code: ~
-    desc: ~
 regexes:
   SNOMED: '233873004'
   ICD10:
@@ -28,7 +25,6 @@ regexes:
   - ~
   all: (?i)cardiomyopath(y|ies)
 include: nih_hypertrophic_cardiomyopathy
-exclude: ~
 notes: |-
   Please include codes that indicate a "history of ...". Disease entities that
   are downstream consequences of the concept of interest (and not downstream of

@@ -21,3 +21,4 @@ regexes:
   - (?i)percutaneous procedure on artery of extremity
   SNOMED_procedure: '8990000'
 include: esc_procedure_perc_angioplasty_peripheral
+exclude: ~

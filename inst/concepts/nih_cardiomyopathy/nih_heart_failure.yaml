@@ -19,9 +19,6 @@ perferred_term:
   ICD10:
     code: ~
     desc: ~
-  ICD9:
-    code: ~
-    desc: ~
 regexes:
   SNOMED: '84114007'
   ICD10:
@@ -33,6 +30,7 @@ regexes:
   - (?i)cardiac insufficiency
   - ' HF '
 include: nih_heart_failure
+exclude: ~
 notes: |-
   Please include codes that indicate a "history of ...". Disease entities that
   are downstream consequences of the concept of interest (and not downstream of
