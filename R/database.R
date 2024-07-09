@@ -14,12 +14,20 @@ make_connection <- function() {
 
   config <- config::get(file = system.file("database", "db_config.yaml", package = "hfphenotyping"))
 
-  con_env$con <- RJDBC::dbConnect(
-    drv      = RJDBC::JDBC(driverClass = "oracle.jdbc.OracleDriver", classPath = system.file("database", "ojdbc8.jar", package = "hfphenotyping")),
-    url      = paste0("jdbc:oracle:thin:@", config[["connection_str"]]),
-    user     = config[["username"]],
-    password = config[["password"]]
-  )
+  # con_env$con <- RJDBC::dbConnect(
+  #   drv      = RJDBC::JDBC(driverClass = "oracle.jdbc.OracleDriver", classPath = system.file("database", "ojdbc8.jar", package = "hfphenotyping")),
+  #   url      = paste0("jdbc:oracle:thin:@", config[["connection_str"]]),
+  #   user     = config[["username"]],
+  #   password = config[["password"]]
+  # )
+
+  con_env$con <- RMySQL::dbConnect(
+    drv      = RMySQL::MySQL(),
+    dbname   = config[["dbname"]],
+    user     = config[["user"]],
+    password = config[["password"]],
+    host     = config[["host"]],
+    port     = config[["port"]])
 
   return(con_env$con)
 }
@@ -51,28 +59,28 @@ query_db <- function(query_str = NULL, type = "get", table = NULL, value = NULL,
   if (type == "get") {
 
     if (is.null(value)) {
-      results <- RJDBC::dbGetQuery(con, query_str)
+      results <- DBI::dbGetQuery(con, query_str)
     } else {
-      results <- do.call(RJDBC::dbGetQuery, c(list(con, query_str), unname(value)))
+      results <- do.call(DBI::dbGetQuery, c(list(con, query_str), unname(value)))
     }
     results <- data.table::as.data.table(results)
 
   } else if (type == "read") {
 
-    results <- RJDBC::dbReadTable(con, name = table)
+    results <- DBI::dbReadTable(con, name = table)
     results <- data.table::as.data.table(results)
 
   } else if (type == "update") {
 
-    results <- do.call(RJDBC::dbSendUpdate, c(list(con, query_str), unname(value)))
+    results <- do.call(DBI::dbExecute, c(list(con, query_str), unname(value)))
 
   } else if (type == "write") {
 
-    results <- RJDBC::dbWriteTable(con, name = table, value = value)
+    results <- DBI::dbWriteTable(con, name = table, value = value)
 
   } else if (type == "send") {
 
-    results <- RJDBC::dbSendQuery(con, query_str)
+    results <- DBI::dbSendQuery(con, query_str)
 
   }
 

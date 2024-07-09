@@ -1,6 +1,7 @@
 id: "nih_cardiomyopathy"
 name: "NIH Cardiomyopathy"
 concepts:
+  - "nih_cardiomyopathy"
   - "nih_dilated_cardiomyopathy"
   - "nih_hypertrophic_cardiomyopathy"
   - "nih_non_ischaemic_cardiomyopathy"

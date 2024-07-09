@@ -1,0 +1,30 @@
+id: nih_cardiomyopathy
+name: Cardiomyopathy
+definition: |
+  Any cardiomyopathy.
+reference: https://doi.org/10.1093/eurheartj/ehad194
+domain: Disorder
+terminology:
+- SNOMED
+- ICD10
+- ICD9
+perferred_term:
+  SNOMED:
+    code: ~
+    desc: ~
+  ICD10:
+    code: ~
+    desc: ~
+regexes:
+  SNOMED:
+  - ~
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  all: (?i)cardiomyopath(y|ies)
+include: nih_cardiomyopathy
+notes: |-
+  Please include codes that indicate a "history of ...". Disease entities that
+  are downstream consequences of the concept of interest (and not downstream of
+  unrelated concepts, i.e. they are relatively specific) should be included.
