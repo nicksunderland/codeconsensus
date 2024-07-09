@@ -8,7 +8,6 @@
 #' @import data.table
 #' @importFrom config get
 #' @importFrom yaml read_yaml
-#' @importFrom RJDBC JDBC
 #' @importFrom shinyjs hide show
 #' @importFrom stats setNames
 
@@ -44,7 +43,7 @@ app_server <- function(input, output, session) {
 
   # close connection when app stops
   onStop(function() {
-    RJDBC::dbDisconnect(con_env$con)
+    DBI::dbDisconnect(con_env$con)
   })
 
   # --------------------------
