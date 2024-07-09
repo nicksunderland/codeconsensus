@@ -90,7 +90,7 @@ mod_concept_server <- function(id, config, user, project_id){
 
 
     # -----------------------------
-    # Dynamic UI elements
+    # Dynamic UI elements - remove this
     # -----------------------------
     output$preferred_terms_ui <- renderUI({
       req(config$domain != "Derived")
