@@ -40,7 +40,7 @@ make_connection <- function() {
 #' @param value values (for update and write options)
 #' @param ... optionally can pass the con object f not declared globally
 #' @return a data.table
-#' @import RJDBC
+#' @import DBI
 #' @export
 #'
 query_db <- function(query_str = NULL, type = "get", table = NULL, value = NULL, ...) {

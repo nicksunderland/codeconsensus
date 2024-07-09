@@ -6,7 +6,6 @@ Description: Enabling heart failure phenotyping by consensus.
 License: MIT + file LICENSE
 Imports: 
     config (>= 0.3.2),
-    RJDBC,
     data.table,
     shinyjs,
     golem (>= 0.4.1),
