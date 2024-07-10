@@ -1,6 +1,7 @@
 utils::globalVariables(c('disabled', 'nhs_counts', 'count', 'i.per_100k_episodes', 'i.per_100k_patients',
                          'ukbb_counts', 'i.count', 'biovu_counts', 'DISABLED', 'CODE_ID', 'i.CODE_ID',
-                         'N', 'CONCEPT', 'max_n', 'i.max_n', 'code_type'), package = "hfphenotyping")
+                         'N', 'CONCEPT', 'max_n', 'i.max_n', 'code_type', 'old', 'i.SELECTED',
+                         'SELECTED'), package = "hfphenotyping")
 
 #' concept UI Function
 #'
@@ -248,8 +249,8 @@ mod_concept_server <- function(id, config, user, project_id){
                               "CODES"."CODE_TYPE",
                               "CONCEPTS"."CONCEPT",
                               "SELECTED"."SELECTED",
-                              NULL AS DISABLED,
-                              NULL AS OPENED
+                              NULL AS "DISABLED",
+                              NULL AS "OPENED"
                            FROM
                               "SELECTED"
                            INNER JOIN
@@ -297,9 +298,9 @@ mod_concept_server <- function(id, config, user, project_id){
                               "CODES"."CODE_TYPE",
                               "CONCEPTS"."CONCEPT",
                               "AVG_SELECTED"."AVG_SELECTED",
-                              0 AS DISABLED,
-                              NULL AS OPENED,
-                              COALESCE("CONSENSUS_SELECTED"."CONSENSUS_SELECTED", CASE WHEN "AVG_SELECTED"."AVG_SELECTED" >= 0.5 THEN 1 ELSE 0 END) AS SELECTED
+                              0 AS "DISABLED",
+                              NULL AS "OPENED",
+                              COALESCE("CONSENSUS_SELECTED"."CONSENSUS_SELECTED", CASE WHEN "AVG_SELECTED"."AVG_SELECTED" >= 0.5 THEN 1 ELSE 0 END) AS "SELECTED"
                           FROM
                               "AVG_SELECTED"
                           LEFT JOIN
@@ -464,27 +465,37 @@ mod_concept_server <- function(id, config, user, project_id){
         save_dat <- current[DISABLED == FALSE, ]
         save_dat[code_ids(), CODE_ID := i.CODE_ID, on = c("CODE", "CODE_TYPE")]
 
-        # remove the old rows from the database
-        code_id_str <- paste0(save_dat$CODE_ID, collapse = ", ")
         if (any(is.na(save_dat$CODE_ID))) {
           # find this bug....
           browser()
         }
-        sql <- glue::glue('DELETE FROM "SELECTED" WHERE "USERNAME" = \'{user[["username"]]}\' AND "CONCEPT_ID" = {concept_id()} AND "CODE_ID" IN ({code_id_str})')
-        query_db(query_str = sql, type = "send")
 
-        # update with the new rows
-        cols <- c("USERNAME", "CODE_ID", "SELECTED", "CONCEPT_ID")
-        sql <- glue::glue('INSERT INTO "SELECTED" ({paste(cols, collapse = ', ')}) VALUES ({paste0("$", seq_along(cols)), collapse = ",")})')
-        res <- query_db(query_str = sql, type = "update", value = as.list(save_dat[, .SD, .SDcols = cols]))
+        # remove the old rows from the database that does match the current selection
+        rows_modified <- 0
+        old_selected <- data.table::copy(selected())
+        save_dat[old_selected, old := i.SELECTED, on = "CODE"][is.na(old), old := 0]
+        remove_dat <- save_dat[old == 1 & SELECTED == 0, ]
+        if (nrow(remove_dat) > 0) {
+          code_id_str <- paste0(remove_dat$CODE_ID, collapse = ", ")
+          sql <- glue::glue('DELETE FROM "SELECTED" WHERE "USERNAME" = \'{user[["username"]]}\' AND "CONCEPT_ID" = {concept_id()} AND "CODE_ID" IN ({code_id_str})')
+          rows_modified <- query_db(query_str = sql, type = "execute")
+        }
+
+        # update with the new selected rows
+        save_dat <- save_dat[SELECTED == 1 & old == 0, ]
+        if (nrow(save_dat) > 0) {
+          code_id_str  <- paste0(save_dat$CODE_ID, collapse = ", ")
+          col_names    <- c("USERNAME", "CODE_ID", "SELECTED", "CONCEPT_ID")
+          cols         <- paste0('"', col_names, '"', collapse = ",")
+          placeholders <- paste0("$", seq_along(col_names), collapse = ",")
+          sql          <- glue::glue('INSERT INTO "SELECTED" ({cols}) VALUES ({placeholders})')
+          n_rows       <- query_db(query_str = sql, type = "execute", value = as.list(save_dat[, .SD, .SDcols = col_names]))
+          rows_modified <- rows_modified + n_rows
+        }
 
         # report and set local reactiveVals
-        if (res) {
-          showNotification("Saved selection", type = "message", duration = 10)
-          selected(current)
-        } else {
-          showNotification("Error saving selection, problem sending data to database", type = "error", duration = 30)
-        }
+        showNotification(paste0("Saved/modified ", rows_modified, " selection(s)"),  type = "message", duration = 10)
+        selected(current)
 
       }
 

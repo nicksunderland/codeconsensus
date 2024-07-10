@@ -78,24 +78,20 @@ query_db <- function(query_str = NULL, type = "get", table = NULL, value = NULL,
 
   } else if (type == "read") {
 
-    results <- DBI::dbReadTable(con, name = table)
+    results <- RPostgres::dbReadTable(con, name = table)
     results <- data.table::as.data.table(results)
 
   } else if (type == "update") {
 
-    DBI::dbExecute(con, query_str, unname(value))
-
-    # DBI::dbBind(stmt, unname(value))
-    # DBI::dbClearResult(stmt)
-    #results <- do.call(DBI::dbExecute, c(list(con, query_str), unname(value)))
+    RPostgres::dbExecute(con, query_str, unname(value))
 
   } else if (type == "write") {
 
-    results <- DBI::dbWriteTable(con, name = table, value = value)
+    results <- RPostgres::dbWriteTable(con, name = table, value = value)
 
   } else if (type == "send") {
 
-    results <- DBI::dbSendQuery(con, query_str)
+    results <- RPostgres::dbSendQuery(con, query_str)
 
   } else if (type == "execute") {
 

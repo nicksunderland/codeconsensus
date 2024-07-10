@@ -20,7 +20,8 @@ Imports:
     utils,
     stats,
     DBI,
-    RMySQL
+    RMySQL,
+    RPostgres
 Suggests:
   Rdiagnosislist,
   xml2
