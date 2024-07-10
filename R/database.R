@@ -70,9 +70,9 @@ query_db <- function(query_str = NULL, type = "get", table = NULL, value = NULL,
   if (type == "get") {
 
     if (is.null(value)) {
-      results <- DBI::dbGetQuery(con, query_str)
+      results <- RPostgres::dbGetQuery(con, query_str)
     } else {
-      results <- do.call(DBI::dbGetQuery, c(list(con, query_str), unname(value)))
+      results <- do.call(RPostgres::dbGetQuery, c(list(con, query_str), !!!unname(value)))
     }
     results <- data.table::as.data.table(results)
 
@@ -99,7 +99,11 @@ query_db <- function(query_str = NULL, type = "get", table = NULL, value = NULL,
 
   } else if (type == "execute") {
 
-    DBI::dbExecute(con, query_str)
+    if (is.null(value)) {
+      results <- RPostgres::dbExecute(con, query_str)
+    } else {
+      results <- RPostgres::dbExecute(con, query_str, unname(value))
+    }
 
   }
 

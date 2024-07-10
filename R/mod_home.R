@@ -55,21 +55,21 @@ mod_home_server <- function(id, concepts, user){
       input$refresh # will trigger a repull of data
 
       names <- paste0("'", concepts, "'", collapse = ", ")
-      sql <- glue::glue("SELECT
-                            SELECTED.USERNAME,
-                            SELECTED.SELECTED,
-                            SELECTED.CODE_ID,
-                            CODES.CODE,
-                            CODES.CODE_TYPE,
-                            CONCEPTS.CONCEPT
+      sql <- glue::glue('SELECT
+                            "SELECTED"."USERNAME",
+                            "SELECTED"."SELECTED",
+                            "SELECTED"."CODE_ID",
+                            "CODES"."CODE",
+                            "CODES"."CODE_TYPE",
+                            "CONCEPTS"."CONCEPT"
                          FROM
-                            SELECTED
+                            "SELECTED"
                          INNER JOIN
-                            CODES ON SELECTED.CODE_ID = CODES.CODE_ID
+                            "CODES" ON "SELECTED"."CODE_ID" = "CODES"."CODE_ID"
                          INNER JOIN
-                            CONCEPTS ON SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
+                            "CONCEPTS" ON "SELECTED"."CONCEPT_ID" = "CONCEPTS"."CONCEPT_ID"
                          WHERE
-                            CONCEPTS.CONCEPT IN ({names}) AND USERNAME != 'consensus'")
+                            "CONCEPTS"."CONCEPT" IN ({names}) AND "USERNAME" != \'consensus\'')
 
       res <- query_db(sql, type = "get")
       res <- unique(res, by = c("USERNAME", "CODE", "CODE_TYPE", "CONCEPT"))

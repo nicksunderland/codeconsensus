@@ -69,7 +69,8 @@ app_server <- function(input, output, session) {
     req(input$username, input$password)
 
     # authentication logic
-    db_user_data <- query_db("SELECT USERNAME, IS_RATER FROM USERS WHERE USERNAME = ? AND PASSWORD = ?", type = "get", value = list(input$username, input$password))
+    sql <- glue::glue('SELECT "USERNAME", "IS_RATER" FROM "USERS" WHERE "USERNAME" = \'{input$username}\' AND "PASSWORD" = \'{input$password}\'')
+    db_user_data <- query_db(sql, type = "get")
 
     # enter main ui if validated
     if (nrow(db_user_data > 0)) {

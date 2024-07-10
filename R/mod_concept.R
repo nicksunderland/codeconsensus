@@ -109,15 +109,15 @@ mod_concept_server <- function(id, config, user, project_id){
     output$consesus_status <- renderUI({
 
       subconcept_ids <- paste0("'", subconcept_ids(), "'", collapse = ", ")
-      sql <- glue("SELECT s.CONCEPT_ID,
-                       CASE WHEN COUNT(ss.USERNAME) > 0 THEN 1 ELSE 0 END AS CONSENSUS_EXISTS
+      sql <- glue('SELECT s."CONCEPT_ID",
+                       CASE WHEN COUNT(ss."USERNAME") > 0 THEN 1 ELSE 0 END AS CONSENSUS_EXISTS
                    FROM (
-                          SELECT DISTINCT CONCEPT_ID
-                          FROM SELECTED
-                          WHERE CONCEPT_ID IN ({subconcept_ids})
+                          SELECT DISTINCT "CONCEPT_ID"
+                          FROM "SELECTED"
+                          WHERE "CONCEPT_ID" IN ({subconcept_ids})
                         ) s
-                  LEFT JOIN SELECTED ss ON s.CONCEPT_ID = ss.CONCEPT_ID AND ss.USERNAME = 'consensus'
-                  GROUP BY s.CONCEPT_ID")
+                  LEFT JOIN "SELECTED" ss ON s."CONCEPT_ID" = ss."CONCEPT_ID" AND ss."USERNAME" = \'consensus\'
+                  GROUP BY s."CONCEPT_ID"')
       res <- query_db(sql, type = "get")
       consensus <- nrow(res) > 0 && all(as.logical(res$CONSENSUS_EXISTS))
 
@@ -142,7 +142,7 @@ mod_concept_server <- function(id, config, user, project_id){
     # -----------------------------
     # the concept id for this module (could be a derived module)
     concept_id <- reactive({
-      sql <- glue::glue("SELECT CONCEPT_ID FROM CONCEPTS WHERE CONCEPT = '{id}'")
+      sql <- glue::glue('SELECT "CONCEPT_ID" FROM "CONCEPTS" WHERE "CONCEPT" = \'{id}\'')
       res <- query_db(sql, type = "get")
       return(res$CONCEPT_ID)
     })
@@ -150,7 +150,7 @@ mod_concept_server <- function(id, config, user, project_id){
     # the subconcept ids for this module (just the concept_id if a concept, or a character vector of concept ids if a derived)
     subconcept_ids <- reactive({
       subconcepts <- paste0("'", c(config$include, config$exclude), "'", collapse = ", ")
-      sql <- glue::glue("SELECT CONCEPT_ID FROM CONCEPTS WHERE CONCEPT IN ({ subconcepts })")
+      sql <- glue::glue('SELECT "CONCEPT_ID" FROM "CONCEPTS" WHERE "CONCEPT" IN ({ subconcepts })')
       res <- query_db(sql, type = "get")
       return(res$CONCEPT_ID)
     })
@@ -160,7 +160,7 @@ mod_concept_server <- function(id, config, user, project_id){
       req(js_tree())
       print("code_ids <- reactive")
       tree_codes <- paste0("'", unlist(tree_attributes(js_tree(), 'code')), "'", collapse = ", ")
-      sql <- glue::glue("SELECT CODE_ID, CODE_TYPE, CODE FROM CODES WHERE CODE IN ({tree_codes})")
+      sql <- glue::glue('SELECT "CODE_ID", "CODE_TYPE", "CODE" FROM "CODES" WHERE "CODE" IN ({tree_codes})')
       res <- query_db(sql, type = "get")
       return(res)
     })
@@ -243,72 +243,72 @@ mod_concept_server <- function(id, config, user, project_id){
       # user logged in and is a rater
       if (user_is_rater & !user_is_concensus) {
 
-        sql <- glue::glue("SELECT
-                              CODES.CODE,
-                              CODES.CODE_TYPE,
-                              CONCEPTS.CONCEPT,
-                              SELECTED.SELECTED,
+        sql <- glue::glue('SELECT
+                              "CODES"."CODE",
+                              "CODES"."CODE_TYPE",
+                              "CONCEPTS"."CONCEPT",
+                              "SELECTED"."SELECTED",
                               NULL AS DISABLED,
                               NULL AS OPENED
                            FROM
-                              SELECTED
+                              "SELECTED"
                            INNER JOIN
-                              CODES ON SELECTED.CODE_ID = CODES.CODE_ID
+                              "CODES" ON "SELECTED"."CODE_ID" = "CODES"."CODE_ID"
                            INNER JOIN
-                              CONCEPTS ON SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
+                              "CONCEPTS" ON "SELECTED"."CONCEPT_ID" = "CONCEPTS"."CONCEPT_ID"
                            WHERE
-                              SELECTED.USERNAME = '{user[['username']]}'
-                              AND SELECTED.SELECTED = 1
-                              AND SELECTED.CONCEPT_ID IN ({subconcept_ids})
-                              AND CODES.CODE IN ({tree_codes})")
+                              "SELECTED"."USERNAME" = \'{user[["username"]]}\'
+                              AND "SELECTED"."SELECTED" = 1
+                              AND "SELECTED"."CONCEPT_ID" IN ({subconcept_ids})
+                              AND "CODES"."CODE" IN ({tree_codes})')
 
       # user not a rater, or in the consensus login (tree enabled), or not logged in (tree disable) - show the consensus results
       } else {
 
-        sql <- glue::glue("
-                          WITH AVG_SELECTED AS (
+        sql <- glue::glue('
+                          WITH "AVG_SELECTED" AS (
                               SELECT
-                                  CONCEPT_ID,
-                                  CODE_ID,
-                                  AVG(SELECTED) AS AVG_SELECTED
+                                  "CONCEPT_ID",
+                                  "CODE_ID",
+                                  AVG("SELECTED") AS "AVG_SELECTED"
                               FROM
-                                  SELECTED
+                                  "SELECTED"
                               WHERE
-                                  USERNAME != 'consensus' AND
-                                  CONCEPT_ID IN ({subconcept_ids}) AND
-                                  CODE_ID IN (SELECT CODE_ID FROM CODES WHERE CODE IN ({tree_codes}))
+                                  "USERNAME" != \'consensus\' AND
+                                  "CONCEPT_ID" IN ({subconcept_ids}) AND
+                                  "CODE_ID" IN (SELECT "CODE_ID" FROM "CODES" WHERE "CODE" IN ({tree_codes}))
                               GROUP BY
-                                  SELECTED.CONCEPT_ID, SELECTED.CODE_ID
+                                  "SELECTED"."CONCEPT_ID", "SELECTED"."CODE_ID"
                           ),
-                          CONSENSUS_SELECTED AS (
+                          "CONSENSUS_SELECTED" AS (
                               SELECT
-                                  CONCEPT_ID,
-                                  CODE_ID,
-                                  SELECTED AS CONSENSUS_SELECTED
+                                  "CONCEPT_ID",
+                                  "CODE_ID",
+                                  "SELECTED" AS "CONSENSUS_SELECTED"
                               FROM
-                                  SELECTED
+                                  "SELECTED"
                               WHERE
-                                  USERNAME = 'consensus' AND
-                                  CONCEPT_ID IN ({subconcept_ids}) AND
-                                  CODE_ID IN (SELECT CODE_ID FROM CODES WHERE CODE IN ({tree_codes}))
+                                  "USERNAME" = \'consensus\' AND
+                                  "CONCEPT_ID" IN ({subconcept_ids}) AND
+                                  "CODE_ID" IN (SELECT "CODE_ID" FROM "CODES" WHERE "CODE" IN ({tree_codes}))
                           )
                           SELECT
-                              CODES.CODE,
-                              CODES.CODE_TYPE,
-                              CONCEPTS.CONCEPT,
-                              AVG_SELECTED.AVG_SELECTED,
+                              "CODES"."CODE",
+                              "CODES"."CODE_TYPE",
+                              "CONCEPTS"."CONCEPT",
+                              "AVG_SELECTED"."AVG_SELECTED",
                               0 AS DISABLED,
                               NULL AS OPENED,
-                              COALESCE(CONSENSUS_SELECTED.CONSENSUS_SELECTED, CASE WHEN AVG_SELECTED.AVG_SELECTED >= 0.5 THEN 1 ELSE 0 END) AS SELECTED
+                              COALESCE("CONSENSUS_SELECTED"."CONSENSUS_SELECTED", CASE WHEN "AVG_SELECTED"."AVG_SELECTED" >= 0.5 THEN 1 ELSE 0 END) AS SELECTED
                           FROM
-                              AVG_SELECTED
+                              "AVG_SELECTED"
                           LEFT JOIN
-                              CONSENSUS_SELECTED ON AVG_SELECTED.CONCEPT_ID = CONSENSUS_SELECTED.CONCEPT_ID AND AVG_SELECTED.CODE_ID = CONSENSUS_SELECTED.CODE_ID
+                              "CONSENSUS_SELECTED" ON "AVG_SELECTED"."CONCEPT_ID" = "CONSENSUS_SELECTED"."CONCEPT_ID" AND "AVG_SELECTED"."CODE_ID" = "CONSENSUS_SELECTED"."CODE_ID"
                           INNER JOIN
-                              CODES ON AVG_SELECTED.CODE_ID = CODES.CODE_ID
+                              "CODES" ON "AVG_SELECTED"."CODE_ID" = "CODES"."CODE_ID"
                           INNER JOIN
-                              CONCEPTS ON AVG_SELECTED.CONCEPT_ID = CONCEPTS.CONCEPT_ID
-                          ")
+                              "CONCEPTS" ON "AVG_SELECTED"."CONCEPT_ID" = "CONCEPTS"."CONCEPT_ID"
+                          ')
       }
 
       # get the codes and select status
@@ -327,7 +327,7 @@ mod_concept_server <- function(id, config, user, project_id){
       # if logged in, enable comments
       if (!is.null(user[["username"]])) {
 
-        sql <- glue::glue("SELECT * FROM COMMENTS WHERE USERNAME = '{user[['username']]}' AND CONCEPT_ID = '{concept_id()}'")
+        sql <- glue::glue('SELECT * FROM "COMMENTS" WHERE "USERNAME" = \'{user[["username"]]}\' AND "CONCEPT_ID" = \'{concept_id()}\'')
         res <- query_db(sql, type = "get")
 
         # extract the data
@@ -417,7 +417,7 @@ mod_concept_server <- function(id, config, user, project_id){
       # save comments & preferred terms
       # ------------------------
       # remove the old comments
-      sql <- glue::glue("DELETE FROM COMMENTS WHERE USERNAME = '{user[['username']]}' AND CONCEPT_ID = '{concept_id()}'")
+      sql <- glue::glue('DELETE FROM "COMMENTS" WHERE "USERNAME" = \'{user[["username"]]}\' AND "CONCEPT_ID" = \'{concept_id()}\'')
       query_db(query_str = sql, type = "send")
 
       # update with new comments
@@ -431,8 +431,10 @@ mod_concept_server <- function(id, config, user, project_id){
       }
 
       # insert
-      sql  <- glue::glue("INSERT INTO COMMENTS ({paste(names(vals), collapse = ', ')}) VALUES ({paste0(rep('?', length(vals)), collapse = ', ')})")
-      res  <- query_db(query_str = sql, type = "update", value = vals)
+      cols         <- paste0('"', names(vals), '"', collapse = ",")
+      placeholders <- paste0("$", seq_along(vals), collapse = ",")
+      sql  <- glue::glue('INSERT INTO "COMMENTS" ({cols}) VALUES ({placeholders})')
+      res  <- query_db(query_str = sql, type = "execute", value = vals)
 
       # report
       if (res) {
@@ -468,12 +470,12 @@ mod_concept_server <- function(id, config, user, project_id){
           # find this bug....
           browser()
         }
-        sql <- glue::glue("DELETE FROM SELECTED WHERE USERNAME = '{user[['username']]}' AND CONCEPT_ID = {concept_id()} AND CODE_ID IN ({code_id_str})")
+        sql <- glue::glue('DELETE FROM "SELECTED" WHERE "USERNAME" = \'{user[["username"]]}\' AND "CONCEPT_ID" = {concept_id()} AND "CODE_ID" IN ({code_id_str})')
         query_db(query_str = sql, type = "send")
 
         # update with the new rows
         cols <- c("USERNAME", "CODE_ID", "SELECTED", "CONCEPT_ID")
-        sql <- glue::glue("INSERT INTO SELECTED ({paste(cols, collapse = ', ')}) VALUES ({paste0(rep('?', length(cols)), collapse = ', ')})")
+        sql <- glue::glue('INSERT INTO "SELECTED" ({paste(cols, collapse = ', ')}) VALUES ({paste0("$", seq_along(cols)), collapse = ",")})')
         res <- query_db(query_str = sql, type = "update", value = as.list(save_dat[, .SD, .SDcols = cols]))
 
         # report and set local reactiveVals
