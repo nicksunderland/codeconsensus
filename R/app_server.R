@@ -10,6 +10,7 @@
 #' @importFrom yaml read_yaml
 #' @importFrom shinyjs hide show
 #' @importFrom stats setNames
+#' @importFrom DBI dbDisconnect
 
 #' @noRd
 app_server <- function(input, output, session) {

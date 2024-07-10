@@ -8,6 +8,8 @@ con_env <- new.env(parent = emptyenv())
 
 #' @title make_connection
 #' @return a connection object
+#' @importFrom DBI dbConnect
+#' @importFrom RMySQL MySQL
 #' @export
 #'
 make_connection <- function() {
@@ -21,7 +23,7 @@ make_connection <- function() {
   #   password = config[["password"]]
   # )
 
-  con_env$con <- RMySQL::dbConnect(
+  con_env$con <- DBI::dbConnect(
     drv      = RMySQL::MySQL(),
     dbname   = config[["dbname"]],
     user     = config[["user"]],
@@ -40,7 +42,7 @@ make_connection <- function() {
 #' @param value values (for update and write options)
 #' @param ... optionally can pass the con object f not declared globally
 #' @return a data.table
-#' @import DBI
+#' @importFrom DBI dbConnect dbGetQuery dbReadTable dbExecute dbSendQuery dbWriteTable
 #' @export
 #'
 query_db <- function(query_str = NULL, type = "get", table = NULL, value = NULL, ...) {

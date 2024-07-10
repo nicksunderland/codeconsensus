@@ -18,7 +18,9 @@ Imports:
     jsTreeR,
     scales,
     utils,
-    stats
+    stats,
+    DBI,
+    RMySQL
 Suggests:
   Rdiagnosislist,
   xml2
