@@ -23,8 +23,17 @@ make_connection <- function() {
   #   password = config[["password"]]
   # )
 
+  # con_env$con <- DBI::dbConnect(
+  #   #drv      = RMariaDB::MariaDB(),
+  #   drv      = RMySQL::MySQL(),
+  #   dbname   = config[["dbname"]],
+  #   username     = config[["user"]],
+  #   password = config[["password"]],
+  #   host     = config[["host"]],
+  #   port     = config[["port"]])
+
   con_env$con <- DBI::dbConnect(
-    drv      = RMySQL::MySQL(),
+    drv      = RPostgres::Postgres(),
     dbname   = config[["dbname"]],
     user     = config[["user"]],
     password = config[["password"]],
@@ -47,7 +56,7 @@ make_connection <- function() {
 #'
 query_db <- function(query_str = NULL, type = "get", table = NULL, value = NULL, ...) {
 
-  type <- match.arg(type, choices = c("get", "read", "update", "write", "send"))
+  type <- match.arg(type, choices = c("get", "read", "update", "write", "send", "execute"))
 
   # if con is not global, needs to be passed in ...
   args <- list(...)
@@ -74,7 +83,11 @@ query_db <- function(query_str = NULL, type = "get", table = NULL, value = NULL,
 
   } else if (type == "update") {
 
-    results <- do.call(DBI::dbExecute, c(list(con, query_str), unname(value)))
+    DBI::dbExecute(con, query_str, unname(value))
+
+    # DBI::dbBind(stmt, unname(value))
+    # DBI::dbClearResult(stmt)
+    #results <- do.call(DBI::dbExecute, c(list(con, query_str), unname(value)))
 
   } else if (type == "write") {
 
@@ -83,6 +96,10 @@ query_db <- function(query_str = NULL, type = "get", table = NULL, value = NULL,
   } else if (type == "send") {
 
     results <- DBI::dbSendQuery(con, query_str)
+
+  } else if (type == "execute") {
+
+    DBI::dbExecute(con, query_str)
 
   }
 
