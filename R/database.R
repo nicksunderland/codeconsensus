@@ -16,22 +16,6 @@ make_connection <- function() {
 
   config <- config::get(file = system.file("database", "db_config.yaml", package = "hfphenotyping"))
 
-  # con_env$con <- RJDBC::dbConnect(
-  #   drv      = RJDBC::JDBC(driverClass = "oracle.jdbc.OracleDriver", classPath = system.file("database", "ojdbc8.jar", package = "hfphenotyping")),
-  #   url      = paste0("jdbc:oracle:thin:@", config[["connection_str"]]),
-  #   user     = config[["username"]],
-  #   password = config[["password"]]
-  # )
-
-  # con_env$con <- DBI::dbConnect(
-  #   #drv      = RMariaDB::MariaDB(),
-  #   drv      = RMySQL::MySQL(),
-  #   dbname   = config[["dbname"]],
-  #   username     = config[["user"]],
-  #   password = config[["password"]],
-  #   host     = config[["host"]],
-  #   port     = config[["port"]])
-
   con_env$con <- DBI::dbConnect(
     drv      = RPostgres::Postgres(),
     dbname   = config[["dbname"]],

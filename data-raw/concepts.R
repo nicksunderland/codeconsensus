@@ -31,9 +31,11 @@ configs <- configs[!file.info(configs)$isdir & !configs %in% project_files]
 
 
 # produce the trees for each config
-plan(multisession, workers = parallel::detectCores() - 1)
-options(future.globals.maxSize = 90 * 1024^3)  # 2 GiB
-future_walk(configs, function(config) {
+# plan(multisession, workers = parallel::detectCores() - 1)
+# options(future.globals.maxSize = 90 * 1024^3)  # 2 GiB
+# future_walk(configs, function(config) {
+
+for (config in configs) {
 
   library(hfphenotyping)
   library(Rdiagnosislist)
@@ -73,7 +75,8 @@ future_walk(configs, function(config) {
   }
 
   # if a derived concept, exit here
-  if (conf$domain == "Derived") return(NULL)
+  if (conf$domain == "Derived") next
+    #return(NULL)
 
 
   cat("Extracting `", conf$id, "`\n")
@@ -277,7 +280,9 @@ future_walk(configs, function(config) {
   # disconnect
   DBI::dbDisconnect(con)
 
-}, .env_globals = environment()) # end future loop
+}
+
+#, .env_globals = environment()) # end future loop
 
 
 

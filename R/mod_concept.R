@@ -111,7 +111,7 @@ mod_concept_server <- function(id, config, user, project_id){
 
       subconcept_ids <- paste0("'", subconcept_ids(), "'", collapse = ", ")
       sql <- glue('SELECT s."CONCEPT_ID",
-                       CASE WHEN COUNT(ss."USERNAME") > 0 THEN 1 ELSE 0 END AS CONSENSUS_EXISTS
+                       CASE WHEN COUNT(ss."USERNAME") > 0 THEN 1 ELSE 0 END AS "CONSENSUS_EXISTS"
                    FROM (
                           SELECT DISTINCT "CONCEPT_ID"
                           FROM "SELECTED"
