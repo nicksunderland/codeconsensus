@@ -508,6 +508,11 @@ mod_concept_server <- function(id, config, user, project_id){
       },
       content = function(file) {
 
+        if (length(input$tree_selected_paths)==0) {
+          showNotification("No codes selected...", type = "error", duration = 30)
+          return(NULL)
+        }
+
         out <- data.table::data.table(PHENO     = id,
                                       CONCEPT   = lapply(input$tree_selected_paths, function(x) sub("^(?:Ex|In)clude/(.*?)/.*", "\\1", x$path)),
                                       CODE      = lapply(input$tree_selected,       function(x) x$data[["code"]]),
@@ -515,6 +520,8 @@ mod_concept_server <- function(id, config, user, project_id){
                                       DESC      = lapply(input$tree_selected,       function(x) x$data[["desc"]]),
                                       INCLUDE   = lapply(input$tree_selected_paths, function(x) grepl("^Include", x$path)),
                                       EXCLUDE   = lapply(input$tree_selected_paths, function(x) grepl("^Exclude", x$path)))
+
+
 
         data.table::fwrite(out, file, sep="\t", row.names=FALSE)
       }

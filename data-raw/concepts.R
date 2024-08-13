@@ -214,7 +214,13 @@ for (config in configs) {
   if ("CPT4" %in% terminologies) {
 
     cat("[i] Extracting CPT4 procedures\n")
-    cpt4_dt <- data.table::as.data.table(readxl::read_xlsx(file.path(dir, "CPT4", "cpt-pcm-nhsn.xlsx"), sheet = "ALL 2024 CPT Codes"))[, .(code = `CPT Codes`, desc = `Procedure Code Descriptions`, code_type = "CPT4", chapter = `Procedure Code Category`)]
+    #cpt4_dt <- data.table::as.data.table(readxl::read_xlsx(file.path(dir, "CPT4", "cpt-pcm-nhsn.xlsx"), sheet = "ALL 2024 CPT Codes"))[, .(code = `CPT Codes`, desc = `Procedure Code Descriptions`, code_type = "CPT4", chapter = `Procedure Code Category`)]
+
+    cpt4_athena_codes <- data.table::fread(file.path(dir, "CPT4", "athena_vocabulary_download_v5", "CONCEPT_CPT4.csv"))
+    cpt4_athena_desc  <- data.table::fread(file.path(dir, "CPT4", "athena_vocabulary_download_v5", "CONCEPT_SYNONYM.csv"))
+    cpt4_athena_codes[cpt4_athena_desc, desc := i.concept_synonym_name, on = "concept_id"]
+    cpt4_dt <- cpt4_athena_codes[!is.na(desc)][, list(code = concept_code, desc = desc, code_type = "CPT4", chapter = "Procedures")]
+
     cpt4_regex <- paste0(c(regex$all, regex$CPT4), collapse = "|")
     cpt4 <- cpt4_tree(cpt4_dt, concept_id = conf$id, regex = cpt4_regex)
 
