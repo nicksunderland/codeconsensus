@@ -22,10 +22,11 @@ perferred_term:
 regexes:
   OPCS4:
   - K502
-  - coronary thrombolysis
+  - (?i)coronary thrombolysis
   all:
   - (?i)thrombolytic
-  - thrombolysis
+  - (?i)thrombolysis
+  - (?i)removal .*blood clot .*dissolving
   SNOMED_procedure: '32912007'
   CPT4:
   - ~

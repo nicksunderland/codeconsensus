@@ -28,9 +28,8 @@ regexes:
   OPCS4: K49[0-9]+?|K50[0-9]+|K75[0-9]+
   all:
   - (?i)percutaneous coronary intervention
-  - (?i)(percutaneous|transluminal) .*(angioplasty|thrombolysis|therapeutic|atherectomy|operations)
-    .*coronar(y|ies)
-  - (?i)(percutaneous|transluminal) .*coronar(y|ies) .*(angioplasty|thrombolysis|therapeutic|atherectomy|operations)
+  - (?i)(percutaneous|transluminal) .*(angioplasty|stent|thrombolysis|thrombectomy|therapeutic|atherectomy|operations|lithotripsy).*coronar(y|ies)
+  - (?i)(percutaneous|transluminal) .*coronar(y|ies) .*(angioplasty|stent|thrombolysis|thrombectomy|therapeutic|atherectomy|operations|lithotripsy)
   SNOMED_procedure: '415070008'
   CPT4:
   - ~

@@ -35,7 +35,7 @@ configs <- configs[!file.info(configs)$isdir & !configs %in% project_files]
 # options(future.globals.maxSize = 90 * 1024^3)  # 2 GiB
 # future_walk(configs, function(config) {
 
-for (config in configs) {
+for (config in configs[29]) {
 
   library(hfphenotyping)
   library(Rdiagnosislist)
