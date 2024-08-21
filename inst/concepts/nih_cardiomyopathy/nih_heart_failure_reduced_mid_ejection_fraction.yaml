@@ -1,0 +1,45 @@
+id: nih_heart_failure_reduced_mid_ejection_fraction
+name: Heart Failure (HFrEF or HFmrEF)
+definition: |
+  Heart failure (HF) is not a single pathological diagnosis, but a clinical syndrome consisting of
+  cardinal symptoms (e.g. breathlessness, ankle . swelling, and fatigue) that may be accompanied
+  by signs (e.g. elevated . jugular venous pressure, pulmonary crackles, and peripheral oedema).
+  It is due to a structural and/or functional abnormality of the heart that results in elevated
+  intracardiac pressures and/or inadequate cardiac output at rest and/or during exercise. HF reduced
+  ejection fraction is defined as HF with LVEF<40% and HF mid-range ejection fraction with LVEF 40-49%.
+reference: https://www.escardio.org/Guidelines/Clinical-Practice-Guidelines/Acute-and-Chronic-Heart-Failure
+domain: Disorder
+terminology:
+- SNOMED
+- ICD10
+- ICD9
+perferred_term:
+  SNOMED:
+    code: '703272007'
+    desc: Heart failure with reduced ejection fraction
+  ICD10:
+    code: ~
+    desc: ~
+regexes:
+  SNOMED:
+  - '703272007'
+  - '788950000'
+  - '134401001'
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  all:
+  - (?i)systolic .*(dys-?function|failure|insufficiency)
+  - (?i)(heart|cardiac|ventricular) failure.*(reduced|mid.*range)
+  - (?i)cardiac insufficiency.*(reduced|mid.*range)
+  - (?i)(reduced|mid.*range).*(heart|cardiac|ventricular) failure
+  - (?i)(reduced|mid.*range).*cardiac insufficiency
+  - ' HF.*(reduced|mid.*range)'
+  - '(reduced|mid.*range) HF'
+include: nih_heart_failure_reduced_mid_ejection_fraction
+exclude: ~
+notes: |-
+  Please include codes that indicate a "history of ...". Disease entities that
+  are downstream consequences of the concept of interest (and not downstream of
+  unrelated concepts, i.e. they are relatively specific) should be included.
