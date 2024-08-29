@@ -2,7 +2,9 @@ id: nih_left_ventricular_systolic_dysfunction
 name: Left ventricular systolic dysfunction
 definition: |
   Left ventricular systolic dysfunction is defined here as any code
-  indicating impaired LV ejection fraction.
+  indicating impaired LV ejection fraction, or heart failure with reduced
+  or mid-range ejection fraction. HF reduced ejection fraction is defined as HF with
+  LVEF<40% and HF mid-range ejection fraction with LVEF 40-49%.
 reference: https://esc.com
 domain: Disorder
 terminology:
@@ -17,7 +19,14 @@ perferred_term:
     code: '134401001'
     desc: Left ventricular systolic dysfunction
 regexes:
-  all: systolic .*(dys-?function|failure|insufficiency)
+  all:
+  - (?i)systolic .*(dys-?function|failure|insufficiency)
+  - (?i)(heart|cardiac|ventricular) failure.*(reduced|mid.*range)
+  - (?i)cardiac insufficiency.*(reduced|mid.*range)
+  - (?i)(reduced|mid.*range).*(heart|cardiac|ventricular) failure
+  - (?i)(reduced|mid.*range).*cardiac insufficiency
+  - ' HF.*(reduced|mid.*range)'
+  - '(reduced|mid.*range) HF'
   SNOMED: '134401001'
   ICD10:
   - ~
