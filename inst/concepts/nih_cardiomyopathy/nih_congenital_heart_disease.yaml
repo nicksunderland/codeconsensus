@@ -25,8 +25,8 @@ regexes:
   ICD9:
   - ~
   all:
-  - (?i)congenital heart disease
-  - (?i)congenital .*(heart|cardiac)
+  - (?i)congenital.*(heart|cardiac)
+  - (?i)(heart|cardiac).*congenital
   - (?i)congenital .*(pulmonary|tricuspid|aortic|mitral) .*valves?
   - (?i)(congenital|transposition) .*great (arter[y|ies]|veins?)
   - (?i)fontan|fallot

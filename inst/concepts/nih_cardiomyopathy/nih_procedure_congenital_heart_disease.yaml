@@ -9,6 +9,7 @@ domain: Procedure
 terminology:
 - SNOMED_procedure
 - OPCS4
+- CPT4
 perferred_term:
   OPCS4:
     code: ~
@@ -22,8 +23,8 @@ regexes:
   - K(29[67]|305|336|34[56]|35[467]|36[12]|37[1-6]|38[56]|482|577|76[189])
   - L1[0-3][0-9]?
   all:
-  - (?i)congenital heart disease
-  - (?i)congenital .*(heart|cardiac)
+  - (?i)congenital.*(heart|cardiac)
+  - (?i)(heart|cardiac).*congenital
   - (?i)congenital .*(pulmonary|tricuspid|aortic|mitral) .*valves?
   - (?i)(congenital|transposition) .*great (arter[y|ies]|veins?)
   - (?i)fontan|norwood|fallot|blalock|mustard|senning|nikaidoh|jatene|rastelli
@@ -32,5 +33,8 @@ regexes:
   - (?i)cor triatriatum|truncus arteriosus
   SNOMED_procedure:
   - ~
+  CPT4:
+  - 9359[3-7]
+  - "93594"
 include: nih_procedure_congenital_heart_disease
 exclude: ~

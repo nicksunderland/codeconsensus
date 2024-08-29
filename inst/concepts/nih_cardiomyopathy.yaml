@@ -13,4 +13,6 @@ concepts:
   - "nih_procedure_open_cabg"
   - "nih_procedure_perc_angioplasty_coronary"
   - "nih_management_coronary_thrombolysis"
+  - "nih_congenital_heart_disease"
+  - "nih_procedure_congenital_heart_disease"
 
