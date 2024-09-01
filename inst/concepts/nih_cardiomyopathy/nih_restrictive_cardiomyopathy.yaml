@@ -27,6 +27,12 @@ regexes:
   - ~
   ICD9:
   - ~
-  all: (?i)(restrictive|constrictive) cardiomyopathy
+  all:
+  - (?i)(restrictive|constrictive) (cardiomyopath.*|heart failure)
+  - (?i)(cardiomyopath.*|heart failure).*(restrictive|constrictive)
 include: nih_restrictive_cardiomyopathy
 exclude: ~
+notes: |-
+  Please include codes that indicate a "history of ...". Disease entities that
+  are downstream consequences of the concept of interest (and not downstream of
+  unrelated concepts, i.e. they are relatively specific) should be included.

@@ -4,6 +4,7 @@ concepts:
   - "nih_cardiomyopathy"
   - "nih_dilated_cardiomyopathy"
   - "nih_hypertrophic_cardiomyopathy"
+  - "nih_restrictive_cardiomyopathy"
   - "nih_non_ischaemic_cardiomyopathy"
   - "nih_heart_failure"
   - "nih_left_ventricular_systolic_dysfunction"
