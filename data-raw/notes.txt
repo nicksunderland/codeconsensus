@@ -1,0 +1,3 @@
+I have manually added congestive heart failure I500 to the xml file
+/Users/xx20081/Library/CloudStorage/OneDrive-UniversityofBristol/phenotyping/FY24-CMS-1785-F-ICD-10-Table-Index/icd10cm_tabular_2024.xml
+as it didn't exist.
