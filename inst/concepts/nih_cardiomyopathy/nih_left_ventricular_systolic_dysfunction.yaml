@@ -29,7 +29,7 @@ regexes:
   - '(reduced|mid.*range) HF'
   SNOMED: '134401001'
   ICD10:
-  - ~
+  - "I501"
   ICD9:
   - ~
 include: nih_left_ventricular_systolic_dysfunction
