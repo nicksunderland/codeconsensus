@@ -10,6 +10,7 @@ terminology:
 - SNOMED_procedure
 - OPCS4
 - CPT4
+- ICD9_procedure
 perferred_term:
   OPCS4:
     code: ~
@@ -25,7 +26,8 @@ regexes:
   - K4[0-9][0-9]?
   - K50[0-9]?|K75[0-9]?
   all:
-  - (?i)coronary artery bypass
+  - (?i)coronary (artery )?bypass
+  - (?i)aortocoronary bypass
   - CABG
   - (?i)(graft|replacement|connection|anastomosis|implantation|bypass|repair|operations?|open
     angioplasty) .*coronary arter(y|ies)

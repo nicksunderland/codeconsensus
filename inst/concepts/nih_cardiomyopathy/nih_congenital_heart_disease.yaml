@@ -3,7 +3,7 @@ name: Congenital heart disease
 definition: |
   Congenital heart disease encompasses a wide range of cardiac defects that affect the normal
   heart function. They are fault or problems that are present from birth.
-reference: https://www.nhs.uk/conditions/congenital-heart-disease/
+reference: https://www.nhs.uk/conditions/congenital-heart-disease/, https://www.opencodelists.org/codelist/nhsd-primary-care-domain-refsets/c19heart_cod/20210127/
 domain: Disorder
 terminology:
 - SNOMED
@@ -25,13 +25,32 @@ regexes:
   ICD9:
   - ~
   all:
-  - (?i)congenital.*(heart|cardiac)
-  - (?i)(heart|cardiac).*congenital
+  - (?i)(congenital|anomal(ous|ies)|hypoplasia|supernumerary|atresia|aplasia|absen(ce|t)|transposition).*(heart|cardiac|myocard|epicard|pulmon(ic|ary)|tricuspid|mitral|aortic|vena cava|great (arter[y|ies]|veins?|vessels?)|coronary|aorta|atri(a|um)|ventric(ular|le))
+  - (?i)(heart|cardiac|myocard|epicard|pulmon(ic|ary)|tricuspid|mitral|aortic|vena cava|great (arter[y|ies]|veins?|vessels?)|coronary|aorta|atri(a|um)|ventric(ular|le)).*(congenital|anomal(ous|ies)|hypoplasia|supernumerary|atresia|aplasia|absen(ce|t)|transposition)
   - (?i)congenital .*(pulmonary|tricuspid|aortic|mitral) .*valves?
-  - (?i)(congenital|transposition) .*great (arter[y|ies]|veins?)
+  - (?i)parachute malformation .*mitral valve
+  - (?i)subaortic stenosis
+  - (?i)bicuspid .*aortic
   - (?i)fontan|fallot
-  - (?i)(double outlet|single) .*ventricle
-  - (?i)(atrial|ventric[ulare]+|aortopulmonary) septal defect
+  - (?i)(double (outlet|inlet)|single) .*ventricle
+  - (?i)abnormal relationship .*(pulmonary|aortic|ventricle) .*(pulmonary|aortic|ventricle)
+  - (?i)(abnormal|discordant|ambiguous|absent) atrioventricular connection
+  - (?i)(atrial|ventric[ulare]+|aortopulmonary) sept(um|al) defect
   - (?i)cor triatriatum|truncus arteriosus
+  - (?i)(double|right|left|interrupted) .*aortic arch
+  - (?i)ebstein|holt[- ]?oram|eisenmenger|lutembacher|prune belly syndrome
+  - (?i)(dextro|levo|meso|hemi|a)(cardia|rotation|transposition)
+  - (?i)levoatrial cardinal vein
+  - (?i)juxtaposed atrial appendage
+  - (?i)coarctation
+  - (?i)(abdominal|criss[- ]?cross|mirror[- ]?imaged) heart
+  - (?i)endocardial cushion defect
+  - (?i)ostium (primum|secundum)|foramen ovale
+  - (?i)stenosis .*infundibulum
+  - (?i)infundibul.* stenosis
+  - (?i)cor triloculare
+  - (?i)persistent aortic arch convolutions
+  - (?i)single coronary artery
+  - (?i)familial mitral valve prolapse
 include: nih_congenital_heart_disease
 exclude: ~

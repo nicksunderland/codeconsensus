@@ -9,6 +9,7 @@ terminology:
 - SNOMED_procedure
 - OPCS4
 - CPT4
+- ICD9_procedure
 perferred_term:
   SNOMED_procedure:
     code: '32912007'

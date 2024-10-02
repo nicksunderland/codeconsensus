@@ -14,6 +14,7 @@ terminology:
 - SNOMED_procedure
 - OPCS4
 - CPT4
+- ICD9_procedure
 perferred_term:
   OPCS4:
     code: ~

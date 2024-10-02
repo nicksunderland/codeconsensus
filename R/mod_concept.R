@@ -520,8 +520,7 @@ mod_concept_server <- function(id, config, user, project_id){
                                       DESC      = lapply(input$tree_selected,       function(x) x$data[["desc"]]),
                                       INCLUDE   = lapply(input$tree_selected_paths, function(x) grepl("^Include", x$path)),
                                       EXCLUDE   = lapply(input$tree_selected_paths, function(x) grepl("^Exclude", x$path)))
-
-
+        out <- out[!sapply(DESC, is.null)]
 
         data.table::fwrite(out, file, sep="\t", row.names=FALSE)
       }
