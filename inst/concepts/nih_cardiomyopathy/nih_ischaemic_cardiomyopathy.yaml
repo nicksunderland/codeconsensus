@@ -16,13 +16,12 @@ perferred_term:
     code: ~
     desc: ~
   SNOMED:
-    code: '414545008'
-    desc: Ischemic heart disease
+    code: '426856002'
+    desc: Ischemic congestive cardiomyopathy
 regexes:
   all:
-  - (?i)ischa?emic heart disease
-  - (?i)ischa?emic cardiomyopath(y|ies)
-  - (?i)cardiomyopath(y|ies) ischa?emic
+  - (?i)ischa?emic .*cardiomyopath(y|ies)
+  - (?i)cardiomyopath(y|ies) .*ischa?emic
   ICD10:
   - ~
   ICD9:
