@@ -6,6 +6,7 @@ concepts:
   - "nih_hypertrophic_cardiomyopathy"
   - "nih_restrictive_cardiomyopathy"
   - "nih_non_ischaemic_cardiomyopathy"
+  - "nih_ischaemic_cardiomyopathy"
   - "nih_heart_failure"
   - "nih_left_ventricular_systolic_dysfunction"
   - "nih_atherosclerosis_coronary"

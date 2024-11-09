@@ -1,0 +1,31 @@
+id: nih_ischaemic_cardiomyopathy
+name: Ischaemic cardiomyopathy
+definition: |
+  Ischemic cardiomyopathy was defined as left ventricular
+  dysfunction caused by coronary artery disease (CAD).
+reference: https://www.ncbi.nlm.nih.gov/books/NBK209964/
+domain: Disorder
+terminology:
+- ICD10
+- ICD9
+- SNOMED
+perferred_term:
+  ICD10:
+    code: ~
+    desc: ~
+  SNOMED:
+    code: '414545008'
+    desc: Ischemic heart disease
+regexes:
+  all:
+  - (?i)ischa?emic heart disease
+  - (?i)ischa?emic cardiomyopathy
+  - (?i)cardiomyopathy ischa?emic
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  SNOMED:
+  - ~
+include: nih_ischaemic_cardiomyopathy
+exclude: ~
