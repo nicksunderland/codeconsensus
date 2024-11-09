@@ -2,7 +2,9 @@ id: nih_ischaemic_cardiomyopathy
 name: Ischaemic cardiomyopathy
 definition: |
   Ischemic cardiomyopathy was defined as left ventricular
-  dysfunction caused by coronary artery disease (CAD).
+  dysfunction caused by coronary artery disease (CAD). Specifically,
+  there must be the implication of cardiomyopathy or LV dysfunction,
+  not simply coronary artery disease.
 reference: https://www.ncbi.nlm.nih.gov/books/NBK209964/
 domain: Disorder
 terminology:
@@ -19,8 +21,8 @@ perferred_term:
 regexes:
   all:
   - (?i)ischa?emic heart disease
-  - (?i)ischa?emic cardiomyopathy
-  - (?i)cardiomyopathy ischa?emic
+  - (?i)ischa?emic cardiomyopath(y|ies)
+  - (?i)cardiomyopath(y|ies) ischa?emic
   ICD10:
   - ~
   ICD9:
