@@ -6,7 +6,8 @@ reference: https://doi.org/10.1016/S1078-5884%2898%2980009-9
 domain: Procedure
 terminology:
 - SNOMED_procedure
-- OPCS4
+- ICD10
+- ICD11
 perferred_term:
   OPCS4:
     code: ~

@@ -1,4 +1,4 @@
-id: esc_heart_failure
+id: nih_outcome_heart_failure
 name: Heart Failure
 definition: |
   Heart failure is not a single pathological diagnosis, but a clinical syndrome consisting of
@@ -6,12 +6,12 @@ definition: |
   by signs (e.g. elevated . jugular venous pressure, pulmonary crackles, and peripheral oedema).
   It is due to a structural and/or functional abnormality of the heart that results in elevated
   intracardiac pressures and/or inadequate cardiac output at rest and/or during exercise.
-reference: https://doi.org/10.1093/eurheartj/ehab368
+reference: https://www.escardio.org/Guidelines/Clinical-Practice-Guidelines/Acute-and-Chronic-Heart-Failure
 domain: Disorder
 terminology:
 - SNOMED
-- ICD11
 - ICD10
+- ICD9
 perferred_term:
   SNOMED:
     code: '84114007'
@@ -19,18 +19,19 @@ perferred_term:
   ICD10:
     code: ~
     desc: ~
-  ICD11:
-    code: ~
-    desc: ~
 regexes:
   SNOMED: '84114007'
   ICD10:
+  - ~
+  ICD9:
   - ~
   all:
   - (?i)(heart|cardiac|ventricular) failure
   - (?i)cardiac insufficiency
   - ' HF '
-  ICD11:
-  - ~
-include: esc_heart_failure
+include: nih_outcome_heart_failure
 exclude: ~
+notes: |-
+  Please include codes that indicate a "history of ...". Disease entities that
+  are downstream consequences of the concept of interest (and not downstream of
+  unrelated concepts, i.e. they are relatively specific) should be included.

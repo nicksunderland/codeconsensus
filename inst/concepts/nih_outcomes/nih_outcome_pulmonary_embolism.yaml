@@ -1,0 +1,39 @@
+id: nih_outcome_pulmonary_embolism
+name: Pulmonary Embolism
+definition: |
+  Pulmonary embolism (PE) is a condition in which one or more emboli, usually blood clots,
+  block one or more arteries in the lungs. It is a potentially life-threatening condition
+  that requires immediate diagnosis and treatment.
+reference: ...
+domain: Disorder
+terminology:
+- SNOMED
+- ICD10
+- ICD9
+perferred_term:
+  SNOMED:
+    code: '59282003'
+    desc: Pulmonary embolism
+  ICD10:
+    code: I269
+    desc: Pulmonary embolism without mention of acute cor pulmonale
+regexes:
+  SNOMED: '59282003|713427006|386661006'
+  ICD10:
+  - I26
+  - I269
+  - I260
+  ICD9:
+  - 4151
+  - 41511
+  - 41519
+  all:
+  - (?i)pulmonary embolism
+  - (?i)\bPE\b
+  - (?i)pulmonary thromboembolism
+include: nih_outcome_pulmonary_embolism
+exclude: ~
+notes: |-
+  Include acute, submassive, and massive pulmonary embolism.
+  Exclude chronic thromboembolic pulmonary hypertension unless explicitly relevant.
+  Consider excluding terms that reflect only a past history unless relevant to the study objective.

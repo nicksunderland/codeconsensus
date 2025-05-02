@@ -1,0 +1,40 @@
+id: nih_outcome_sudden_death
+name: Sudden Cardiac Death
+definition: |
+  Sudden cardiac death (SCD) is an unexpected death due to cardiac causes,
+  occurring in a short time period (generally within one hour of symptom onset),
+  in a person with known or unknown cardiac disease.
+reference: ...
+domain: Disorder
+terminology:
+- SNOMED
+- ICD10
+- ICD9
+perferred_term:
+  SNOMED:
+    code: '95281009'
+    desc: Sudden cardiac death
+  ICD10:
+    code: I461
+    desc: Sudden cardiac death, so described
+regexes:
+  SNOMED: '95281009|22298006|410429000'
+  ICD10:
+  - I461
+  - I469
+  ICD9:
+  - 4275
+  - 7981
+  - 7982
+  all:
+  - (?i)sudden.*cardiac.*death
+  - (?i)cardiac.*arrest
+  - (?i)sudden.*death
+  - (?i)unexpected.*death
+include: nih_outcome_sudden_death
+exclude: ~
+notes: |-
+  Include codes and text descriptions that represent sudden death presumed to be
+  of cardiac origin. Exclude clearly non-cardiac causes such as trauma, overdose,
+  or terminal illness. Where available, consider additional temporal qualifiers
+  (e.g., death within 1 hour of symptom onset). Use in conjunction with cause-of-death data if present.

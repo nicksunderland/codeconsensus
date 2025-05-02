@@ -1,0 +1,36 @@
+id: nih_outcome_procedure_heart_transplant
+name: Heart Transplant (Procedure)
+definition: |
+  Heart transplant procedure.
+reference: ...
+domain: Procedure
+terminology:
+- SNOMED_procedure
+- OPCS4
+- CPT4
+- ICD9_procedure
+perferred_term:
+  OPCS4:
+    code: ~
+    desc: ~
+  SNOMED_procedure:
+    code: '32413006'
+    desc: Transplantation of heart (procedure)
+  CPT4:
+    code: ~
+    desc: ~
+regexes:
+  OPCS4:
+  -
+  all:
+  - (?i)(heart|cardiac) .*transplant
+  - (?i)transplant .*(heart|cardiac)
+  SNOMED_procedure: '32413006'
+  CPT4:
+  - ~
+include: nih_outcome_procedure_heart_transplant
+exclude: ~
+notes: |-
+  Please include codes that indicate a "history of ...". Disease entities that
+  are downstream consequences of the concept of interest (and not downstream of
+  unrelated concepts, i.e. they are relatively specific) should be included.

@@ -1,0 +1,32 @@
+id: nih_outcome_heart_transplant
+name: Heart Transplant
+definition: |
+  Heart transplant.
+reference: ...
+domain: Disorder
+terminology:
+- SNOMED
+- ICD10
+- ICD9
+perferred_term:
+  SNOMED:
+    code: '739024006'
+    desc: Transplanted heart present
+  ICD10:
+    code: ~
+    desc: ~
+regexes:
+  SNOMED: '739024006'
+  ICD10:
+  - ~
+  ICD9:
+  - ~
+  all:
+  - (?i)(heart|cardiac).*transplant
+  - (?i)transplant.*(heart|cardiac)
+include: nih_outcome_heart_failure
+exclude: ~
+notes: |-
+  Please include codes that indicate a "history of ...". Disease entities that
+  are downstream consequences of the concept of interest (and not downstream of
+  unrelated concepts, i.e. they are relatively specific) should be included.

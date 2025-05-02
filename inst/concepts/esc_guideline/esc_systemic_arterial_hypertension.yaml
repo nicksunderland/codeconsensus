@@ -9,7 +9,6 @@ terminology:
 - SNOMED
 - ICD11
 - ICD10
-- ICD9
 perferred_term:
   SNOMED:
     code: '38341003'
@@ -23,8 +22,6 @@ perferred_term:
 regexes:
   SNOMED: '38341003'
   ICD10:
-  - ~
-  ICD9:
   - ~
   all:
   - (?i)hypertensi(on|ve)

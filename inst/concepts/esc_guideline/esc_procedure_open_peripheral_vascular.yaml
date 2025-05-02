@@ -6,16 +6,13 @@ reference: https://...TBC
 domain: Procedure
 terminology:
 - SNOMED_procedure
-- OPCS4
+- ICD10
+- ICD11
 perferred_term:
-  OPCS4:
-    code: ~
-    desc: ~
   SNOMED_procedure:
     code: '22701007'
     desc: Operation procedure on artery of extremity
 regexes:
-  OPCS4: L[1256][0123689][0-9]
   all: Operative procedure on artery of extremity
   SNOMED_procedure: '22701007'
 include: esc_procedure_open_peripheral_vascular

@@ -11,7 +11,6 @@ terminology:
 - SNOMED
 - ICD11
 - ICD10
-- ICD9
 perferred_term:
   SNOMED:
     code: '73211009'
@@ -25,8 +24,6 @@ perferred_term:
 regexes:
   SNOMED: '73211009'
   ICD10:
-  - ~
-  ICD9:
   - ~
   all:
   - diabetes mellitus

@@ -1,0 +1,34 @@
+id: nih_outcome_vt_vf
+name: Ventricular Tachycardia/Fibrillation
+definition: |
+  Ventricular Tachycardia/Fibrillation.
+reference: ...
+domain: Disorder
+terminology:
+- SNOMED
+- ICD10
+- ICD9
+perferred_term:
+  SNOMED:
+    code: '66657009'
+    desc: Paroxysmal ventricular tachycardia
+  ICD10:
+    code: ~
+    desc: ~
+regexes:
+  SNOMED: '66657009|698247007|164865005|427172004'
+  ICD10:
+  - I472
+  - I490
+  ICD9:
+  - ~
+  all:
+  - (?i)ventricular.*(tachycardia|fibrillation|flutter|arrhythmia)
+  - (?i)VT|VF
+include: nih_outcome_vt_vf
+exclude: ~
+notes: |-
+  Please include all types of myocardial infarction (see reference for universal
+  definitions). Please include codes that indicate a "history of ...".  Disease entities that
+  are downstream consequences of the concept of interest (and not downstream of
+  unrelated concepts, i.e. they are relatively specific) should be included.

@@ -8,7 +8,6 @@ terminology:
 - SNOMED
 - ICD11
 - ICD10
-- ICD9
 perferred_term:
   SNOMED:
     code: '194828000'

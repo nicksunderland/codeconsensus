@@ -8,7 +8,6 @@ terminology:
 - SNOMED
 - ICD11
 - ICD10
-- ICD9
 perferred_term:
   SNOMED:
     code: '63491006'
@@ -22,8 +21,6 @@ perferred_term:
 regexes:
   SNOMED: '63491006'
   ICD10:
-  - ~
-  ICD9:
   - ~
   all: intermittent claudication
   ICD11:

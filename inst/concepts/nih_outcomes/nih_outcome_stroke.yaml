@@ -1,4 +1,4 @@
-id: esc_stroke
+id: nih_outcome_stroke
 name: Stroke
 definition: |
   Stroke is defined as an acute episode of focal or global neurological dysfunction
@@ -38,5 +38,5 @@ regexes:
   - (?i)extra-?dural hae?morrhae?ge
   ICD11:
   - ~
-include: esc_stroke
+include: nih_outcome_stroke
 exclude: ~

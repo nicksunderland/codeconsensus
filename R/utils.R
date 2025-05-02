@@ -35,6 +35,14 @@ tree_attributes <- function(tree, attribute_name, result = list()) {
         result[[tree[[i]]$text]] <- attribute_value
       }
 
+    } else if (attribute_name %in% names(tree[[i]])) {
+
+      if (is.null(tree[[i]][[attribute_name]])) {
+        result[[tree[[i]]$text]] <- NA
+      } else {
+        result[[tree[[i]]$text]] <- tree[[i]][[attribute_name]]
+      }
+
     }
 
     result <- tree_attributes(tree[[i]]$children, attribute_name, result)

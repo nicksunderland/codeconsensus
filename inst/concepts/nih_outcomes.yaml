@@ -1,0 +1,33 @@
+id: "nih_outcomes"
+name: "NIH Outcomes"
+concepts:
+  # HEART FAILURE
+  - "nih_outcome_heart_failure"
+  - "nih_outcome_heart_transplant"
+  - "nih_outcome_procedure_heart_transplant"
+  - "nih_outcome_vad"
+  - "nih_outcome_procedure_vad"
+
+  # ARRHYTHMIA
+  #- "nih_outcome_vt_vf"
+
+  # MYOCARDIAL INFARCTION
+  #- "nih_outcome_myocardial_infarction"
+
+  # STROKE
+  #- "nih_outcome_stroke"
+
+  # EMBOLISM
+  #- "nih_outcome_pulmonary_embolism"
+  #- "nih_outcome_systemic_embolism"
+
+  # SUDDEN DEATH
+  #- "nih_outcome_sudden_death"
+
+  # DERIVED
+  #- "nih_outcome_dcm_mace"
+  #- "nih_outcome_mace"
+  #- "nih_outcome_macce"
+
+
+

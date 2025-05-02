@@ -1,0 +1,36 @@
+id: nih_outcome_procedure_vad
+name: Ventricular Assist Device (Procedure)
+definition: |
+  Ventricular assist device procedure.
+reference: ...
+domain: Procedure
+terminology:
+- SNOMED_procedure
+- OPCS4
+- CPT4
+- ICD9_procedure
+perferred_term:
+  OPCS4:
+    code: ~
+    desc: ~
+  SNOMED_procedure:
+    code: '232965003'
+    desc: Implantation of cardiac ventricular assist device
+  CPT4:
+    code: ~
+    desc: ~
+regexes:
+  OPCS4:
+  - K541
+  all:
+  - (?i)(heart|cardiac|ventric(le|ular)).*assist
+  - (?i)assist.*(heart|cardiac|ventric(le|ular))
+  SNOMED_procedure: '232965003'
+  CPT4:
+  - ~
+include: nih_outcome_procedure_vad
+exclude: ~
+notes: |-
+  Please include codes that indicate a "history of ...". Disease entities that
+  are downstream consequences of the concept of interest (and not downstream of
+  unrelated concepts, i.e. they are relatively specific) should be included.
