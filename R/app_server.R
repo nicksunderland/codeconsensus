@@ -1,5 +1,3 @@
-# utils::globalVariables(c('con'), package = "hfphenotyping")
-
 #' The application server-side
 #'
 #' @param input,output,session Internal parameters for {shiny}.
@@ -32,7 +30,7 @@ app_server <- function(input, output, session) {
   # Create porject radiobuttons
   # --------------------------
   output$project_radiobuttons <- renderUI({
-    project_configs <- list.files(system.file("concepts", package = "hfphenotyping"), pattern = ".ya?ml$", full.names = TRUE)
+    project_configs <- list.files(system.file("concepts", package = "codeconsensus"), pattern = ".ya?ml$", full.names = TRUE)
     project_names   <- sapply(project_configs, function(x) yaml::read_yaml(paste0(sub(".yaml$", "", x), ".yaml"))$name)
     project_ids     <- lapply(project_configs, function(x) yaml::read_yaml(paste0(sub(".yaml$", "", x), ".yaml"))$id)
     names(project_ids) <- project_names
@@ -153,9 +151,9 @@ app_server <- function(input, output, session) {
     } # end cleaning up old UIs
 
     # get the concepts for this project
-    project_config <- system.file("concepts", paste0(project, ".yaml"),  package = "hfphenotyping")
+    project_config <- system.file("concepts", paste0(project, ".yaml"),  package = "codeconsensus")
     config         <- yaml::read_yaml(project_config)
-    concept_dir    <- system.file("concepts", project, package = "hfphenotyping")
+    concept_dir    <- system.file("concepts", project, package = "codeconsensus")
     concepts_files <- lapply(config$concepts, function(x) file.path(concept_dir, paste0(x, ".yaml")))
     concepts       <- lapply(concepts_files, function(x) yaml::read_yaml(x))
 

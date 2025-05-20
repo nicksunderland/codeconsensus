@@ -59,8 +59,8 @@ parse_config_files <- function(file) {
     config_paths <- file
   } else if (dir.exists(file)) {
     config_paths <- list.files(file, pattern = ".ya?ml$", full.names = TRUE, recursive = TRUE)
-  } else if (file %in% list.files(system.file("concepts", package = "hfphenotyping"))) {
-    config_dir   <- system.file("concepts", file, package = "hfphenotyping")
+  } else if (file %in% list.files(system.file("concepts", package = "codeconsensus"))) {
+    config_dir   <- system.file("concepts", file, package = "codeconsensus")
     config_paths <- list.files(config_dir, pattern = ".ya?ml$", full.names = TRUE)
   } else {
     stop("incorrect input")

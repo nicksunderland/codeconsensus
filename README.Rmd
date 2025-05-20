@@ -1,0 +1,109 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# codeconsensus
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of `codeconsensus` is to assist with electronic health record (EHR) code curation from mutiple EHR dictionaries.
+
+
+## Installation
+You can install the development version of codeconsensus from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("pak")
+pak::pak("nicksunderland/codeconsensus")
+```
+
+## Concepts
+At the heart of `codeconsensus` is the specification of a `concept`. A `concept` is the clinical entity which we are trying to describe in terms of diagnostic codes. Concepts are defined in a `.yaml` file with the following structure, for example Heart Failure. The concept `.yaml` files are located in project-specific directories within this package at `/inst/concepts/...`.
+
+The primary field of concern is that `regexes` field - this needs to be adjusted with appropriate search terms. The regexes can be for all dictionaries (add under the `all` field) or specific to a particular dictionary/terminology. 
+
+```{yaml}
+id: esc_heart_failure
+name: Heart Failure
+definition: |
+  Heart failure is not a single pathological diagnosis, but a clinical syndrome consisting of
+  cardinal symptoms (e.g. breathlessness, ankle . swelling, and fatigue) that may be accompanied
+  by signs (e.g. elevated . jugular venous pressure, pulmonary crackles, and peripheral oedema).
+  It is due to a structural and/or functional abnormality of the heart that results in elevated
+  intracardiac pressures and/or inadequate cardiac output at rest and/or during exercise.
+reference: https://doi.org/10.1093/eurheartj/ehab368
+domain: Disorder
+terminology:
+- SNOMED
+- ICD11
+- ICD10
+regexes:
+  SNOMED: '84114007'
+  ICD10:
+  - ~
+  all:
+  - (?i)(heart|cardiac|ventricular) failure
+  - (?i)cardiac insufficiency
+  - ' HF '
+  ICD11:
+  - ~
+include: esc_heart_failure
+exclude: ~
+```
+
+
+## EHR dictionaries
+The concept files are used to query the appropriate EHR dictionaries, the dictionaries used are those specified under the `terminology` field. The EHR dictionary files can be large and so are not included in this package. The dictionaries include: 
+
+* ICD 10  
+* ICD 11  
+* ICD 9  
+* SNOMED  
+* CPT4  
+* OPCS  
+
+Currently the dictionary directory is located at: 
+
+```{yaml}
+'/path-to-UCL-OneDrive/.../IHI.CompMed - Documents/PHENOTYPING/ehr_dictionaries'
+```
+
+
+## Create code lists
+To create a concept code list you can use the function `make_concept()`. This will output the code list in the 3 requested formats:
+
+* Flat `.tsv` file (list option)  
+* Excel file called `concepts.xlsx`, where concepts are added as tabs across multiple function calls (excel option)  
+* Code tree `.RDS` file (nested lists), suitable for displaying in Shiny applications (tree option)  
+
+```{r ehr_dictionaries, eval = FALSE}
+library(codeconsensus)
+
+concept_yml <- system.file("concepts", "nih_cardiomyopathy", "nih_heart_failure.yaml", package="codeconsensus")
+
+make_concept(concept_yml   = concept_yml, 
+             output_dir    = "~/Desktop/codeconsensus_output", 
+             ehr_dict_root = Sys.getenv("CODECONSESUS_DICT_DIR"),
+             format        = c("list", "excel", "tree"))
+```
+
+## Code conensus
+The workflow after generating an initial code list includes: 
+
+* manual comparison with published code lists  
+* expert manual review of the codes, voting, then concensus meeting  
+* amendment of the regexes to capture additional codes  
+* rerunning of the `make_concept()` function to generate the final code list
+

@@ -1,4 +1,4 @@
-utils::globalVariables(c('USERNAME'), package = "hfphenotyping")
+utils::globalVariables(c('USERNAME'), package = "codeconsensus")
 
 #' home UI Function
 #'

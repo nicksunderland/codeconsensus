@@ -14,7 +14,7 @@ con_env <- new.env(parent = emptyenv())
 #'
 make_connection <- function() {
 
-  config <- config::get(file = system.file("database", "db_config.yaml", package = "hfphenotyping"))
+  config <- config::get(file = system.file("database", "db_config.yaml", package = "codeconsensus"))
 
   con_env$con <- DBI::dbConnect(
     drv      = RPostgres::Postgres(),

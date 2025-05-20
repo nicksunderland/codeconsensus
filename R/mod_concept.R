@@ -1,7 +1,7 @@
 utils::globalVariables(c('disabled', 'nhs_counts', 'count', 'i.per_100k_episodes', 'i.per_100k_patients',
                          'ukbb_counts', 'i.count', 'biovu_counts', 'DISABLED', 'CODE_ID', 'i.CODE_ID',
-                         'N', 'CONCEPT', 'max_n', 'i.max_n', 'code_type', 'old', 'i.SELECTED',
-                         'SELECTED'), package = "hfphenotyping")
+                         'N', 'CONCEPT', 'max_n', 'i.max_n', 'code_type', 'old', 'i.SELECTED', 'DESC',
+                         'SELECTED'), package = "codeconsensus")
 
 #' concept UI Function
 #'
@@ -188,7 +188,7 @@ mod_concept_server <- function(id, config, user, project_id){
       # populate inclusion tree
       for (id in config$include) {
         print(id)
-        tree_path <- system.file("concepts", project_id, paste0(id, ".RDS"), package = "hfphenotyping")
+        tree_path <- system.file("concepts", project_id, paste0(id, ".RDS"), package = "codeconsensus")
         include$children <- c(include$children, list(readRDS(tree_path)))
       }
 
@@ -209,7 +209,7 @@ mod_concept_server <- function(id, config, user, project_id){
                             children = list())
 
         for (id in config$exclude) {
-          tree_path <- system.file("concepts", project_id, paste0(id, ".RDS"), package = "hfphenotyping")
+          tree_path <- system.file("concepts", project_id, paste0(id, ".RDS"), package = "codeconsensus")
           exclude$children <- c(exclude$children, list(readRDS(tree_path)))
         }
       }
